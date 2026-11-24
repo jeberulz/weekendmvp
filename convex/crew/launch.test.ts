@@ -25,6 +25,7 @@ import { hydrotrailBrandKit, hydrotrailEmailSequence, hydrotrailWizardAnswers } 
 import { CREDIT_ACTIONS, jobKey } from "../../lib/workspace/contracts/jobs";
 import type { WizardAnswers } from "../../lib/workspace/contracts/wizard";
 import { RUN_LEASE_MS, abandonCrewTask, ensureLaunchStepTasks } from "./jobs";
+import { handoffEmailKind } from "../../lib/workspace/crew/emailHandoff";
 import { FAILED_STEP_INTERRUPTED_REASON } from "../../lib/workspace/crew/retry";
 import {
   BRIEF_CHANGED_REASON,
@@ -525,7 +526,15 @@ describe("WP94 founder-requested revisions", () => {
     ]);
   });
 
-  test("the lead accepts a change to an approved brand and Elle uses the replacement only after approval", async () => {
+  test("a single named email is targeted, while a whole sequence keeps its full scope", () => {
+    expect(handoffEmailKind("show me one revised email")).toBe("welcome");
+    expect(handoffEmailKind("rewrite the follow-up email")).toBe("follow_up");
+    expect(handoffEmailKind("update the email sequence")).toBeUndefined();
+    expect(handoffEmailKind("show me a revised email sequence")).toBeUndefined();
+    expect(handoffEmailKind("update the waitlist emails")).toBeUndefined();
+  });
+
+  test.each([false, true])("Elle rewrites one email using Iris's approved brand, retry required: %s", async (retryFirst) => {
     vi.stubEnv("AI_PROVIDER_MODE", "fixture");
     try {
       const { w, founder, projectId, original, brand } = await launchedBrand();
@@ -541,18 +550,25 @@ describe("WP94 founder-requested revisions", () => {
           reply: (request) => {
             emailPrompts.push(JSON.stringify(request.messages));
             const { emails } = hydrotrailEmailSequence;
-            return { json: { ...hydrotrailEmailSequence, emails: { ...emails, welcome: { ...emails.welcome, subject: emailSubject } } } };
+            const subject = retryFirst && emailPrompts.length === 1 ? emails.welcome.subject : emailSubject;
+            return { json: { ...hydrotrailEmailSequence, name: "A model-generated new name", emails: {
+              ...emails, welcome: { ...emails.welcome, subject, goal: "A different internal metric" },
+              offer: { ...emails.offer, subject: "An unrelated offer rewrite" },
+            } } };
           },
         };
         return {};
       };
       const turn = await founder.mutation(api.workspace.chat.sendWrenMessage, {
-        projectId, body: "Ask Iris to make the brand voice warmer, then have Elle update the waitlist emails.",
+        projectId, body: "Iris, change the brand voice to practical and direct and show me one revised email.",
       });
       if (turn.kind !== "sent") throw new Error(`Lead did not receive the request: ${turn.kind}`);
       await drain(w);
       const receipt = await w.t.run(async (ctx) => await ctx.db.get("chat_messages", turn.wrenMessageId));
-      expect(receipt).toMatchObject({ status: "done", body: expect.stringContaining("Elle") });
+      expect(receipt).toMatchObject({ status: "done", body: expect.stringContaining("Elle"), crewRevisionTaskId: expect.any(String) });
+      const latestReceipt = async () => (await founder.query(api.workspace.chat.listWrenThread, { projectId }))
+        .find((message) => message._id === turn.wrenMessageId);
+      expect(await latestReceipt()).toMatchObject({ body: expect.stringContaining("once you approve"), cards: [{ kind: "navigate", route: "brand" }] });
       const reviewed = await rows(w);
       const revisedBrand = reviewed.documents.find((doc) => doc.supersedesDocumentId === original._id);
       const emailDraft = reviewed.documents.find((doc) => doc.kind === "email_sequence");
@@ -567,20 +583,68 @@ describe("WP94 founder-requested revisions", () => {
       await founder.mutation(api.workspace.approvals.decideApproval, approve);
       await founder.mutation(api.workspace.approvals.decideApproval, approve);
       await drain(w);
+      if (retryFirst) {
+        const first = await founder.query(api.growth.drafts.emailSequence.emailSequenceDraft, { projectId });
+        if (first.state !== "ready" || !first.failedHandoff) throw new Error("The failed rewrite must be recoverable from the Email page");
+        expect(first.failedHandoff).toMatchObject({ canRetry: true, reason: expect.stringMatching(/same email copy/i) });
+        expect(first.emails[0]?.subject).toBe(hydrotrailEmailSequence.emails.welcome.subject);
+        expect((await rows(w)).documents.filter((doc) => doc.supersedesDocumentId === emailDraft._id)).toHaveLength(0);
+        expect(await latestReceipt()).toMatchObject({
+          body: expect.stringMatching(/Elle’s email rewrite failed.*same email copy/i), cards: [{ kind: "navigate", route: "email" }],
+        });
+        const retry = { projectId, taskId: first.failedHandoff.taskId };
+        // A pre-link chat receipt can still follow its own founder-turn idempotency key.
+        await w.t.run(async (ctx) => await ctx.db.patch("chat_messages", turn.wrenMessageId, { crewRevisionTaskId: undefined }));
+        // An older approved brand still exists, but this retry is exclusively for the pinned new kit.
+        await w.t.run(async (ctx) => await ctx.db.patch("approvals", approve.approvalId, { status: "cancelled" }));
+        expect(await founder.mutation(api.growth.drafts.emailSequence.retryEmailHandoff, retry)).toBe("not_available");
+        expect(emailPrompts).toHaveLength(1);
+        await w.t.run(async (ctx) => await ctx.db.patch("approvals", approve.approvalId, { status: "approved" }));
+        const otherEmail = await w.t.run(async (ctx) => await ctx.db.insert("documents", {
+          projectId, ownerId: emailDraft.ownerId, kind: "email_sequence", format: "json", title: "A newer email draft",
+          body: emailDraft.body, createdAt: Date.now() + 1, updatedAt: Date.now() + 1,
+        }));
+        expect(await founder.mutation(api.growth.drafts.emailSequence.retryEmailHandoff, retry)).toBe("not_available");
+        await w.t.run(async (ctx) => {
+          await ctx.db.patch("documents", otherEmail, { archivedAt: Date.now() });
+          // Older failed tasks only retained the founder's note on the source review.
+          await ctx.db.patch("tasks", retry.taskId, { revisionNote: undefined });
+        });
+        expect(await founder.mutation(api.growth.drafts.emailSequence.retryEmailHandoff, retry)).toBe("queued");
+        await founder.mutation(api.growth.drafts.emailSequence.retryEmailHandoff, retry);
+        expect(await latestReceipt()).toMatchObject({ body: expect.stringContaining("rewrite is queued") });
+        await drain(w);
+      }
 
       const final = await rows(w);
+      expect(await latestReceipt()).toMatchObject({
+        body: expect.stringContaining("Elle saved the revised email copy"), cards: [{ kind: "navigate", route: "email" }],
+      });
       const emailTasks = ofType(final, "crew_email_sequence").filter((task) => task.revisionOfTaskId === emailDraft.taskId);
-      expect(emailTasks).toEqual([expect.objectContaining({ status: "succeeded", requiresBrandDocumentId: revisedBrand._id })]);
+      expect(emailTasks.map((task) => task.status)).toEqual(retryFirst ? ["failed", "succeeded"] : ["succeeded"]);
+      expect(emailTasks.every((task) => task.requiresBrandDocumentId === revisedBrand._id)).toBe(true);
       expect(final.documents.filter((doc) => doc.supersedesDocumentId === emailDraft._id)).toEqual([
         expect.objectContaining({ kind: "email_sequence", brandKitDocumentId: revisedBrand._id }),
       ]);
-      expect(emailPrompts).toHaveLength(1);
-      expect(emailPrompts[0]).toContain(newVoice);
+      expect(emailPrompts).toHaveLength(retryFirst ? 2 : 1);
+      for (const prompt of emailPrompts) {
+        expect(prompt).toContain(newVoice);
+        expect(prompt).toContain("Rewrite the welcome email only.");
+        expect(prompt).toContain("show me one revised email");
+      }
       const emailPage = await founder.query(api.growth.drafts.emailSequence.emailSequenceDraft, { projectId });
       expect(emailPage).toMatchObject({
         state: "ready", status: "draft", card: { status: "pending", changeRound: 1n },
         emails: expect.arrayContaining([expect.objectContaining({ kind: "welcome", subject: emailSubject })]),
       });
+      if (emailPage.state !== "ready") throw new Error("Missing final email sequence");
+      expect(emailPage.failedHandoff).toBeUndefined();
+      expect(emailPage.name).toBe(hydrotrailEmailSequence.name);
+      const { welcome, ...others } = hydrotrailEmailSequence.emails;
+      expect(emailPage.emails[0]).toEqual({ ...welcome, kind: "welcome", subject: emailSubject });
+      for (const [kind, email] of Object.entries(others)) {
+        expect(emailPage.emails.find((row) => row.kind === kind)).toEqual({ kind, ...email });
+      }
       expect(ofType(final, "crew_social_pack")).toHaveLength(1);
       const crew = await founder.query(api.workspace.crewStatus.snapshot, { projectId });
       expect(crew.assignments.find(({ role }) => role === "brand")?.changePreview).toEqual([expect.stringContaining(newVoice)]);

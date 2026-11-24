@@ -25,9 +25,15 @@ type AssignmentIntent =
   | { type: "revision"; target: Target; note: string; followUpEmail: boolean; emailNote?: string }
   | { type: "clarify"; question: string };
 
+/** Founder's explicit instruction to return only an answer on this turn. */
+export function answerOnlyRequest(message: string): boolean {
+  return /\b(?:only answer|answer (?:the|my|this) question only|(?:question|steps|explanation) only|leave (?:all |the )?drafts (?:as they are|unchanged)|do not start|don['’]t start)\b/iu.test(message);
+}
+
 /** Only explicit directives in the current founder turn can put work in the queue. */
 export function crewAssignmentIntent(body: string, focus?: string): AssignmentIntent | null {
   const current = body.trim();
+  if (handoffGuide(current) || answerOnlyRequest(current)) return null;
   const directive = current
     .replace(/^(?:hey[, ]+)?(?:(?:can|could|would) you\s+|(?:i would like|i['’]d like|i want) you to\s+)?(?:please\s+)?/iu, "")
     .replace(/^(?:ask|have|get|tell) (?:iris|elle|theo|the (?:brand|email|social) (?:agent|specialist))\s+(?:to\s+)?/iu, "")
@@ -66,6 +72,48 @@ export function crewAssignmentIntent(body: string, focus?: string): AssignmentIn
   return { type: "revision", target, note: primary, followUpEmail, ...(followUpEmail ? { emailNote: followUp } : {}) };
 }
 
+export type ArtifactReviewTarget = Target | "blueprint";
+
+/** Match a question about the ability to relay. A message with an actual question for a worker goes to the relay. */
+export function capabilityQuestion(message: string): { target: string } | null {
+  const sentences = message.trim().split(/(?<=[?!])\s+/u);
+  const question = /^(?:can|could|do|would) you (?:communicate with|(?:talk|speak) to|(?:pass|relay|deliver) (?:a |my )?(?:message|question) to)\s*([\p{L}\p{N} ’'-]{0,65})[?!.]*$/iu;
+  if (!sentences.every((sentence) => question.test(sentence))) return null;
+  const asked = question.exec(sentences[0]);
+  if (!asked) return null;
+  const target = asked[1].trim().replace(/\s+and (?:the |my |our )?team$/iu, "");
+  return { target: /^(?:the |my |our )?(?:team|crew|specialists?|agents?)$/iu.test(target) ? "" : target };
+}
+
+export function artifactReviewQuestion(message: string, focus?: string): ArtifactReviewTarget | null {
+  const asksForDecision = /\b(?:appr(?:o|io)ve|approval|review decision|passed review)\b/iu.test(message) ||
+    /\b(?:is|was|are|were|been|has|have|did|already|yet)\b[^.!?]{0,80}\bappr(?:o|io)ved\b/iu.test(message) ||
+    /\bappr(?:o|io)ved(?: yet| already)?[?!.]*\s*$/iu.test(message);
+  if (!asksForDecision) return null;
+  // “What colours are in the approved brand kit?” asks about its contents.
+  // Only treat a preceding “approved” as a decision when the founder names an actor.
+  if (/\b(?:the|our|my|an?) (?:already )?appr(?:o|io)ved (?:brand|social|email|blueprint)\b/iu.test(message) &&
+      !/\b(?:approve|approval|review decision|passed review)\b/iu.test(message)) return null;
+  if (/\b(?:spend|credits?|send|sending|post to|publish|publishing|activate|launch ads)\b/iu.test(message)) return null;
+  const matches: ArtifactReviewTarget[] = targets.filter((target) => references[target].test(message));
+  if (/\bblueprint\b/iu.test(message)) matches.push("blueprint");
+  return matches.length === 1 ? matches[0] : matches.length === 0 ? targets.find((target) => target === focus) ?? null : null;
+}
+
+/** A founder asking how a workflow operates has authorized an explanation only. */
+export function handoffGuide(message: string): boolean {
+  if (/^(?:(?:could|would|can) you )?(?:please )?(?:ask|tell|message|pass|check with)\b/iu.test(message.trim())) return false;
+  const explanation = /\b(?:how (?:do|does|would|could|can|to)|what would|if (?:i|we) wanted|describe (?:the |those )?steps|explain|walk me through|where (?:can|could|would) (?:i|we) (?:see|follow|track))\b/iu.test(message);
+  if (!explanation) return false;
+  const namesBrand = references.brand.test(message);
+  const namesEmail = references.email.test(message);
+  if (namesBrand && namesEmail) return /\b(?:hand[ -]?off|then|after|once|pass|hand over)\b/iu.test(message);
+  // A general how-to can use the supported handoff as its example. A question
+  // about a different named worker should reach that worker's own status.
+  return !namesBrand && !namesEmail &&
+    /\b(?:how (?:does (?:the |a )?hand[ -]?off|do hand[ -]?offs) work|(?:explain|describe|follow|track) (?:the |a )?(?:crew |team )?hand[ -]?offs?[.?!]*$)/iu.test(message);
+}
+
 /** A read request for an existing email, distinct from asking Elle to write one. */
 export function emailPreviewRequest(message: string): { revised: boolean } | null {
   if (!/^(?:(?:can|could|would) you |please )*(?:show|share|read|display|open|let me see)\b/iu.test(message.trim()) ||
@@ -82,7 +130,7 @@ export function specialistStatusAnswer(
     spendApprovals?: readonly { title: string; costCredits: number }[];
   },
 ): string | null {
-  if (!/\b(?:working on|status|progress|updates?|finished|done|blocked|waiting|what changed|what happened|who is working|everyone doing|team doing)\b/iu.test(message)) return null;
+  if (!/\b(?:working on|still working|working right now|doing (?:now|today|right now)|status|progress|updates?|finished|done|blocked|waiting|what changed|what happened|who is working|everyone doing|team doing)\b/iu.test(message)) return null;
   const words = new Set(message.toLowerCase().match(/[a-z]+/gu) ?? []);
   const named = crew.specialists.filter((entry) => words.has(entry.name.toLowerCase()) || words.has(entry.role) ||
     (entry.role === "email" && words.has("emails")));

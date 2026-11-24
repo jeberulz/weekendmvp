@@ -165,6 +165,7 @@ export async function runWrenTurnWith(
   ctx: TurnCtx,
   args: RunWrenTurnArgs,
   runPrompt: (prompt: RunPromptArgs) => Promise<GatewayRunResult>,
+  runConsultation?: (turn: RunWrenTurnArgs) => Promise<null>,
 ): Promise<null> {
   const finishOnce = async (outcome: FinishOutcome, attempt: number) => {
     await ctx.runMutation(internal.workspace.chat.finishWrenTurn, {
@@ -212,6 +213,20 @@ export async function runWrenTurnWith(
     throw error;
   }
   if (turn.status === "skip") return null;
+  if (turn.status === "consultation") {
+    if (runConsultation === undefined) {
+      await finish({ status: "failed", cause: "failed" });
+      return null;
+    }
+    try {
+      return await runConsultation(args);
+    } catch {
+      // A failed claim still needs a terminal reply. Once claimed, only
+      // the consultation worker can commit its outcome.
+      await finish({ status: "failed", cause: "failed" });
+      return null;
+    }
+  }
   if (turn.status === "assignment" || turn.status === "answer") {
     try {
       await finishOnce(turn.status === "assignment"
@@ -271,5 +286,8 @@ export const runWrenTurn = internalAction({
   args: runWrenTurnArgs,
   returns: v.null(),
   handler: async (ctx, args): Promise<null> =>
-    await runWrenTurnWith(ctx, args, async (prompt) => await ctx.runAction(internal.ai.gatewayActions.runPrompt, prompt)),
+    await runWrenTurnWith(ctx, args,
+      (prompt) => ctx.runAction(internal.ai.gatewayActions.runPrompt, prompt),
+      (turn) => ctx.runAction(internal.workspace.crewConsultationActions.run, turn),
+    ),
 });

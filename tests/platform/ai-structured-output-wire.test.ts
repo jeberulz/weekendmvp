@@ -89,7 +89,7 @@ function sentSchema(params: ReturnType<typeof buildMessageParams>): unknown {
 }
 
 /** Refused as a grammar by the live API on 2026-11-08; each must stay prompted. */
-const GRAMMAR_TOO_LARGE = ["crew-idea-seed", "crew-social-pack"];
+const GRAMMAR_TOO_LARGE = ["crew-idea-seed@3", "crew-social-pack@4"];
 
 describe("structured output schemas on the wire", () => {
   test("every registered prompt has a reply schema to check", () => {
@@ -125,7 +125,7 @@ describe("structured output schemas on the wire", () => {
 
   test("every schema the API refused as a grammar is sent prompted", () => {
     for (const id of GRAMMAR_TOO_LARGE) {
-      expect(specsWithSchema.find((spec) => spec.id === id)?.outputMode).toBe("prompted");
+      expect(specsWithSchema.find((spec) => `${spec.id}@${spec.version}` === id)?.outputMode).toBe("prompted");
     }
   });
 

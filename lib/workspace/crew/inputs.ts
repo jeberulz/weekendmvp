@@ -38,7 +38,7 @@ export const BLUEPRINT_LIBRARY_PROMPT_REF = "crew-blueprint-personalise@3";
 export const BLUEPRINT_OWN_IDEA_PROMPT_REF = "crew-blueprint-own-idea@3";
 export const BRAND_KIT_PROMPT_REF = "crew-brand-kit@3";
 export const EMAIL_SEQUENCE_PROMPT_REF = "crew-email-sequence@3";
-export const SOCIAL_PACK_PROMPT_REF = "crew-social-pack@4";
+export const SOCIAL_PACK_PROMPT_REF = "crew-social-pack@5";
 
 export type CrewPromptInputs = Record<string, string | null>;
 

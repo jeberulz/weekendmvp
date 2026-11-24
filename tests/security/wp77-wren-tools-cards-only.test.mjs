@@ -165,9 +165,13 @@ const CHAT_IMPORTS = {
     // WP94: the sole command boundary accepts a typed request derived from the founder's own row.
     ["./approvals", [...APPROVAL_VALIDATORS, "requestCrewRevision"]],
     ["./crewStatus", ["readCrewStatus"]],
+    ["./crewApprovalAnswer", ["readCrewApprovalAnswer"]],
+    ["./consultationRoster", ["readConsultationRoster"]],
+    ["./wrenHandoffReceipt", ["readWrenHandoffReceipt"]],
+    ["../../lib/workspace/crew/consultation", ["consultationAttemptsAvailable", "consultationMember", "crewConsultationIntent"]],
     ["../growth/drafts/emailSequence", ["readEmailSequenceDraft"]],
     ["../../lib/workspace/contracts/roster", ["ROLE_KEYS"]],
-    ["../../lib/workspace/crewAssignment", ["crewAssignmentIntent", "REVISION_TARGETS", "declinedRevisionMessage", "emailPreviewRequest", "specialistStatusAnswer"]],
+    ["../../lib/workspace/crewAssignment", ["answerOnlyRequest", "artifactReviewQuestion", "capabilityQuestion", "handoffGuide", "crewAssignmentIntent", "REVISION_TARGETS", "declinedRevisionMessage", "emailPreviewRequest", "specialistStatusAnswer"]],
     ["../../lib/workspace/plainText", ["sliceWellFormed"]],
     ["../../lib/workspace/contracts/prompts", ["parsePromptRef", "promptRef"]],
     ["../../lib/workspace/contracts/wrenTools", ["WREN_CARDS_PER_TURN"]],
@@ -251,6 +255,9 @@ const PLATFORM_GATES = new Set([
   "convex/platform/authz.ts",
   "convex/platform/limits.ts",
   "convex/workspace/crewStatus.ts",
+  "convex/workspace/crewApprovalAnswer.ts",
+  "convex/workspace/consultationRoster.ts",
+  "convex/workspace/wrenHandoffReceipt.ts",
   "convex/growth/drafts/emailSequence.ts",
   "lib/workspace/contracts/roster.ts",
 ]);
@@ -259,6 +266,7 @@ const PLATFORM_GATES = new Set([
 const PURE_HELPERS = [
   "lib/workspace/wren.ts",
   "lib/workspace/crewAssignment.ts",
+  "lib/workspace/crew/consultation.ts",
   "lib/workspace/contracts/prompts.ts",
   "lib/workspace/contracts/wrenTools.ts",
   "convex/ai/prompts/wrenChat.ts",
@@ -277,7 +285,7 @@ const CHAT_WRITE_TABLES = new Set(["chat_messages"]);
 const CHAT_TARGETS = {
   runMutation: new Set(["internal.workspace.chat.finishWrenTurn"]),
   runQuery: new Set(["internal.workspace.chat.loadWrenTurn"]),
-  runAction: new Set(["internal.ai.gatewayActions.runPrompt"]),
+  runAction: new Set(["internal.ai.gatewayActions.runPrompt", "internal.workspace.crewConsultationActions.run"]),
   runAfter: new Set(["internal.workspace.chatActions.runWrenTurn"]),
 };
 const ALL_TARGETS = new Set(Object.values(CHAT_TARGETS).flatMap((targets) => [...targets]));
@@ -711,7 +719,7 @@ function scanTargets(fileName, sourceFile, problems) {
           problems.push(`${fileName}:${line(sourceFile, node)} uses ${name} outside a direct call`);
         } else {
           const target = (name === "runAfter" ? call.arguments[1] : call.arguments[0])?.getText(sourceFile) ?? "";
-          if (!CHAT_TARGETS[name].has(target)) problems.push(`${fileName}:${line(sourceFile, node)} ${name}(${target})`);
+          if (!CHAT_TARGETS[name].has(target) || (target === "internal.workspace.crewConsultationActions.run" && fileName !== "convex/workspace/chatActions.ts")) problems.push(`${fileName}:${line(sourceFile, node)} ${name}(${target})`);
         }
       }
       // The outermost chain rooted at `internal` must be one exact allowed reference.
@@ -1203,6 +1211,8 @@ test("fixtures: the chat scan catches each side-effect shape", () => {
     patchApproval: "export async function f(ctx,id){ await ctx.db.patch(\"approvals\", id, {status:\"approved\"}); }",
     helper: "import { go } from \"./wrenHelpers\"; export async function f(ctx){ await go(ctx); }",
     insertTask: "export async function f(ctx){ await ctx.db.insert(\"tasks\", {}); }",
+    consultationOutsideAction: "export async function f(ctx){ await ctx.runAction(internal.workspace.crewConsultationActions.run, {}); }",
+    consultationRecord: "export async function f(ctx){ await ctx.runMutation(internal.workspace.crewConsultation.record, {}); }",
     scheduleViaChat: "export async function f(ctx){ await ctx.runMutation(internal.workspace.chat.doAnything, {}); }",
     // Variants of the same holes.
     aliasCreate: "import { createApprovalRecord as raise } from \"./approvals\"; export async function f(ctx){ await raise(ctx,{}); }",

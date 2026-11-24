@@ -12,6 +12,9 @@ import { revisionNoteFor } from "../workspace/changeRounds";
 import type { LineageTask } from "../../lib/workspace/changeRounds";
 import { isPendingApprovalStale } from "../../lib/workspace/contracts/approvals";
 import { parseArtifact, parseModelOutput } from "../../lib/workspace/contracts/artifacts";
+import { emailCopyChanged, handoffEmailBrief, handoffEmailKind, reviseSingleEmail } from "../../lib/workspace/crew/emailHandoff";
+import { parseEmailSequenceBody } from "../../lib/workspace/growth/emailDraft";
+import { socialSchemaFailure } from "../../lib/workspace/crew/socialFailure";
 import { JOB_SUBJECT_MAIN, jobKey, parseJobKey } from "../../lib/workspace/contracts/jobs";
 import { parsePromptRef } from "../../lib/workspace/contracts/prompts";
 import {
@@ -837,7 +840,7 @@ async function setTaskStatus(ctx: MutationCtx, task: Doc<"tasks">, next: TaskSta
  * interrupted action, a missing payment, or a draft that failed the quality
  * checks (S3a).
  */
-type FailCause = "failed" | "interrupted" | "unpaid" | "quality" | "no_change" | "stale_input" | "spend_revoked";
+type FailCause = "failed" | "interrupted" | "unpaid" | "quality" | "no_change" | "email_copy_unchanged" | "stale_input" | "spend_revoked";
 
 function failedReason(cause: FailCause, refundScheduled: boolean, hasDebit: boolean): string {
   if (hasDebit && !refundScheduled) return FAILED_STEP_ARCHIVED_REASON;
@@ -856,6 +859,10 @@ function failedReason(cause: FailCause, refundScheduled: boolean, hasDebit: bool
       return refundScheduled
         ? "The approved brand changed before this email revision finished. Credits are being returned."
         : "The approved brand changed before this email revision finished. Ask Elle to revise against the current kit.";
+    case "email_copy_unchanged":
+      return refundScheduled
+        ? "Elle returned the same email copy. Credits are being returned. Retry the rewrite on the Email page."
+        : "Elle returned the same email copy. Retry the rewrite on the Email page.";
     case "no_change":
       return refundScheduled
         ? "The revision made no changes. Credits are being returned."
@@ -868,6 +875,7 @@ async function failTask(
   task: Doc<"tasks">,
   now: number,
   cause: FailCause = "failed",
+  diagnosis?: string,
 ): Promise<{ refundScheduled: boolean }> {
   const failed = await setTaskStatus(ctx, task, "failed", now);
   const debit = await debitOf(ctx, failed);
@@ -881,8 +889,11 @@ async function failTask(
       projectId: failed.projectId,
     });
   }
-  const reason = failedReason(cause, refundScheduled, debit !== null);
-  if (failed.revisionOfTaskId !== undefined) await ctx.db.patch("tasks", failed._id, { crewFailureReason: reason });
+  const defaultReason = failedReason(cause, refundScheduled, debit !== null);
+  const reason = diagnosis === undefined ? defaultReason : debit !== null ? `${diagnosis} ${defaultReason}` : diagnosis;
+  if (failed.revisionOfTaskId !== undefined || diagnosis !== undefined || (failed.type === "crew_social_pack" && cause !== "failed")) {
+    await ctx.db.patch("tasks", failed._id, { crewFailureReason: reason });
+  }
   await setCrewStatus(ctx, failed, {
     member: "needs_you",
     workstream: "failed",
@@ -1192,7 +1203,7 @@ export const startCrewRun = internalMutation({
       changeRound: Number(task.changeRound ?? 0n),
       ...(debit === null ? {} : { creditDebitId: debit._id }),
       ...(previous?.body === undefined ? {} : { previousArtifactJson: previous.body }),
-      ...(note === null ? {} : { revisionNote: note }),
+      ...(note === null ? {} : { revisionNote: task.requiresBrandDocumentId && jobType === "crew_email_sequence" ? handoffEmailBrief(note) : note }),
       quality: await qualityContextFor(ctx, project, args.seedId),
     };
   },
@@ -1322,11 +1333,21 @@ export const finishCrewStep = internalMutation({
       await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
       return { kind: "failed", ...(await failTask(ctx, task, now, "spend_revoked")) };
     }
+    const handoffNote = task.requiresBrandDocumentId && kind === "email_sequence" ? await revisionNoteFor(ctx, task._id) : null;
+    const emailKind = handoffNote === null ? undefined : handoffEmailKind(handoffNote);
+    let unchangedEmail = false;
     let body: string | null = null;
     let gate: ReturnType<typeof gateCrewArtifact> | null = null;
     let prior: Record<string, unknown> | null = null;
     try {
-      const raw: unknown = JSON.parse(args.outputJson);
+      let raw: unknown = JSON.parse(args.outputJson);
+      if (emailKind !== undefined) {
+        const before = parseEmailSequenceBody(previous?.body);
+        const proposed = parseArtifact("email_sequence", raw);
+        if (!before || !proposed.success) throw new Error("Invalid email revision");
+        unchangedEmail = !emailCopyChanged(before, proposed.data, emailKind);
+        raw = reviseSingleEmail(before, proposed.data, emailKind);
+      }
       // The revised draft, re-validated: a LandingSpec revision keeps the stored proof slots.
       const stored = previous?.body === undefined ? null : parseArtifact(kind, JSON.parse(previous.body));
       if (stored?.success === true) prior = stored.data as Record<string, unknown>;
@@ -1338,6 +1359,10 @@ export const finishCrewStep = internalMutation({
       }
     } catch {
       body = null;
+    }
+    if (unchangedEmail) {
+      await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
+      return { kind: "failed", ...(await failTask(ctx, task, now, "email_copy_unchanged")) };
     }
     if (gate !== null && gate.result.hard.length > 0) {
       await closeRun(ctx, run, "failed", "permanent", nextAttempt, now);
@@ -1484,8 +1509,11 @@ export const settleCrewRun = internalMutation({
         }
         return { kind: "retry", retryClass, delayMs: decision.delayMs, scheduled: args.retry !== undefined };
       }
-      case "fail":
-        return { kind: "failed", retryClass, exhausted: decision.exhausted, ...(await failTask(ctx, task, now)) };
+      case "fail": {
+        const diagnosis = task.type === "crew_social_pack" && args.failure.kind === "schema_invalid"
+          ? socialSchemaFailure(args.failure.issues) : undefined;
+        return { kind: "failed", retryClass, exhausted: decision.exhausted, ...(await failTask(ctx, task, now, "failed", diagnosis)) };
+      }
       case "park": {
         const code = args.failure.kind === "meter_refused" ? args.failure.error.code : null;
         await parkTask(ctx, task, isParkingMeterCode(code) ? code : "AI_DISABLED", now);
