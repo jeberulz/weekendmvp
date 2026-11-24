@@ -110,7 +110,10 @@ export function IdeaImprove({ controller, fieldId }: { controller: IdeaImproveCo
           <p className="font-editorial text-lg leading-snug text-home-ink">
             {wordDiff(state.before, state.text).map((part, index) =>
               part.added ? (
-                <mark key={index} className="rounded-sm bg-home-ember-soft px-0.5 text-home-ink">
+                <mark
+                  key={index}
+                  className="rounded-sm bg-home-ember-soft px-0.5 text-home-ink underline decoration-home-orange-ink decoration-2 underline-offset-4"
+                >
                   <span className="sr-only">changed: </span>
                   {part.text}
                 </mark>
