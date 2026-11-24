@@ -3,6 +3,7 @@ import type { Doc } from "../_generated/dataModel";
 import { query, type QueryCtx } from "../_generated/server";
 import { launchProgressValidator, readLaunchProgress, revisionBlocker } from "../crew/launch";
 import { launchViewValidator, readLaunch } from "../crew/roster";
+import { lastCrewFailure } from "../crew/failure";
 import { approvedBrandKit } from "../crew/jobs";
 import { LAUNCH_STEPS, isPoolStep, type LaunchStep } from "../crew/steps";
 import { parseDraftBody } from "../growth/drafts/documentDraft";
@@ -29,6 +30,7 @@ const assignmentValidator = v.object({
   documentId: v.optional(v.id("documents")),
   blocker: v.optional(v.union(v.literal("blueprint"), v.literal("brand_kit"))),
   failure: v.optional(v.string()),
+  failureClass: v.optional(v.string()),
   changedFields: v.optional(v.array(v.string())),
   changePreview: v.optional(v.array(v.string())),
   handoff: v.optional(v.union(v.literal("requested"), v.literal("queued"), v.literal("spend_required"), v.literal("not_available"))),
@@ -137,6 +139,8 @@ async function readAssignment(
   const source = output && (step.key === "email_sequence" || step.key === "social_pack")
     ? await copySource(ctx, project, output, currentKit)
     : undefined;
+  const lastFailure = round > 0 && task.status === "failed" ? await lastCrewFailure(ctx, task) : null;
+  const failure = lastFailure?.detail ?? task.crewFailureReason;
   const changePreview = output ? await brandChangePreview(ctx, output) : [];
   return {
     role: step.employee, title: step.title, round, taskId: task._id, status: task.status,
@@ -145,7 +149,8 @@ async function readAssignment(
     ...(output?.changedFields ? { changedFields: output.changedFields } : {}),
     ...(source !== undefined ? { source } : {}),
     ...(blocker ? { blocker } : {}),
-    ...(task.crewFailureReason ? { failure: task.crewFailureReason } : {}),
+    ...(failure ? { failure } : {}),
+    ...(lastFailure ? { failureClass: lastFailure.failureClass } : {}),
     ...await emailHandoff(ctx, task),
   };
 }

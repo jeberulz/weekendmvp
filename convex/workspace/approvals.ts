@@ -686,6 +686,7 @@ type CrewRevisionInput = {
   followUpEmail?: boolean;
   emailNote?: string;
   requiresBrandDocumentId?: Id<"documents">;
+  expectedDocumentId?: Id<"documents">;
 };
 
 type CrewRevisionReceipt = {
@@ -854,6 +855,7 @@ export async function requestCrewRevision(
     .filter((q) => q.and(q.eq(q.field("ownerId"), project.ownerId), q.eq(q.field("archivedAt"), undefined)))
     .first();
   if (document === null) return unavailable("missing_artifact");
+  if (request.expectedDocumentId !== undefined && request.expectedDocumentId !== document._id) return unavailable("stale");
   const resolution = await resolveChangeRound(ctx, project.ownerId, project._id, "documents", document._id);
   if (!resolution.ok) return unavailable(resolution.reason);
   const { decision, lineage } = resolution;
@@ -907,8 +909,7 @@ export const handOffBrandToEmail = internalMutation({
       kind: "email_sequence",
       requestId: `brand-handoff:${task._id}`,
       requiresBrandDocumentId: brand._id,
-      note: task.emailHandoff.note ??
-        "Update the waitlist email draft to use the approved brand voice and positioning. Preserve the sequence structure and existing factual claims.",
+      note: task.emailHandoff.note ?? "Revise the waitlist email sequence.",
     });
     await ctx.db.patch("tasks", task._id, {
       emailHandoff: {

@@ -52,6 +52,7 @@ import {
   type LaunchStepKey,
   type StepRunResult,
 } from "./steps";
+import { lastCrewFailure } from "./failure";
 import { crewWorkpool } from "./workpool";
 
 /**
@@ -621,11 +622,11 @@ export const BRAND_KIT_CHANGED_REASON =
 
 /** WP76-S2a: a failed social pack with no blueprint brief it may use now. */
 export const SOCIAL_BRIEF_CHANGED_REASON =
-  "The blueprint changed. Approve it, or finish its changes, before the social pack can try again.";
+  "Approve the blueprint or finish its requested changes before retrying the social pack.";
 
 /** WP76-S2a: a failed social pack with no brand kit it may use now (approved, or the launch rule). */
 export const SOCIAL_BRAND_KIT_CHANGED_REASON =
-  "The brand kit changed. Approve it, or finish its changes, before the social pack can try again.";
+  "Approve the brand kit or finish its requested changes before retrying the social pack.";
 
 /** What each step that briefs from the blueprint says when no brief exists for it now. */
 const BRIEF_CHANGED_REASONS: Partial<Record<LaunchStep["jobType"], string>> = {
@@ -644,6 +645,40 @@ const BRAND_KIT_CHANGED_REASONS: Partial<Record<LaunchStep["jobType"], string>> 
 export const WAITING_FOR_SLOT_REASON = "Waiting for a free slot: your team is busy with other work.";
 
 type FailedStep = { readonly step: LaunchStep; readonly retryable: boolean; readonly reason: string };
+
+async function retryEligibility(ctx: ReadCtx, project: Doc<"projects">, step: LaunchStep, now?: number): Promise<FailedStep> {
+  if (step.jobType === "crew_email_sequence" && !(await emailDraftTarget(ctx, { ownerId: project.ownerId, projectId: project._id })).ok) {
+    return { step, retryable: false, reason: EMAIL_DRAFT_CONFLICT_REASON };
+  }
+  const briefReason = BRIEF_CHANGED_REASONS[step.jobType];
+  if (briefReason !== undefined) {
+    const brief = (await approvedBlueprint(ctx, project)) ?? (await launchDraftBlueprint(ctx, project, now));
+    if (brief === null) {
+      return { step, retryable: false, reason: briefReason };
+    }
+  }
+  // WP76-S1a/S2a: the email sequence and the social pack also need a brand kit they may brief from, under the same rule.
+  const kitReason = BRAND_KIT_CHANGED_REASONS[step.jobType];
+  if (kitReason !== undefined &&
+    (await approvedBrandKit(ctx, project)) === null && (await launchDraftBrandKit(ctx, project, now)) === null) {
+    return { step, retryable: false, reason: kitReason };
+  }
+  return { step, retryable: true, reason: STEP_FAILED_REASON };
+}
+
+/** Only used when the Social page has no draft, so normal draft reads incur no extra lookups. */
+export async function socialDraftFailure(ctx: ReadCtx, project: Doc<"projects">) {
+  const task = await stepTask(ctx, project, "social_pack");
+  if (task?.status !== "failed") return null;
+  const [lastFailure, retry] = await Promise.all([
+    lastCrewFailure(ctx, task), retryEligibility(ctx, project, launchStep("social_pack")),
+  ]);
+  return {
+    detail: lastFailure?.detail ?? "The last run ended before a draft could be saved.",
+    ...(lastFailure ? { failureClass: lastFailure.failureClass } : {}),
+    ...(retry.retryable ? {} : { retryBlocker: retry.reason }),
+  };
+}
 
 /**
  * The launch's failed pool steps after the blueprint, in registry order, and
@@ -666,26 +701,7 @@ async function failedLaunchSteps(
   for (const step of LAUNCH_STEPS) {
     if (!isPoolStep(step) || step.key === "blueprint" || read.tasks[step.key] === undefined) continue;
     if (evaluated.find((entry) => entry.key === step.key)?.state !== "failed") continue;
-    if (step.jobType === "crew_email_sequence" && !(await emailDraftTarget(ctx, { ownerId: project.ownerId, projectId: project._id })).ok) {
-      out.push({ step, retryable: false, reason: EMAIL_DRAFT_CONFLICT_REASON });
-      continue;
-    }
-    const briefReason = BRIEF_CHANGED_REASONS[step.jobType];
-    if (briefReason !== undefined) {
-      const brief = (await approvedBlueprint(ctx, project)) ?? (await launchDraftBlueprint(ctx, project, now));
-      if (brief === null) {
-        out.push({ step, retryable: false, reason: briefReason });
-        continue;
-      }
-    }
-    // WP76-S1a/S2a: the email sequence and the social pack also need a brand kit they may brief from, under the same rule.
-    const kitReason = BRAND_KIT_CHANGED_REASONS[step.jobType];
-    if (kitReason !== undefined &&
-      (await approvedBrandKit(ctx, project)) === null && (await launchDraftBrandKit(ctx, project, now)) === null) {
-      out.push({ step, retryable: false, reason: kitReason });
-      continue;
-    }
-    out.push({ step, retryable: true, reason: STEP_FAILED_REASON });
+    out.push(await retryEligibility(ctx, project, step, now));
   }
   return out;
 }
@@ -1038,6 +1054,7 @@ export const launchProgressValidator = v.object({
     notBuilt: v.boolean(),
     state: stepStateValidator,
     reason: v.optional(v.string()),
+    lastFailure: v.optional(v.object({ failureClass: v.string(), detail: v.string() })),
     /** Set on a failed step: whether a Try again can help it now. */
     retryable: v.optional(v.boolean()),
   })),
@@ -1050,6 +1067,7 @@ export type LaunchProgressStep = {
   notBuilt: boolean;
   state: EvaluatedStep["state"];
   reason?: string;
+  lastFailure?: { failureClass: string; detail: string };
   retryable?: boolean;
 };
 
@@ -1090,12 +1108,14 @@ export async function readLaunchProgress(ctx: ReadCtx, project: Doc<"projects">)
         : open.retryable ? STEP_FAILED_REASON : LAUNCH_STUCK_REASON,
     });
   }
-  const steps = evaluated.map((entry): LaunchProgressStep => {
+  const steps = await Promise.all(evaluated.map(async (entry): Promise<LaunchProgressStep> => {
     const failure = failed.get(entry.key);
     const reason = failure?.reason ?? entry.reason ?? (entry.state === "queued" ? WAITING_FOR_SLOT_REASON : undefined);
     // An unplanned team reads `waiting` from the facts; it has failed, as `launchStatus` says.
     const state = entry.key === openKey && open?.failed === true && !open.paused ? "failed" : entry.state;
     const definition = launchStep(entry.key);
+    const task = read.tasks[entry.key];
+    const lastFailure = task?.status === "failed" ? await lastCrewFailure(ctx, task) : null;
     return {
       key: entry.key,
       title: definition.title,
@@ -1103,8 +1123,9 @@ export async function readLaunchProgress(ctx: ReadCtx, project: Doc<"projects">)
       notBuilt: definition.status !== "built",
       state,
       ...(reason === undefined ? {} : { reason }),
+      ...(lastFailure ? { lastFailure } : {}),
       ...(failure === undefined ? {} : { retryable: failure.retryable }),
     };
-  });
+  }));
   return { started: true, retryable: [...failed.values()].some((entry) => entry.retryable), steps };
 }

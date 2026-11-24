@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { brandKitSpec } from "@/convex/ai/prompts/brandKit.v3";
 import { blueprintPersonaliseSpec } from "@/convex/ai/prompts/blueprintPersonalise.v3";
 import { emailSequenceSpec } from "@/convex/ai/prompts/emailSequence.v3";
-import { socialPackSpec } from "@/convex/ai/prompts/socialPack.v4";
+import { socialPackSpec } from "@/convex/ai/prompts/socialPack.v5";
 import { hydrotrailBlueprint, hydrotrailBrandKit, hydrotrailWizardAnswers } from "@/lib/workspace/contracts/fixtures/hydrotrail";
 import { hydrotrailSeedDraft } from "@/lib/workspace/contracts/fixtures/seeds";
 import { seedFromDraft } from "@/lib/workspace/contracts/seeds";
@@ -43,7 +43,7 @@ describe("WP90-S5 idea angles", () => {
   test("each copy step's plan carries the angles, and the refs are v2", () => {
     expect(BRAND_KIT_PROMPT_REF).toBe("crew-brand-kit@3");
     expect(EMAIL_SEQUENCE_PROMPT_REF).toBe("crew-email-sequence@3");
-    expect(SOCIAL_PACK_PROMPT_REF).toBe("crew-social-pack@4");
+    expect(SOCIAL_PACK_PROMPT_REF).toBe("crew-social-pack@5");
     expect(brandKitStepPlan({ answers, blueprint: hydrotrailBlueprint, seed }).inputs.ideaAngles).toBe(ideaAnglesFor("brand_kit", seed));
     expect(
       emailSequenceStepPlan({ answers, blueprint: hydrotrailBlueprint, brandKit: hydrotrailBrandKit, seed }).inputs.ideaAngles,

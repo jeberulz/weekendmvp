@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { crewAssignmentIntent, pageFocus, specialistStatusAnswer } from "@/lib/workspace/crewAssignment";
+import { artifactReviewQuestion, crewAssignmentIntent, handoffGuide, pageFocus, specialistStatusAnswer } from "@/lib/workspace/crewAssignment";
 
 describe("crew draft commands", () => {
   test.each([
@@ -31,6 +31,17 @@ describe("crew draft commands", () => {
     'For instance, "update the brand kit" could mean a lot of things.',
   ])("keeps informational and negated requests out of the writing queue", (message) => {
     expect(crewAssignmentIntent(message, "brand")).toBeNull();
+  });
+
+  test("keeps hypothetical handoffs and explicit answer-only notes out of the revision broker", () => {
+    expect(handoffGuide("How do handoffs work?")).toBe(true);
+    expect(handoffGuide("Where can I follow the handoff?")).toBe(true);
+    expect(handoffGuide("How is Elle doing on the handoff?")).toBe(false);
+    expect(crewAssignmentIntent("Please update the brand palette. This is a question only.", "brand")).toBeNull();
+    expect(artifactReviewQuestion("Is it approved yet?", "email")).toBe("email");
+    expect(artifactReviewQuestion("What colors are in the approved brand kit?")).toBeNull();
+    expect(artifactReviewQuestion("Brand kit approved?")).toBe("brand");
+    expect(artifactReviewQuestion("Have we approved spending credits for the brand revision?", "brand")).toBeNull();
   });
 
   test("asks one clarification when the referred draft or follow-up is ambiguous", () => {

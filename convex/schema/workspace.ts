@@ -50,6 +50,12 @@ const wizardAnswers = v.object({
   })),
 });
 
+export const consultationParticipant = v.object({
+  employeeId: v.id("crew_members"),
+  name: v.string(),
+  role: v.string(),
+});
+
 export const workspaceTables = {
   wizard_sessions: defineTable({
     ownerId: v.id("users"),
@@ -173,6 +179,15 @@ export const workspaceTables = {
     body: v.string(),
     status: v.union(v.literal("streaming"), v.literal("done"), v.literal("failed")),
     cardApprovalIds: v.array(v.id("approvals")),
+    crewRevisionTaskId: v.optional(v.id("tasks")),
+    crewConsultation: v.optional(v.object({
+      attempt: v.number(),
+      recipient: consultationParticipant,
+      colleague: v.optional(consultationParticipant),
+      colleagueAnswer: v.optional(v.string()),
+      recipientAnswer: v.optional(v.string()),
+      state: v.union(v.literal("working"), v.literal("answered"), v.literal("failed")),
+    })),
     usageId: v.optional(v.id("ai_usage")),
     createdAt: v.number(),
     updatedAt: v.number(),
