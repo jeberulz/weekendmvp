@@ -32,3 +32,9 @@ Keep the restricted cohort and external effect switches in place for G1. The pro
 - TypeScript, lint, prompt lock and production build passed. The existing Next.js build reported the dependency warning tracked by G3.
 - The full test command passed (6,855 test executions). Fixture coverage exercises gateway calls, scope, duplicate runs, partial consultation retries, stale approval history, the pinned brand version, and the exact welcome email rewrite.
 - Chrome on the local production build showed the roster refusal for an absent Brian, two attributed Iris and Elle fixture answers, and the current changes-requested Brand decision. The consultation and decision remained visible after refresh. No live model ran during these checks.
+
+## Follow-up from the live gate
+
+- Approval answers, the approval-triggered Iris-to-Elle rewrite, and the saved Social pack passed in Chrome on 24 November. The Social Pack needed its automatic schema re-ask.
+- The two-way consultation returned both replies but failed accuracy. Both specialists described a complete saved email as cut off. The evidence builder silently shortened the body to 400 characters and Iris received Elle's assertion without the underlying email.
+- S6 scopes the repair to consultation evidence and the prompt. Leo’s workflow depends on the same production consultation passing with evidence of the saved welcome email's ending and call to action.

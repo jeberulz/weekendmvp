@@ -10,6 +10,7 @@ import type { Id } from "../_generated/dataModel";
 import schema from "../schema";
 import { createAnthropicAdapter } from "../ai/providers/anthropic";
 import { runPromptWithMeter, type RunPromptArgs } from "../ai/gatewayActions";
+import { hydrotrailBrandKit, hydrotrailEmailSequence } from "../../lib/workspace/contracts/fixtures/hydrotrail";
 import { crewConsultationIntent } from "../../lib/workspace/crew/consultation";
 import { runCrewConsultationWith } from "./crewConsultationActions";
 import type { runWrenTurnWith } from "./chatActions";
@@ -98,7 +99,7 @@ describe("Crew discussions", () => {
     }));
     expect(rows.approvals).toHaveLength(0);
     expect(rows.tasks).toHaveLength(0);
-    expect(rows.usage.map((entry) => entry.promptRef)).toEqual(["crew-consultation@1", "crew-consultation@1"]);
+    expect(rows.usage.map((entry) => entry.promptRef)).toEqual(["crew-consultation@2", "crew-consultation@2"]);
   });
 
   test("refuses a name hired in another business and uses one call for an explicit single-role relay", async () => {
@@ -118,6 +119,73 @@ describe("Crew discussions", () => {
     expect(await read(direct)).toMatchObject({ status: "done", crewConsultation: { recipient: { name: "Iris" } } });
     expect((await read(direct))?.crewConsultation?.colleague).toBeUndefined();
     expect(await t.run((ctx) => ctx.db.query("ai_usage").collect())).toHaveLength(1);
+  });
+
+  test("gives both specialists the complete requested welcome email, its CTA and the approved Brand Kit", async () => {
+    const { t, send } = await setup();
+    const turn = await send("Ask Iris to consult with Elle about whether the welcome email matches the brand voice and the rest of the sequence.");
+    const body = `${"Choose a dry section to plan your water stops. ".repeat(76)}Reply with the length of your next hike.`;
+    await t.run(async (ctx) => {
+      const scope = { ownerId: turn.ownerId, projectId: turn.projectId, format: "json" as const, createdAt: 1, updatedAt: 1 };
+      const brandId = await ctx.db.insert("documents", {
+        ...scope, kind: "brand_kit", title: "Brand Kit", body: JSON.stringify(hydrotrailBrandKit),
+      });
+      await ctx.db.insert("approvals", {
+        ownerId: turn.ownerId, projectId: turn.projectId, subjectId: brandId, subjectTable: "documents", kind: "artifact_review",
+        status: "approved", changeRound: 0n, decidedAt: 2, createdAt: 1, updatedAt: 2,
+      });
+      await ctx.db.insert("documents", {
+        ...scope, kind: "email_sequence", title: "Waitlist",
+        body: JSON.stringify({
+          ...hydrotrailEmailSequence,
+          emails: { ...hydrotrailEmailSequence.emails, welcome: { ...hydrotrailEmailSequence.emails.welcome, body } },
+        }),
+      });
+    });
+    const { ownerId, projectId, founderMessageId, wrenMessageId, attempt } = turn;
+    const plan = await t.mutation(internal.workspace.crewConsultation.start, {
+      ownerId, projectId, founderMessageId, wrenMessageId, attempt,
+    });
+    expect(plan?.recipient.participant.name).toBe("Iris");
+    expect(plan?.colleague?.participant.name).toBe("Elle");
+    for (const worker of [plan?.recipient, plan?.colleague]) {
+      expect(JSON.parse(worker?.evidence ?? "{}")).toMatchObject({
+        artifacts: [
+          { kind: "brand_kit", review: "approved", voice: hydrotrailBrandKit.voice },
+          { kind: "email_sequence", coverage: "email_sequence", focusEmail: "welcome", emails: [
+            { kind: "welcome", body: { format: "full", text: body }, cta: { target: "reply" } },
+            { kind: "value", body: { format: "full", text: hydrotrailEmailSequence.emails.value.body } },
+            { kind: "offer", body: { format: "full", text: hydrotrailEmailSequence.emails.offer.body } },
+            { kind: "follow_up", body: { format: "full", text: hydrotrailEmailSequence.emails.follow_up.body } },
+          ] },
+        ],
+      });
+    }
+  });
+
+  test("labels oversized copy as an excerpt in a broad sequence consultation", async () => {
+    const { t, send } = await setup();
+    const turn = await send("Ask Iris to consult with Elle about the tone of all four emails.");
+    const body = `${"Leave a little time to check today's route. ".repeat(82)}The original last line is here.`;
+    await t.run((ctx) => ctx.db.insert("documents", {
+      ownerId: turn.ownerId, projectId: turn.projectId, format: "json", kind: "email_sequence", title: "Waitlist",
+      body: JSON.stringify({
+        ...hydrotrailEmailSequence,
+        emails: { ...hydrotrailEmailSequence.emails, welcome: { ...hydrotrailEmailSequence.emails.welcome, body } },
+      }),
+      createdAt: 1, updatedAt: 1,
+    }));
+    const { ownerId, projectId, founderMessageId, wrenMessageId, attempt } = turn;
+    const plan = await t.mutation(internal.workspace.crewConsultation.start, {
+      ownerId, projectId, founderMessageId, wrenMessageId, attempt,
+    });
+    const evidence = JSON.parse(plan?.colleague?.evidence ?? "{}");
+    const emails = evidence.artifacts[0].emails;
+    expect(emails).toHaveLength(4);
+    expect(emails[0].body).toMatchObject({ format: "excerpt", text: expect.stringContaining("today's route") });
+    expect(body.startsWith(emails[0].body.text)).toBe(true);
+    expect(emails[0].body.text).not.toContain("The original last line");
+    expect(emails[1].body).toMatchObject({ format: "full", text: hydrotrailEmailSequence.emails.value.body });
   });
 
   test("passes the saved colleague answer verbatim on retry and fences duplicate and old work", async () => {

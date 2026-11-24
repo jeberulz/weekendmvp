@@ -108,6 +108,16 @@
         "module": "sha256:ad08af0d634bed955e4391d87c5e0fba584ac0974d5a7069f8cd9d387811b160"
       }
     },
+    "crew-consultation@2": {
+      "hash": "sha256:60ee3c7a4fb308bde8832c457b34daf2e41ceee370edb227d5b51e7f43393f33",
+      "parts": {
+        "system": "sha256:9a06ac2809f7d93a92c619215b35ac1ba8d0cc443d4ae3715ba7eab76c296d61",
+        "task": "sha256:faa045076093982872a282a11541b48084142b48df6babdab2f7b1a19bc31771",
+        "outputSchema": "sha256:85cfdccfccfeb67cb90667470afdab9da07cbd6642e260dc47cdb0f32aee8c60",
+        "run": "sha256:3f7915b2f6660e2e3b4e4f3f62292228f034a523b643d3dfc4b1e2c5e05c4a9f",
+        "module": "sha256:b9d3ddc84d2f7901f1517a9e1a3e100a42c8450746596c149cfc1a16adb94e87"
+      }
+    },
     "crew-email-sequence@1": {
       "hash": "sha256:766729f2c5237750413ebf9ddcfa73a36d132870204182042561e0b4affca0c5",
       "parts": {

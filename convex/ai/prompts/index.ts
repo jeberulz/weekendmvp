@@ -24,7 +24,8 @@
 import { blueprintOwnIdeaSpec } from "./blueprintOwnIdea.v3.ts";
 import { blueprintPersonaliseSpec } from "./blueprintPersonalise.v3.ts";
 import { brandKitSpec } from "./brandKit.v3.ts";
-import { crewConsultationSpec } from "./crewConsultation.ts";
+import { crewConsultationSpec as consultationV1 } from "./crewConsultation.ts";
+import { crewConsultationSpec } from "./crewConsultation.v2.ts";
 import { emailSequenceSpec } from "./emailSequence.v3.ts";
 import { ideaImproveSpec } from "./ideaImprove.v1.ts";
 import { ideaSeedSpec } from "./ideaSeed.v3.ts";
@@ -54,11 +55,19 @@ export const PROMPT_ENTRIES: readonly PromptEntry[] = Object.freeze([
     sampleInputs: { label: "registry probe sample" },
     internal: true,
   }),
-  promptEntry(crewConsultationSpec, {
+  promptEntry(consultationV1, {
     module: "convex/ai/prompts/crewConsultation.ts",
     sampleInputs: {
       specialist: "Iris", role: "brand", question: "Does the welcome email match the kit?",
       evidence: '{"voice":"calm and practical"}', colleague: "Elle", colleagueAnswer: "The welcome email uses short sentences.",
+    },
+  }),
+  promptEntry(crewConsultationSpec, {
+    module: "convex/ai/prompts/crewConsultation.v2.ts",
+    sampleInputs: {
+      specialist: "Iris", role: "brand", question: "Does the welcome email match the kit?",
+      evidence: '{"artifacts":[{"kind":"brand_kit","review":"approved","voice":"calm and practical"}]}',
+      colleague: "Elle", colleagueAnswer: "The welcome email uses short sentences.",
     },
   }),
   promptEntry(wrenChatSpec, { module: "convex/ai/prompts/wrenChat.ts", sampleInputs: WREN_SAMPLE }),

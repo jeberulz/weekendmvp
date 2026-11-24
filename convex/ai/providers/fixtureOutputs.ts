@@ -47,7 +47,8 @@ import {
 import { promptRef } from "../../../lib/workspace/contracts/prompts";
 import { blueprintOwnIdeaSpec } from "../prompts/blueprintOwnIdea.v3";
 import { blueprintPersonaliseSpec } from "../prompts/blueprintPersonalise.v3";
-import { crewConsultationSpec } from "../prompts/crewConsultation";
+import { crewConsultationSpec as consultationV1 } from "../prompts/crewConsultation";
+import { crewConsultationSpec } from "../prompts/crewConsultation.v2";
 import { ideaImproveSpec } from "../prompts/ideaImprove.v1";
 import { socialPackSpec } from "../prompts/socialPack.v5";
 import { ideaSeedSpec } from "../prompts/ideaSeed.v3";
@@ -67,6 +68,10 @@ import { promptedSchemaFrom, wireOutputSchema } from "./wireSchema";
  */
 export type FixtureOutput = (params: Anthropic.MessageCreateParamsNonStreaming) => unknown;
 
+const consultationFixtureReply: FixtureOutput = () => ({
+  answer: "Test mode: this is a fixture specialist response. No AI model wrote this answer.",
+});
+
 /**
  * Prompt-specific fixture replies, keyed by `id@version`: a spec whose output
  * schema is not a C-ART schema registers its reply here.
@@ -84,7 +89,8 @@ export type FixtureOutput = (params: Anthropic.MessageCreateParamsNonStreaming) 
  *   founder's own sentence (`ideaImproveFixtureReply.ts`).
  */
 export const FIXTURE_OUTPUTS_BY_REF: Readonly<Record<string, FixtureOutput>> = Object.freeze({
-  [promptRef(crewConsultationSpec)]: () => ({ answer: "Test mode: this is a fixture specialist response. No AI model wrote this answer." }),
+  [promptRef(consultationV1)]: consultationFixtureReply,
+  [promptRef(crewConsultationSpec)]: consultationFixtureReply,
   [promptRef(wrenChatSpec)]: wrenFixtureReply,
   [promptRef(wrenPlanTurnSpec)]: wrenFixtureReply,
   [promptRef(blueprintPersonaliseSpec)]: blueprintFixtureReply,
