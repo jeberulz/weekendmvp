@@ -209,6 +209,12 @@ Sent to the wizard end-to-end audit session (`wizard-e2e-audit`) with repros:
    The article is stripped, then the clause starter "that" stops the cut after one word. It needs a minimum-quality
    rule (no lone generic noun), or the enrichment call's names (F15).
 
+**Status:** both now have PRs into `main`. [#319](https://github.com/jeberulz/weekendmvp/pull/319) checks for a reserved
+name on Step 6 itself and keeps the reason after a Create bounce (`NAME_RESERVED_MESSAGE` in `labels.ts`).
+[#321](https://github.com/jeberulz/weekendmvp/pull/321) makes `nameFromOwnIdea` fall back to "Weekend Launch" when every
+word is generic. That fallback is safe but still isn't a name. Decision 4's "Working name" field, and the enrichment
+call's names, are the real fix. Wiring this redesign must build on #319's `decide()` change, not replace it.
+
 Back keeps a typed name (`savedNameIsListed` false → the field is pre-filled) and a picked alternative. Focus goes to
 the h1 on step change. Both read correctly in code. The e2e session owns verifying them against a live backend.
 
