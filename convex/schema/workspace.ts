@@ -85,6 +85,49 @@ export const workspaceTables = {
     .index("by_ownerId_and_createdAt", ["ownerId", "createdAt"])
     .index("by_step_and_action", ["step", "action"]),
 
+  /**
+   * WP100. One row per "Improve with AI" call on wizard Step 1
+   * (`convex/workspace/ideaImprove.ts`). Written before the session exists,
+   * so it is keyed by owner, not session. `originalText` is the founder's own
+   * words before any AI round; `hints` follow `OwnIdeaHints`
+   * (`lib/workspace/wizard/idea-hints.ts`). Deleted with the account.
+   */
+  wizard_idea_improvements: defineTable({
+    ownerId: v.id("users"),
+    mode: v.union(v.literal("whole"), v.literal("selection")),
+    inputText: v.string(),
+    selection: v.optional(v.object({ start: v.number(), end: v.number() })),
+    originalText: v.string(),
+    parentId: v.optional(v.id("wizard_idea_improvements")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("suggested"),
+      v.literal("already_clear"),
+      v.literal("not_an_idea"),
+      v.literal("rejected"),
+      v.literal("failed"),
+    ),
+    suggestion: v.optional(v.string()),
+    changeNote: v.optional(v.string()),
+    hints: v.optional(v.object({
+      audience: v.union(v.string(), v.null()),
+      coreAction: v.union(v.string(), v.null()),
+      offer: v.union(v.string(), v.null()),
+    })),
+    /** Why a suggestion failed the code checks, or the gateway failure kind. */
+    reason: v.optional(v.string()),
+    outcome: v.optional(v.union(
+      v.literal("accepted"),
+      v.literal("dismissed"),
+      v.literal("retried"),
+      v.literal("undone"),
+    )),
+    usageIds: v.array(v.string()),
+    chargedMicroUsd: v.number(),
+    createdAt: v.number(),
+    decidedAt: v.optional(v.number()),
+  }).index("by_ownerId_and_createdAt", ["ownerId", "createdAt"]),
+
   roster_plans: defineTable({
     ownerId: v.id("users"),
     projectId: v.id("projects"),

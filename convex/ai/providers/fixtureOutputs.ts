@@ -48,12 +48,14 @@ import { promptRef } from "../../../lib/workspace/contracts/prompts";
 import { blueprintOwnIdeaSpec } from "../prompts/blueprintOwnIdea.v3";
 import { blueprintPersonaliseSpec } from "../prompts/blueprintPersonalise.v3";
 import { crewConsultationSpec } from "../prompts/crewConsultation";
+import { ideaImproveSpec } from "../prompts/ideaImprove.v1";
 import { socialPackSpec } from "../prompts/socialPack.v5";
 import { ideaSeedSpec } from "../prompts/ideaSeed.v3";
 import { wrenChatSpec } from "../prompts/wrenChat";
 import { wrenPlanTurnSpec } from "../prompts/wrenPlanTurn";
 import { canonicalJson, getEntry, type PromptEntry } from "../registry";
 import { blueprintFixtureReply } from "./blueprintFixtureReply";
+import { ideaImproveFixtureReply } from "./ideaImproveFixtureReply";
 import { seedFixtureReply } from "./seedFixtureReply";
 import { wrenFixtureReply } from "./wrenFixtureReply";
 import { promptedSchemaFrom, wireOutputSchema } from "./wireSchema";
@@ -78,6 +80,8 @@ export type FixtureOutput = (params: Anthropic.MessageCreateParamsNonStreaming) 
  *   words (`blueprintFixtureReply.ts`), so local teams differ by idea.
  * - The per-idea seed (`crew-idea-seed@3`, WP90-S3): a test-mode seed draft
  *   built from the quoted idea page (`seedFixtureReply.ts`).
+ * - Improve with AI (`wizard-idea-improve@1`, WP100): a tidied version of the
+ *   founder's own sentence (`ideaImproveFixtureReply.ts`).
  */
 export const FIXTURE_OUTPUTS_BY_REF: Readonly<Record<string, FixtureOutput>> = Object.freeze({
   [promptRef(crewConsultationSpec)]: () => ({ answer: "Test mode: this is a fixture specialist response. No AI model wrote this answer." }),
@@ -92,6 +96,7 @@ export const FIXTURE_OUTPUTS_BY_REF: Readonly<Record<string, FixtureOutput>> = O
       return { ...clone(row), imageAlt: row.imageAlt ?? "", pollOptions: row.pollOptions ?? [] };
     }),
   }),
+  [promptRef(ideaImproveSpec)]: ideaImproveFixtureReply,
 });
 
 type ArtifactFixture = { readonly key: string; readonly schema: z.ZodType; readonly output: FixtureOutput };

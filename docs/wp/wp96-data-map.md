@@ -98,6 +98,7 @@ All have `ownerId` and, except the first two, `projectId`. Delete-by `by_ownerId
 | Table | Personal / founder-authored fields | Delete-by | Treatment |
 |---|---|---|---|
 | `wizard_sessions` | `ownIdeaText`, `ideaSlug`, `answers` (idea text, rework notes, platform description, goal, business name and alternatives, partner custom name, signal notes) | `by_ownerId_and_updatedAt` | DELETE |
+| `wizard_idea_improvements` (WP100) | `inputText`, `originalText`, `suggestion`, `changeNote`, `hints` (the founder's idea and the AI suggestions for it) | `by_ownerId_and_createdAt` | DELETE |
 | `founder_signals` | `before`, `after` (free text the founder kept or changed) | `by_ownerId_and_createdAt` | DELETE |
 | `roster_plans` | hired and skipped roles with reasons | `by_ownerId_and_projectId` | DELETE |
 | `crew_members` | `displayName` (lead name the founder chose) | `by_ownerId_and_projectId` | DELETE |

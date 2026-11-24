@@ -245,6 +245,16 @@
         "module": "sha256:4e634491c06eb5553e7e84d9766b790e81a9509ee37a76e27c96da7cc23afc3d"
       }
     },
+    "wizard-idea-improve@1": {
+      "hash": "sha256:09b921b850be7440845fa6705b14a4adf46dfd80f46b7104249f5b34b67d3405",
+      "parts": {
+        "system": "sha256:785d67591350d10bbdb165b0f0a25f647a020cdf7c5078851b3f88cd9b024c13",
+        "task": "sha256:33b31a1088bf8b83d9b8aa631f9d98aad4d1f9c07dae1d4cbecb2ba24dcf3932",
+        "outputSchema": "sha256:df95649f52284142bf8cdbe94e038d4c07e6835ca05701db2026bfb044517db0",
+        "run": "sha256:259eeef9c500a2becaf914f253de1cdf87e899765a2d6ab98706c1916ed69508",
+        "module": "sha256:c1dbb5c43d724929f3d58d184da0c5990edc4c1cb688a647c5fbdd970426c7c8"
+      }
+    },
     "wren-chat@1": {
       "hash": "sha256:fe68e594a7cb48914dc9435e3edb02b7618c3aa3b0e5f217818bd888690bfe8d",
       "parts": {
