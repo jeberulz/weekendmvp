@@ -3,7 +3,8 @@
 Status: plan for review. Nothing here is built. Date: 2026-11-24.
 Clickable mockup (today vs proposed, every Step 2 state): https://claude.ai/artifact/5kxy2mX6bJW2MuWp2VMLbm (private
 until shared).
-Related: `docs/design/wizard-e2e-audit.md`, WP97 "Improve your idea with AI" (§3, which shares the hint shape below),
+Related: `docs/design/wizard-e2e-audit.md`, WP100 "Improve with AI" (#311, `docs/design/wizard-idea-ai-improve.md` §3,
+which owns the shared hint shape below),
 D15 and the WP71 C-METER wizard key ruling (`docs/wp/RULINGS.md`), WP74-S3 notes (`docs/wp/wp74-progress.md`).
 
 ## The problem
@@ -53,15 +54,15 @@ approve a blueprint that says almost nothing about their idea. It also feeds the
 - The blueprint stays generic, and the crew starts from a generic outline.
 - Honest, but the step isn't worth much.
 
-### B. Fill fields from the WP97 hints (no extra call)
+### B. Fill fields from the WP100 hints (no extra call when they exist)
 
-WP97 proposes that the "Improve" call also return `OwnIdeaHints { audience, coreAction, offer }`, each checked with
-`hasMarketClaim`.
+The WP100 "Improve" call also returns `OwnIdeaHints { audience, coreAction, offer }` (see "Shared with WP100" below).
 
-- When those hints exist and the founder didn't edit after accepting: `oneUser` ← `audience`, `oneLoop` ←
-  `coreAction`, and `profile.audiencePlural` ← `audience`. The rest stays fixed.
-- **Cost:** $0 extra. **Latency:** none.
-- Only helps founders who pressed Improve and kept the suggestion. `features` and `scopeCuts` stay generic.
+- When those hints exist (`ownIdeaAi.hints`, kept only while the founder didn't edit after accepting): `oneUser` ←
+  `audience`, `oneLoop` ← `coreAction`, and `profile.audiencePlural` ← `audience`. The rest stays fixed.
+- When they don't, B alone would need WP100's extract-only call (fast tier, about $0.0001 per idea) to get them.
+- **Cost:** $0 extra with hints, about $0.0001 without. **Latency:** none with hints, ~1 s without.
+- `features` and `scopeCuts` stay generic either way.
 
 ### C. One light drafting call (D15 "Option A"). Recommended
 
@@ -76,7 +77,7 @@ One call per idea text, after Step 1, that returns a light blueprint that fits t
   - `names`: 3 business names (fixes audit F15).
 - **Inputs:**
   - the founder's sentence (quoted data)
-  - the WP97 hints, when present (quoted data, so the draft doesn't rediscover the audience)
+  - the WP100 hints, when present (quoted data, so the draft doesn't rediscover the audience)
   - on a redraft, the founder's rework notes (quoted data)
 - **Prompt:** a new `wizard-own-blueprint@1` on the `draft` tier, with the same D15 system rules as
   `crew-blueprint-own-idea@3`. Every string runs through `hasMarketClaim`. Stripped claims are counted and disclosed
@@ -88,9 +89,33 @@ One call per idea text, after Step 1, that returns a light blueprint that fits t
   pages.
 - D15 rules that own ideas get a light blueprint, not research. Rejected.
 
+## Shared with WP100 (#311): one extraction, paid for once
+
+WP100 and this plan both need to know who the idea is for and what they do with it. That read happens once.
+
+- **One shape, owned by WP100.** `OwnIdeaHints { audience, coreAction, offer }` and `cleanOwnIdeaHints` live in
+  `lib/workspace/wizard/idea-hints.ts`. This plan imports them and never defines its own. Every hint passes
+  `hasMarketClaim`, and a failed hint is null, not an error.
+- **Where hints come from.** When the founder presses Improve and continues with the suggestion unedited, the session
+  stores `ownIdeaAi.hints`. Any edit after accepting drops them (`editedAfter: true`). WP100 owns that field; this plan
+  only reads it.
+- **Which call extracts, by case:**
+
+| Case | With C approved (recommended) | With B only |
+|---|---|---|
+| `ownIdeaAi.hints` present | The draft gets them as a quoted data block. No extraction. | Used directly. No call. |
+| No hints (no Improve, edited after, or all failed the check) | The draft call extracts them itself: its schema adds an `hints: OwnIdeaHints` field, checked with `cleanOwnIdeaHints`. **No separate extract call.** | WP100's extract-only mode runs once (fast tier, `wizard-idea-improve@1`, ~$0.0001) |
+
+- **Never both.** With C approved, WP100's extract-only mode isn't needed for the blueprint. The draft already reads the
+  sentence, so a second call would pay twice for the same read.
+- **Where draft hints are stored.** In the `wizard_blueprint_drafts` row, never in `ownIdeaAi`. `ownIdeaAi.hints`
+  keeps meaning "what the Improve call understood".
+- **Worst case per idea:** the founder's own Improve calls (WP100's daily cap: 20 calls, ≈ $0.01 a day at most), plus
+  at most 3 drafts (≈ $0.03 on the draft tier). Nothing is extracted twice.
+
 ## Recommendation: C, fed by B
 
-Build C, and pass the WP97 hints into it when they exist. B on its own isn't enough: most founders won't press
+Build C, and pass the WP100 hints into it when they exist. B on its own isn't enough: most founders won't press
 Improve, and the features and scope cuts stay generic.
 
 ### How C works
@@ -152,6 +177,7 @@ Improve, and the features and scope cuts stay generic.
 | Tokens per call (estimate) | ~1.5K in, ~0.7K out | same |
 | Cost per call | ≈ $0.003 + $0.007 ≈ **$0.01** | ≈ **$0.0005** |
 | Worst case per session (3 drafts) | ≈ $0.03, 2% of the Free $1.50 ceiling | ≈ $0.0015 |
+| Hint extraction | Inside the draft call: $0 extra | same |
 | Latency (estimate; measure in the live test launches) | ~4–6 s | ~1–2 s |
 
 Rates come from `convex/ai/pricing.ts`, and the tier to model mapping from `lib/workspace/contracts/prompts.ts:56`.
@@ -177,8 +203,9 @@ Token counts are estimates from the size of the `crew-blueprint-own-idea@3` syst
 
 ### Build order (small PRs, none stacked)
 
-1. The prompt, the schema, the `wizard_blueprint_drafts` table, the internal action and metering. Backend only,
-   behind an ops flag that is off by default.
+1. The prompt, the schema (including `hints` from `idea-hints.ts`), the `wizard_blueprint_drafts` table, the internal
+   action and metering. Backend only, behind an ops flag that is off by default. After WP100's backend (#311) merges,
+   so the shared hint shape exists on main.
 2. `getSession` wiring and the Step 2 drafting, fallback and "ready" states. After #310 and #312 merge.
 3. Redraft with notes, plus the name step reading `names`.
 4. Turn the flag on for the cohort after the live test launches confirm latency and cost.
