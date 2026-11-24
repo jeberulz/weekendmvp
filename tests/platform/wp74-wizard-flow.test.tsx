@@ -178,6 +178,76 @@ describe("WP74-S1 WizardFlow", () => {
     expect(screen.getByRole("button", { name: "A meal-prep planner for lifters" })).toBeTruthy();
   });
 
+  test("own idea: step 1 looks the same on first visit and after Back from the blueprint, with the idea pre-filled", async () => {
+    // First visit: no session yet.
+    const first = render(<WizardFlow idea={null} ideaTitle={null} initialSessionId={null} />);
+    const shape = (root: HTMLElement) => ({
+      heading: screen.getByRole("heading", { level: 1 }).textContent,
+      chips: Array.from(root.querySelectorAll("form button[type=button]")).map((chip) => chip.textContent),
+      library: screen.getByRole("link", { name: "Pick one from the library instead" }).getAttribute("href"),
+      note: screen.getByText("Your answers save as you go.").tagName,
+      boxed: root.querySelector("form .rounded-\\[10px\\]") !== null,
+    });
+    const before = shape(first.container);
+    expect(before.chips.length).toBeGreaterThan(0);
+    expect(before.boxed).toBe(false);
+    first.unmount();
+
+    // Back from step 2: the session exists and the live view is on the idea step.
+    const text = "A packing list that builds itself from your trip";
+    const ownSeed = wizardSeedFor({ idea: { source: "own_idea", text } });
+    state.view = { ...view("idea", 0), ideaTitle: text, answers: { idea: { source: "own_idea", text } }, defaults: ownSeed.defaults };
+    const back = render(<WizardFlow idea={null} ideaTitle={null} initialSessionId="session123" />);
+    expect(shape(back.container)).toEqual(before);
+    const field = screen.getByLabelText("Your idea in one sentence") as HTMLInputElement;
+    expect(field.value).toBe(text);
+
+    // Continue unchanged keeps the idea; an edit rewrites it, so step 2 is rebuilt from the new words.
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await waitFor(() => expect(state.calls.some((call) => call.name.endsWith(":saveStep"))).toBe(true));
+    expect(state.calls.find((call) => call.name.endsWith(":saveStep"))?.args).toEqual({
+      sessionId: "session123",
+      step: "idea",
+      answer: { source: "own_idea", text },
+    });
+    await user.clear(field);
+    await user.type(field, "Packing lists for school trips");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await waitFor(() => expect(state.calls.some((call) => call.name.endsWith(":rewriteStep"))).toBe(true));
+    expect(state.calls.find((call) => call.name.endsWith(":rewriteStep"))?.args).toEqual({
+      sessionId: "session123",
+      step: "idea",
+      text: "Packing lists for school trips",
+    });
+    const results = await axe(back.container, { rules: { "color-contrast": { enabled: false } } });
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  });
+
+  test("own idea: once the first sentence starts the session, step 2 is announced and its h1 takes focus", async () => {
+    const props = { idea: null, ideaTitle: null, initialSessionId: null };
+    const { container, rerender } = render(<WizardFlow {...props} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText("Your idea in one sentence"), "Invoice reminders for freelancers");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await waitFor(() => expect(state.replace).toHaveBeenCalled());
+    const text = "Invoice reminders for freelancers";
+    const ownSeed = wizardSeedFor({ idea: { source: "own_idea", text } });
+    await act(async () => {
+      state.view = {
+        ...view("blueprint", 1),
+        ideaTitle: text,
+        answers: { idea: { source: "own_idea", text } },
+        defaults: ownSeed.defaults,
+        blueprint: { ...ownSeed.blueprint, features: [...ownSeed.blueprint.features], scopeCuts: [...ownSeed.blueprint.scopeCuts] },
+      };
+      rerender(<WizardFlow {...props} />);
+    });
+    expect(document.activeElement?.tagName).toBe("H1");
+    expect(document.activeElement?.textContent).toBe("Here's how I'd build it.");
+    expect(container.querySelector('main [aria-live="polite"]')?.textContent).toBe("Step 2 of 8: Blueprint");
+  });
+
   test("the finished session offers Create my business and creates nothing until clicked", () => {
     state.view = { ...view("partner_name", 7, true), answers: seed.defaults };
     render(<WizardFlow idea={{ source: "library", ideaSlug: "hydrotrail" }} ideaTitle="HydroTrail" initialSessionId={null} />);

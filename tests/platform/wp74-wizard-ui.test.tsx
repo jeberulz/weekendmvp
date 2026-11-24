@@ -216,9 +216,11 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
       ideaSlug: null,
       defaults: own.defaults,
       answers: { idea: own.defaults.idea },
-      showResumeHint: true,
     });
-    expect(screen.getByText("Your answers save as you go. Bookmark this page to come back.")).toBeTruthy();
+    // The shared own-idea surface (OwnIdeaForm): the save note and the example chips, never the old boxed card.
+    expect(screen.getByText("Your answers save as you go.")).toBeTruthy();
+    expect(screen.getByText("Try one of these")).toBeTruthy();
+    expect((screen.getByLabelText("Your idea in one sentence") as HTMLInputElement).value).toBe(own.defaults.idea?.source === "own_idea" ? own.defaults.idea.text : "");
     expect(screen.queryByText("From the library")).toBeNull();
     const field = screen.getByLabelText("Your idea in one sentence");
     await user.click(screen.getByRole("button", { name: "Continue" }));
