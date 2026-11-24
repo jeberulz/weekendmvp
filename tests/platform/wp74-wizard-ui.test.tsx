@@ -102,6 +102,19 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     expect(clicks).toBeLessThanOrEqual(2);
   });
 
+  test("a 'fill this in first' error clears once the founder picks a valid choice", async () => {
+    const { user } = setup("platform");
+    await user.click(screen.getByRole("radio", { name: /Something else/ }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(screen.getByRole("alert").textContent).toMatch(/Describe the platform first/);
+    await user.click(screen.getByRole("radio", { name: /Mobile web, installable/ }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    // Back to "Something else" with the field still empty: the error stays hidden until the next Continue.
+    await user.click(screen.getByRole("radio", { name: /Something else/ }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByLabelText("Describe the platform").getAttribute("aria-invalid")).toBeNull();
+  });
+
   test("a custom platform reveals a labelled field; empty text is an announced error, then it is sent as the founder's words", async () => {
     const { container, handlers, user } = setup("platform");
     await user.click(screen.getByRole("radio", { name: /Something else/ }));
@@ -166,19 +179,6 @@ describe("L1 UI fidelity: WizardStepPanel", () => {
     await user.click(screen.getByRole("button", { name: "Rework it" }));
     expect(handlers.onRewrite).toHaveBeenCalledWith("Drop one feature");
     await expectNoAxeViolations(container);
-  });
-
-  test("a 'fill this in first' error clears once the founder picks a valid choice", async () => {
-    const { user } = setup("platform");
-    await user.click(screen.getByRole("radio", { name: /Something else/ }));
-    await user.click(screen.getByRole("button", { name: "Continue" }));
-    expect(screen.getByRole("alert").textContent).toMatch(/Describe the platform first/);
-    await user.click(screen.getByRole("radio", { name: /Mobile web, installable/ }));
-    expect(screen.queryByRole("alert")).toBeNull();
-    // Back to "Something else" with the field still empty: the error stays hidden until the next Continue.
-    await user.click(screen.getByRole("radio", { name: /Something else/ }));
-    expect(screen.queryByRole("alert")).toBeNull();
-    expect(screen.getByLabelText("Describe the platform").getAttribute("aria-invalid")).toBeNull();
   });
 
   test("a previous, different answer is preselected and kept with Continue", async () => {
