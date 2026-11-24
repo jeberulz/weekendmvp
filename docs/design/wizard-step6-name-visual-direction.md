@@ -191,8 +191,8 @@ The name flows further than any earlier answer, and the step says almost none of
   the fold" problem Step 5 recorded and left open (Step 5 doc §7: "needs a further choice, such as a sticky
   Continue"). John picked a sticky Continue for Step 5. It's built as `stickyPrimary` in `WizardStepPanel.tsx`
   (commit `d67a75ca`, a `max-sm:sticky` bar with a hairline top and safe-area padding, plus `scroll-mb-28` on inputs
-  for WCAG 2.4.11). That commit was pushed after #315 merged, so **it is not on `main` yet** (the Step 5 session
-  owns landing it).
+  for WCAG 2.4.11). That commit was pushed after #315 merged, so **it is not on `main` yet**. It is landing in
+  [#320](https://github.com/jeberulz/weekendmvp/pull/320).
 - **Two accents compete again.** The "Suggested" chip and the ember-soft rename box are both ember, so the series'
   "one ember accent per view" rule breaks whenever the founder departs from the default.
 - **The sage web-address line is the only sage text in the wizard body.** Sage means "kept" in the signals rail. Here
@@ -344,8 +344,8 @@ names should feel drafted by someone who read the idea, not generated.
   becomes a kit piece only if a third step needs it.
 - **The address line** is Name-only. It's a one-line `<p>` in the same `text-sm text-home-ink-2` style as Step 5's
   consequence line, so the two read as one family ("what your answer does").
-- **The sticky mobile Continue** already exists for Step 5 as `stickyPrimary` (`step === "goal" && !quick`), on
-  the Step 5 branch and not yet on `main`. Step 6 adopts it by widening that condition, not by adding a new
+- **The sticky mobile Continue** already exists for Step 5 as `stickyPrimary` (`step === "goal" && !quick`), now in
+  [#320](https://github.com/jeberulz/weekendmvp/pull/320) and not yet on `main`. Step 6 adopts it by widening that condition, not by adding a new
   component (decision 6).
 - **The AI-names line** ("Drafted by AI from the idea page…") could share the reason-line style. No new component.
 - **Content changes** live in `copy.ts` (sub line, address line, AI line) and the seed prompt `ideaSeed.v3.ts`
@@ -381,7 +381,7 @@ names should feel drafted by someone who read the idea, not generated.
    and fixtures. Ship 1–4 first.
    (B) No: the step offers its first three names and the field, nothing more.
 6. **Sticky Continue on mobile (reuse Step 5's).**
-   **(A, recommended)** Once Step 5's `stickyPrimary` is on `main`, widen its condition to include `name` (and later
+   **(A, recommended)** Once Step 5's `stickyPrimary` is on `main` (#320), widen its condition to include `name` (and later
    the other non-quick steps). That's the same bar and the same 2.4.11 guard, with no new component.
    (B) No sticky bar. Shorten the step until Continue fits, and accept that it won't on the seeded case with a typed
    name.
