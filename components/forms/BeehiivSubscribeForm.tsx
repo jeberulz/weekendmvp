@@ -59,6 +59,8 @@ type BeehiivSubscribeFormProps = {
   onSuccess?: () => void;
   showFirstName?: boolean;
   submitLabel?: string;
+  /** Placeholder for the email field. Defaults to jane@example.com. */
+  emailPlaceholder?: string;
   className?: string;
   inputClassName?: string;
   buttonClassName?: string;
@@ -73,6 +75,7 @@ export function BeehiivSubscribeForm({
   onSuccess,
   showFirstName = true,
   submitLabel = "Get the Starter Kit",
+  emailPlaceholder = "jane@example.com",
   className,
   inputClassName,
   buttonClassName,
@@ -159,7 +162,7 @@ export function BeehiivSubscribeForm({
           id={emailId}
           name="email"
           required
-          placeholder="jane@example.com"
+          placeholder={emailPlaceholder}
           autoComplete="email"
           className={cn(
             "w-full rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white/40",
