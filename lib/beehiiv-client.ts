@@ -16,9 +16,14 @@ export const DEFAULT_AUTOMATION_ID =
 export const SHIPABLE_WAITLIST_AUTOMATION_ID =
   "aut_b55c6b1e-330b-4768-b44a-30e9e07ae92a" as const;
 
+/** The 5-to-9 Starter 5-day guide automation. */
+export const GUIDE_AUTOMATION_ID =
+  "aut_ccd70ec4-dff3-4a10-8d26-290cb7fa9bc2" as const;
+
 export type AllowedAutomationId =
   | typeof DEFAULT_AUTOMATION_ID
-  | typeof SHIPABLE_WAITLIST_AUTOMATION_ID;
+  | typeof SHIPABLE_WAITLIST_AUTOMATION_ID
+  | typeof GUIDE_AUTOMATION_ID;
 
 export type SubscribeParams = {
   email: string;

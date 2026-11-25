@@ -70,6 +70,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/articles", { priority: 0.9, changeFrequency: "weekly" }),
     entry("/newsletter", { priority: 0.9, changeFrequency: "daily" }),
     entry("/starter-kit", { priority: 0.85, changeFrequency: "monthly" }),
+    entry("/5-to-9-starter", { priority: 0.85, changeFrequency: "monthly" }),
     entry("/shipable", { priority: 0.85, changeFrequency: "weekly" }),
     entry("/live", { priority: 0.85, changeFrequency: "weekly" }),
     entry("/live/48-hours", { priority: 0.85, changeFrequency: "weekly" }),
