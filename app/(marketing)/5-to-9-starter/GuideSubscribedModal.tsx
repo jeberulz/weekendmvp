@@ -21,8 +21,10 @@ export function GuideSubscribedModal() {
   React.useEffect(() => {
     if (!subscribed) return;
     // Small delay so the open transition can run, then clean the URL.
-    const t = setTimeout(() => setOpen(true), 100);
-    window.history.replaceState({}, document.title, window.location.pathname);
+    const t = setTimeout(() => {
+      setOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }, 100);
     return () => clearTimeout(t);
   }, [subscribed]);
 
@@ -45,54 +47,54 @@ export function GuideSubscribedModal() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="inbox-modal-title"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-home-ink/40 p-4 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div className="modal-container relative w-full max-w-md rounded-[2.5rem] border border-neutral-200 bg-white p-10 shadow-2xl">
+      <div className="modal-container relative max-h-full w-full max-w-md overflow-y-auto rounded-[10px] border border-home-rule bg-home-card p-6 sm:p-10">
         <IconButton
           aria-label="Close modal"
-          className="absolute top-8 right-8 text-neutral-400 transition-colors hover:text-black"
+          className="absolute top-8 right-8 text-home-ink-3 transition-colors hover:text-home-ink"
           onClick={close}
         >
           <X size={20} />
         </IconButton>
 
         <div className="flex flex-col items-center text-center">
-          <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-green-50 text-green-600">
+          <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-home-paper text-home-orange-ink">
             <MailCheck size={40} aria-hidden="true" />
           </div>
 
           <h3
             id="inbox-modal-title"
-            className="mb-4 text-2xl font-medium tracking-tight"
+            className="mb-4 font-editorial text-2xl tracking-tight"
           >
             You&apos;re in — Day 1 is on its way!
           </h3>
-          <p className="mb-8 text-sm leading-relaxed text-neutral-500">
-            The 5-to-9 Starter starts now. Please check your{" "}
-            <span className="font-semibold text-black">Inbox</span>,{" "}
-            <span className="font-semibold text-black">Spam</span>, or{" "}
-            <span className="font-semibold text-black">Promotions</span> folder.
+          <p className="mb-8 text-sm leading-relaxed text-home-ink-3">
+            Day 1 arrives in a few minutes. Please check your{" "}
+            <span className="font-semibold text-home-ink">Inbox</span>,{" "}
+            <span className="font-semibold text-home-ink">Spam</span>, or{" "}
+            <span className="font-semibold text-home-ink">Promotions</span> folder.
           </p>
 
-          <div className="mb-8 w-full rounded-2xl border border-neutral-100 bg-neutral-50 p-6 text-left">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+          <div className="mb-8 w-full rounded-[10px] border border-home-rule bg-home-paper p-6 text-left">
+            <p className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-orange-ink">
               Search for this subject:
             </p>
-            <p className="select-all text-sm font-medium text-black">
+            <p className="select-all text-sm font-medium text-home-ink">
               Day 1: Your 5-to-9 idea is already in your 9-to-5
             </p>
           </div>
 
-          <div className="mb-8 flex items-start gap-3 rounded-2xl bg-blue-50/50 p-4 text-left">
+          <div className="mb-8 flex items-start gap-3 rounded-[10px] bg-home-paper p-4 text-left">
             <Info
-              className="mt-0.5 text-blue-500"
+              className="mt-0.5 text-home-orange-ink"
               size={18}
               aria-hidden="true"
             />
-            <p className="text-xs leading-relaxed text-blue-800">
+            <p className="text-xs leading-relaxed text-home-ink-3">
               If it landed in <span className="font-bold">SPAM</span>, please
               drag it to your <span className="font-bold">primary inbox</span>{" "}
               so you don&apos;t miss the next four days.
@@ -102,7 +104,7 @@ export function GuideSubscribedModal() {
           <button
             type="button"
             onClick={close}
-            className="w-full rounded-full bg-black py-4 text-sm font-semibold text-white shadow-lg transition-all hover:bg-neutral-800"
+            className="w-full rounded-full border border-home-ink px-6 py-3 text-sm font-semibold text-home-ink transition-colors hover:bg-home-ink hover:text-home-paper"
           >
             Got it, I&apos;ll check now
           </button>

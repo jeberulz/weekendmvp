@@ -36,8 +36,10 @@ const BOTTOM_LINKS: MobileLink[] = [
  */
 export function MobileNav({
   triggerClassName,
+  starter = false,
 }: {
   triggerClassName?: string;
+  starter?: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
@@ -68,7 +70,8 @@ export function MobileNav({
         aria-describedby={undefined}
         className={cn(
           newsreaderEditorial.variable,
-          "w-80 max-w-none gap-0 overflow-y-auto border-l border-home-rule bg-home-paper p-0 font-sans text-home-ink"
+          "w-80 max-w-none gap-0 overflow-y-auto border-l border-home-rule bg-home-paper p-0 font-sans text-home-ink",
+          starter && "motion-reduce:animate-none motion-reduce:transition-none motion-reduce:[&_*]:transition-none"
         )}
       >
         <SheetTitle className="sr-only">Navigation menu</SheetTitle>
@@ -134,7 +137,8 @@ export function MobileNav({
                       {group.heading && (
                         <p
                           className={cn(
-                            "px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-ink-3",
+                            "px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.08em]",
+                            starter ? "text-home-orange-ink" : "text-home-ink-3",
                             groupIndex > 0 && "pt-3"
                           )}
                         >
@@ -194,7 +198,7 @@ export function MobileNav({
           ))}
 
           <div className="mt-3 space-y-2 border-t border-home-rule pt-5">
-            <NavAuthLinks variant="mobile" onNavigate={closeMenu} />
+            <NavAuthLinks variant="mobile" onNavigate={closeMenu} starter={starter} />
           </div>
         </nav>
       </SheetContent>

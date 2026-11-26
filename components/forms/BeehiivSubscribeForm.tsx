@@ -55,6 +55,7 @@ type OptimisticUnlock = { email: string; via: "api" | "timer" | "fallback" };
 type BeehiivSubscribeFormProps = {
   automationId?: AllowedAutomationId;
   utmCampaign?: string;
+  utmSource?: string;
   /** Where to send the user after success. Default mirrors legacy behavior. */
   successHref?: string | null;
   /** Called instead of (or in addition to) redirecting. */
@@ -72,11 +73,16 @@ type BeehiivSubscribeFormProps = {
   buttonClassName?: string;
   /** Classes for the email label. Defaults to visually hidden. */
   emailLabelClassName?: string;
+  /** Places the email field and submit button side by side at 560px. */
+  inlineEmail?: boolean;
+  /** Enables inline submission announcements alongside the existing success path. */
+  successMessage?: string;
 };
 
 export function BeehiivSubscribeForm({
   automationId,
   utmCampaign,
+  utmSource,
   successHref = "/starter-kit?subscribed=true",
   onSuccess,
   optimisticSuccessMs,
@@ -89,12 +95,14 @@ export function BeehiivSubscribeForm({
   inputClassName,
   buttonClassName,
   emailLabelClassName = "sr-only",
+  inlineEmail = false,
+  successMessage,
 }: BeehiivSubscribeFormProps) {
   const emailId = useId();
   const nameId = useId();
   const statusId = useId();
   const router = useRouter();
-  const [status, setStatus] = useState<"idle" | "submitting" | "error">(
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">(
     "idle",
   );
   const [phase, setPhase] = useState<"idle" | "sending" | "slow" | "error" | "unlocked">("idle");
@@ -158,6 +166,7 @@ export function BeehiivSubscribeForm({
       firstName: firstName || undefined,
       automationIds: automationId ? [automationId] : undefined,
       utmCampaign,
+      utmSource,
     });
     clearTimeout(unlockTimer.current);
     clearTimeout(slowTimer.current);
@@ -208,9 +217,10 @@ export function BeehiivSubscribeForm({
       } catch {
         // storage unavailable — non-fatal
       }
+      if (successMessage) setStatus("success");
+      else if (!successHref) setStatus("idle");
       onSuccess?.();
       if (successHref) router.push(successHref);
-      else setStatus("idle");
     };
 
     const result = await subscribeViaApi({
@@ -218,6 +228,7 @@ export function BeehiivSubscribeForm({
       firstName: firstName || undefined,
       automationIds: automationId ? [automationId] : undefined,
       utmCampaign,
+      utmSource,
     });
 
     if (result.ok) {
@@ -238,9 +249,9 @@ export function BeehiivSubscribeForm({
   const busy = phase === "sending" || phase === "slow" || phase === "unlocked";
 
   return (
-    <form onSubmit={handleSubmit} className={cn("space-y-4", className)} noValidate={optimistic || undefined} data-phase={optimistic ? phase : undefined}>
+    <form onSubmit={handleSubmit} className={cn(inlineEmail ? "grid gap-x-2.5 gap-y-2 min-[560px]:grid-cols-[minmax(0,1fr)_auto]" : "space-y-4", className)} noValidate={optimistic || undefined} data-phase={optimistic ? phase : undefined}>
       {showFirstName && (
-        <div>
+        <div className={inlineEmail ? "col-span-full" : undefined}>
           <label htmlFor={nameId} className="sr-only">
             First name
           </label>
@@ -257,8 +268,8 @@ export function BeehiivSubscribeForm({
           />
         </div>
       )}
-      <div>
-        <label htmlFor={emailId} className={emailLabelClassName}>
+      <div className={inlineEmail ? "contents" : undefined}>
+        <label htmlFor={emailId} className={cn(inlineEmail && "col-span-full", emailLabelClassName)}>
           {emailLabel}
         </label>
         <input
@@ -274,7 +285,7 @@ export function BeehiivSubscribeForm({
           spellCheck={optimistic ? false : undefined}
           readOnly={optimistic && busy ? true : undefined}
           aria-invalid={optimistic && phase === "error" ? true : undefined}
-          aria-describedby={optimistic ? statusId : undefined}
+          aria-describedby={successMessage ? `${emailId}-status` : optimistic ? statusId : undefined}
           onChange={optimistic ? () => {
             if (phase === "error") {
               setPhase("idle");
@@ -300,10 +311,16 @@ export function BeehiivSubscribeForm({
           ? busy ? "Opening…" : submitLabel
           : status === "submitting"
           ? "Sending..."
-          : status === "error"
+          : status === "error" && !successMessage
             ? "Error. Try again?"
             : submitLabel}
       </button>
+      {successMessage && (
+        <p id={`${emailId}-status`} aria-live="polite" className="col-span-full text-[13px] font-medium text-home-orange-ink empty:sr-only">
+          {status === "success" && successMessage}
+          {status === "error" && "We couldn’t sign you up. Please try again."}
+        </p>
+      )}
       {optimistic && (
         <p id={statusId} role="status" className="subscribe-status">
           {message && phase === "error" && <span aria-hidden="true">! </span>}
