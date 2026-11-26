@@ -145,6 +145,11 @@ read the response as text before parsing JSON.
   and a typed confirm. The cap override writes the five C2 fields on the
   founder's `ai_budgets` row, which the meter reads; `CAP_OVERRIDE_LIVE` turns
   the live form off. Dev fixtures: `EDITORIAL_FIXTURE_MODE=local-demo`
+- `app/(marketing)/guides/_shared/*` + `app/(marketing)/guides/{slug}/guide.spec.ts` — guide template (WP103).
+  A guide is data (`guide.spec.ts`: sections, steps, skills, roles, weeks, FAQ, gate) plus a slotted copy deck
+  (`guideCopy.ts`); layout, gate, checklist, prompt and SEO builders are shared. A missing copy slot throws at render
+  time. Slot naming is documented at the top of `_shared/blocks.tsx`. The unlock state lives on the `.builder-guide`
+  wrapper (`data-guide`), and `_shared/guide.css` is keyed to it. Plan: `docs/plans/publish-guide/PLAN.md`
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

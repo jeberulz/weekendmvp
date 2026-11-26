@@ -7,7 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import FiveToNineBuilderGuidePage, { metadata } from "@/app/(marketing)/guides/5-to-9-builder/page";
-import { BUILD_ALONG_PRICE } from "@/app/(marketing)/guides/5-to-9-builder/guideContent";
+import { BUILD_ALONG_PRICE } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
 import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
 import { guideLiveIdeaCount } from "@/app/(marketing)/guides/5-to-9-builder/ideaCount";
 import { BUILD_ALONG } from "@/lib/live/config";
@@ -39,8 +39,7 @@ vi.mock("next/image", async () => {
   };
 });
 
-const guidePath = "app/(marketing)/guides/5-to-9-builder";
-const guideCss = readFileSync(`${guidePath}/guide.css`, "utf8");
+const guideCss = readFileSync("app/(marketing)/guides/_shared/guide.css", "utf8");
 const subscribeMock = vi.mocked(subscribeViaApi);
 const productionGuideHtml = ".next/server/app/guides/5-to-9-builder.html";
 function expectGuideCopy(html: string) {

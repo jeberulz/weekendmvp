@@ -86,14 +86,19 @@ Add a second archetype only after guide two ships.
 6. Audit (fails the run). See rules below.
 7. Build and preview. Typecheck, tests, `a11y-check`, screenshots at phone (390px) and desktop width, taken with the
    consent banner open and again with it dismissed. A human looks at the hero image.
-8. Private candidate. Ships as draft and noindex. CLAUDE.md says site publishing is paused and new engine content
-   stays private until John says go. The skill never deploys on its own.
+8. Private candidate. CLAUDE.md says site publishing is paused and new engine content stays private until John says
+   go. The skill never deploys on its own. A noindex tag and a draft flag are not access control: anyone with the URL
+   of a deployed page can open it. Until a mechanism is chosen (open question 6), review the candidate from a local
+   build, with no deploy. If a preview deployment is used later, it needs deployment protection that is confirmed on
+   for this project before the first candidate goes up.
 9. John signs off on facts, evidence and voice. Only then does anyone ask to publish.
 10. Live acceptance after any deploy: `npm run audit:guide -- --slug={slug} --live`. It loads the live URL in a
-    headless browser and checks: locked state shows only the open sections, one submit returns 200 from
-    `/api/subscribe`, the unlocked state shows every section, a reload reads as returning, no page errors, no sideways
-    scroll at 390px, no placeholder text in copy or alt text, one currency, and prices match config.
-    Use a test address the owner controls. The run subscribes it, so never run it with a reader's address.
+    headless browser. Checks that run for every guide: no page errors, no sideways scroll at 390px, no placeholder
+    text in copy or alt text, one currency, and prices match config.
+    Checks that run only when `gate.mode` is `after-section-N` or `full`: the locked state shows only the open
+    sections, one submit returns 200 from `/api/subscribe`, the unlocked state shows every section, and a reload reads
+    as returning. A guide with `gate.mode: none` never submits a subscription, because the page does not ask for one.
+    Use a test address the owner controls. The gated run subscribes it, so never run it with a reader's address.
 
 ## Audit rules (examples, to be finalised in story S2)
 
@@ -198,3 +203,4 @@ Fix PR 331 first, because the template copies whatever it ships:
 3. Do you have first-hand Claude Code results to use as evidence for guide two?
 4. Gate mode for guide two: none, partial or full?
 5. Is the 30 day re-check cadence right for tool guides?
+6. How should a private candidate stay inaccessible before approval: local build only, or a protected preview deployment? If a preview, confirm deployment protection is on for this project.
