@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 
 import { guideSpec } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
 import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
-import { auditGuide, currencySymbols, publicSpecStrings, receiptSources, type AuditInput } from "@/lib/guides/audit";
+import { auditGuide, currencySymbols, publicSpecStrings, receiptAmounts, receiptSources, type AuditInput } from "@/lib/guides/audit";
 import { evaluateLive, type LiveSnapshot, type PageState } from "@/lib/guides/audit-live";
 import { requiredSlots } from "@/lib/guides/slots";
 import { guideSpecSchema } from "@/lib/guides/spec-schema";
@@ -117,6 +117,40 @@ describe("static audit", () => {
   test("the clean Receipt sources pass", () => {
     const source = `<Receipt kind="Price" amount="$29" source="A working example, not a benchmark">first paid offer.</Receipt>`;
     expect(audit({ sources: [{ file: "_sections.tsx", text: source }] }).findings).toEqual([]);
+  });
+
+  test("a Receipt amount in another currency is caught even though it lives in the source, not the deck", () => {
+    const source = `<Receipt kind="Price" amount="£29" source="A working example, not a benchmark">first paid offer.</Receipt>`;
+    expect(receiptAmounts(source)).toEqual(["£29"]);
+    const result = audit({ sources: [{ file: "_sections.tsx", text: source }] });
+    expect(errorsOf(result)).toContain("currency-mixed");
+    expect(result.findings.find((f) => f.rule === "currency-mixed")?.message).toMatch(/£ x1/);
+  });
+
+  test("a Receipt amount in the same currency, a template-literal amount and a numeric expression are all fine", () => {
+    const source = [
+      `<Receipt kind="Price" amount="$29" source="x">a</Receipt>`,
+      "<Receipt kind=\"Price\" amount={`$5`} source=\"x\">b</Receipt>",
+      `<Receipt kind="Live count" amount={ideaCount} source="x">c</Receipt>`,
+    ].join("\n");
+    expect(receiptAmounts(source)).toEqual(["$29", "$5"]);
+    expect(errorsOf(audit({ sources: [{ file: "_sections.tsx", text: source }] }))).not.toContain("currency-mixed");
+  });
+
+  test("empty copy fails for every deck slot, including ledes, honest catches and self-check items", () => {
+    const deck = { ...guideCopy } as Record<string, string>;
+    deck["The Shift · Honest catch"] = "   ";
+    deck["Self-Check · Item 1"] = "";
+    deck["The Method · Lede"] = "\n";
+    const empty = audit({ deck }).findings.filter((f) => f.rule === "slot-empty").map((f) => f.path);
+    expect(empty).toEqual(expect.arrayContaining(["The Shift · Honest catch", "Self-Check · Item 1", "The Method · Lede"]));
+  });
+
+  test("an empty required slot is reported once, not twice", () => {
+    const deck = { ...guideCopy } as Record<string, string>;
+    deck["Prove it · Reasoning"] = "";
+    const hits = audit({ deck }).findings.filter((f) => f.rule === "slot-empty" && f.path === "Prove it · Reasoning");
+    expect(hits).toHaveLength(1);
   });
 
   test("mixed currencies fail, one currency passes", () => {
