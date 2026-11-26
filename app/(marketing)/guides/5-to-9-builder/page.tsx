@@ -20,7 +20,6 @@ export const metadata: Metadata = {
   description: GUIDE_DESCRIPTION,
   authors: [{ name: "John Iseghohi" }],
   alternates: { canonical: GUIDE_PATH },
-  robots: { index: false, follow: false },
   openGraph: {
     type: "article",
     url,

@@ -363,9 +363,10 @@ describe("5-to-9 Builder guide", () => {
     expect(homepageAfterWithdraw).toBe(homepageCount - 1);
   });
 
-  test("is omitted from the sitemap and marked noindex while it is a placeholder, and allows its campaign", () => {
-    expect(readFileSync("app/sitemap.ts", "utf8")).not.toContain('"/guides/5-to-9-builder"');
-    expect(metadata.robots).toEqual({ index: false, follow: false });
+  test("lists the guide in the sitemap and is indexable, and allows its campaign", () => {
+    expect(readFileSync("app/sitemap.ts", "utf8"))
+      .toContain('entry("/guides/5-to-9-builder", { priority: 0.85, changeFrequency: "monthly" })');
+    expect(metadata.robots).toBeUndefined();
     expect(readFileSync("app/api/subscribe/route.ts", "utf8"))
       .toMatch(/ALLOWED_UTM_CAMPAIGNS = new Set\(\[[^\]]*"5-to-9-builder"/);
   });
