@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { ContentsLinks, GuideChecklist, GuidePrompt, SprintLink } from "./GuideInteractions";
 import { BUILD_ALONG_PRICE, GUIDE_HEADLINE, GUIDE_TITLE, SECTIONS } from "./guideContent";
 import { guideCopy, selfCheckItems, type GuideCopySlot } from "./guideCopy";
-import { HERO_IMAGE_SRC } from "./heroImageData";
 
 const META = [
   ["Free", "guide"],
@@ -113,11 +112,12 @@ export function GuideHero() {
       </div>
       <Image
         className="guide-hero-image"
-        src={HERO_IMAGE_SRC}
-        alt="Placeholder hero for John's working photo. An illustration of a late-night desk with a laptop, notebook and coffee."
-        width={640}
-        height={800}
-        unoptimized
+        src="/image/john-portrait.webp"
+        alt="John Iseghohi, founder of WeekendMVP, working at his desk"
+        width={1000}
+        height={1250}
+        sizes="(min-width: 1024px) 458px, 100vw"
+        priority
       />
     </section>
   );

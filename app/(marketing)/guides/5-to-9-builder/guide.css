@@ -213,6 +213,7 @@
   border: 1px solid var(--color-home-rule);
   border-radius: 10px;
   object-fit: cover;
+  object-position: 50% 55%;
   background: var(--color-home-panel);
 }
 

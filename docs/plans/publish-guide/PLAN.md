@@ -84,10 +84,16 @@ Add a second archetype only after guide two ships.
    If the file is empty the guide is flagged `noFirstHandProof` and cannot publish without John's explicit override.
 5. Draft. Claude fills the spec and copy deck from the sealed record and the evidence file only.
 6. Audit (fails the run). See rules below.
-7. Build and preview. Typecheck, tests, `a11y-check`, screenshots at phone and desktop width.
+7. Build and preview. Typecheck, tests, `a11y-check`, screenshots at phone (390px) and desktop width, taken with the
+   consent banner open and again with it dismissed. A human looks at the hero image.
 8. Private candidate. Ships as draft and noindex. CLAUDE.md says site publishing is paused and new engine content
    stays private until John says go. The skill never deploys on its own.
 9. John signs off on facts, evidence and voice. Only then does anyone ask to publish.
+10. Live acceptance after any deploy: `npm run audit:guide -- --slug={slug} --live`. It loads the live URL in a
+    headless browser and checks: locked state shows only the open sections, one submit returns 200 from
+    `/api/subscribe`, the unlocked state shows every section, a reload reads as returning, no page errors, no sideways
+    scroll at 390px, no placeholder text in copy or alt text, one currency, and prices match config.
+    Use a test address the owner controls. The run subscribes it, so never run it with a reader's address.
 
 ## Audit rules (examples, to be finalised in story S2)
 
@@ -98,7 +104,12 @@ Add a second archetype only after guide two ships.
 - Every claim has a `dateChecked`. Warn at 60 days, fail at 120 days (thresholds to confirm).
 - Section count, word floor per section and a cap on honest-catch asides.
 - At most two upsell cards plus one soft link. Offer status must match the registry.
-- Internal labels never render publicly (for example "guide draft, Day 5" in a Receipt).
+- Internal labels never render publicly (for example "guide draft, Day 5" in a Receipt). Structural fix: a Receipt
+  `source` is a typed reference to a claim id or a URL, never free text.
+- Hero asset must carry `assetStatus: approved`. Fail on inline data images, files named or commented as draft, and any
+  alt text that describes a stand-in. A text audit alone misses a placeholder drawn inside a picture, so a human
+  confirms the hero in the preview step.
+- Cookie banner check: at 390px with the consent banner open, the hero headline and the primary button stay visible.
 
 ## Upsell system
 
@@ -134,11 +145,25 @@ Keep today's behavior (email unlocks, starts the 5-day Starter) as the default f
 - A re-check command re-fetches excerpts and reports drift. Tool-based guides (Claude Code) get a 30 day cadence.
 - Re-check can run as a session task (Tier A) or a scheduled job (Tier B).
 
+## What the live check of PR 331 taught us (2026-11-26)
+
+Found on the deployed page, none caught by the PR checks:
+- The hero image had "PLACEHOLDER HERO" drawn into the picture, with matching alt text.
+- Receipt boxes showed internal labels.
+- Mixed currency: 19 uses of the pound sign beside dollar prices.
+- The cookie banner covered the primary button and stats on a phone.
+- The preview before the gate was one section and a locked list. Depth was not visible.
+Worked as intended: unlock opens in place, state persists on reload, no page errors, no sideways scroll at 390px.
+Each item above now has an audit rule or a pipeline step in this plan.
+Fixed on branch `claude/magical-dirac-f4ehf2`: hero now uses `/image/john-portrait.webp` with real alt text, and the
+draft data-image file is deleted. Receipt labels, currency and the gate preview are still open.
+
 ## Stories (WP103, proposed)
 
 - S1 Extract shared blocks and per-guide spec from 5-to-9. No visual change. Existing guide tests still pass.
   Done when: the 5-to-9 page renders from `guide.spec.ts` and the built-HTML copy check passes.
-- S2 GuideSpec schema (zod) and `audit:guide`. Done when: the audit fails on each rule above with a fixture.
+- S2 GuideSpec schema (zod) and `audit:guide`, including the `--live` mode from pipeline step 10.
+  Done when: the audit fails on each rule above with a fixture, and `--live` passes against the 5-to-9 guide.
 - S3 Offers registry and `UpsellCard`. Done when: price mismatch, over-cap cards and missing offer each fail the audit.
 - S4 Extend Source Critic claim kinds. Today it covers market stats, competitor prices and community quotes. Guides
   need stats, pay or job data, tool facts, dates and quotes. Done when: sealed PASS gates the draft step.
