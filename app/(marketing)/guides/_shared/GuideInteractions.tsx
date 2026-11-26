@@ -8,12 +8,9 @@ import { Eyebrow } from "@/components/home/ui";
 import { GUIDE_AUTOMATION_ID, subscribeViaApi } from "@/lib/beehiiv-client";
 import { trackEvent } from "@/lib/track";
 
-import { GUIDE_TITLE, SECTIONS } from "./guideContent";
+import type { GuideGateConfig, GuideNavSection } from "./types";
 
-const UTM_CAMPAIGN = "5-to-9-builder";
-const UNLOCKS = ["The Method", "The 6 Skills", "The Catch", "30-Day Plan", "Idea Bank", "First Sale", "Self-Check", "The prompt"];
-
-export function GuideGate({ finePrint }: { finePrint: string }) {
+export function GuideGate({ config, utmCampaign, finePrint }: { config: GuideGateConfig; utmCampaign: string; finePrint: string }) {
   const gate = useRef<HTMLElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const email = useRef<string | null>(null);
@@ -55,7 +52,7 @@ export function GuideGate({ finePrint }: { finePrint: string }) {
       const result = await subscribeViaApi({
         email: email.current,
         automationIds: [GUIDE_AUTOMATION_ID],
-        utmCampaign: UTM_CAMPAIGN,
+        utmCampaign,
       });
       if (result.ok) setMode("confirmed");
     } catch {
@@ -69,19 +66,19 @@ export function GuideGate({ finePrint }: { finePrint: string }) {
     <section id="gate" ref={gate} aria-label="Unlock the guide" className="guide-gate bg-home-sunk">
       <div className="guide-ticket bg-home-card">
         <div className="guide-stub">
-          <Eyebrow>Free · Sections 02–11</Eyebrow>
-          <span className="font-mono text-[11px] uppercase text-home-ink-3">One email · No download</span>
+          <Eyebrow>{config.stubEyebrow}</Eyebrow>
+          <span className="font-mono text-[11px] uppercase text-home-ink-3">{config.stubNote}</span>
         </div>
         <div className="guide-faces">
           <div className="guide-locked-face">
-            <h2>The rest of the guide is free. One email opens it.</h2>
-            <p className="text-home-ink-2">It opens right here, on this page. The same email starts the 5-to-9 Starter: five daily emails, one action a day.</p>
+            <h2>{config.heading}</h2>
+            <p className="text-home-ink-2">{config.body}</p>
             <ul aria-label="What unlocks" className="guide-chips">
-              {UNLOCKS.map((label) => <li key={label}>{label}</li>)}
+              {config.unlocks.map((label) => <li key={label}>{label}</li>)}
             </ul>
             <BeehiivSubscribeForm
               automationId={GUIDE_AUTOMATION_ID}
-              utmCampaign={UTM_CAMPAIGN}
+              utmCampaign={utmCampaign}
               successHref={null}
               onSuccess={(details) => {
                 if (!details) return;
@@ -118,7 +115,7 @@ export function GuideGate({ finePrint }: { finePrint: string }) {
               <p className="guide-confirmed">Day 1 is on its way.</p>
               <p className="guide-returning">You unlocked it on this device.</p>
             </div>
-            <a href="#s02" className="guide-pill guide-pill-outline">Start with 02 · The Method ↓</a>
+            <a href={config.nextHref} className="guide-pill guide-pill-outline">{config.nextLabel}</a>
           </div>
         </div>
       </div>
@@ -126,11 +123,11 @@ export function GuideGate({ finePrint }: { finePrint: string }) {
   );
 }
 
-export function ContentsLinks({ onNavigate }: { onNavigate?: () => void }) {
+export function ContentsLinks({ sections, onNavigate }: { sections: readonly GuideNavSection[]; onNavigate?: () => void }) {
   return (
     <nav aria-label="Guide contents">
       <ol className="guide-mini-nav">
-        {SECTIONS.map(({ id, title }) => (
+        {sections.map(({ id, title }) => (
           <li key={id}>
             <a href={`#${id}`} onClick={onNavigate}>
               <span className="font-mono text-xs text-home-orange-ink">{id.slice(1)}</span>{title}
@@ -142,7 +139,7 @@ export function ContentsLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export function GuideNavigation() {
+export function GuideNavigation({ title, sections }: { title: string; sections: readonly GuideNavSection[] }) {
   const progress = useRef<HTMLSpanElement>(null);
   const contents = useRef<HTMLDetailsElement>(null);
 
@@ -152,7 +149,7 @@ export function GuideNavigation() {
     if (!bar || !guide) return;
     const end = guide.querySelector("#builder-guide-end");
     const links = [...guide.querySelectorAll<HTMLAnchorElement>(".guide-mini-nav a")];
-    const sections = SECTIONS.map(({ id }) => guide.querySelector<HTMLElement>(`#${id}`));
+    const sectionNodes = sections.map(({ id }) => guide.querySelector<HTMLElement>(`#${id}`));
     let frame = 0;
     let activeId = "";
     function update() {
@@ -161,10 +158,10 @@ export function GuideNavigation() {
       const read = Math.min(1, window.scrollY / Math.max(1, endOffset - window.innerHeight));
       bar.style.transform = `scaleX(${read})`;
 
-      const active = sections.findLast((section) =>
+      const active = sectionNodes.findLast((section) =>
         section?.getClientRects().length && section.getBoundingClientRect().top <= window.innerHeight * 0.4,
       );
-      const nextId = active?.id ?? SECTIONS[0].id;
+      const nextId = active?.id ?? sections[0].id;
       if (nextId === activeId) return;
       activeId = nextId;
       for (const link of links) {
@@ -187,16 +184,16 @@ export function GuideNavigation() {
       window.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", scheduleUpdate);
     };
-  }, []);
+  }, [sections]);
 
   return (
     <div className="guide-reading-header">
       <div className="guide-measure guide-reading-controls">
-        <span className="font-mono text-xs uppercase tracking-wide">{GUIDE_TITLE}</span>
+        <span className="font-mono text-xs uppercase tracking-wide">{title}</span>
         <a href="#gate" className="guide-when-locked guide-unlock-link">Unlock free ↓</a>
         <details ref={contents} className="guide-unless-locked guide-contents-sheet">
           <summary className="guide-pill guide-pill-outline">Contents</summary>
-          <ContentsLinks onNavigate={() => contents.current?.removeAttribute("open")} />
+          <ContentsLinks sections={sections} onNavigate={() => contents.current?.removeAttribute("open")} />
         </details>
       </div>
       <span className="guide-progress" ref={progress} aria-hidden="true" />
@@ -204,11 +201,9 @@ export function GuideNavigation() {
   );
 }
 
-const CHECKLIST_KEY = "5-to-9-builder-checklist";
-
-function readChecklist() {
+function readChecklist(storageKey: string) {
   try {
-    return localStorage.getItem(CHECKLIST_KEY) ?? "[]";
+    return localStorage.getItem(storageKey) ?? "[]";
   } catch {
     return "[]";
   }
@@ -219,8 +214,8 @@ function subscribeToChecklist(onChange: () => void) {
   return () => window.removeEventListener("storage", onChange);
 }
 
-export function GuideChecklist({ items }: { items: readonly string[] }) {
-  const stored = useSyncExternalStore(subscribeToChecklist, readChecklist, () => "[]");
+export function GuideChecklist({ items, storageKey }: { items: readonly string[]; storageKey: string }) {
+  const stored = useSyncExternalStore(subscribeToChecklist, () => readChecklist(storageKey), () => "[]");
   const [edited, setEdited] = useState<number[] | null>(null);
   let checked = edited ?? [];
   if (edited === null) {
@@ -240,7 +235,7 @@ export function GuideChecklist({ items }: { items: readonly string[] }) {
     const next = checked.includes(item) ? checked.filter((value) => value !== item) : [...checked, item];
     setEdited(next);
     try {
-      localStorage.setItem(CHECKLIST_KEY, JSON.stringify(next));
+      localStorage.setItem(storageKey, JSON.stringify(next));
     } catch {
       // The checklist still works for this page view.
     }
@@ -290,7 +285,7 @@ async function copyText(text: string) {
   }
 }
 
-export function GuidePrompt({ prompt: PROMPT }: { prompt: string }) {
+export function GuidePrompt({ prompt: PROMPT, fileName }: { prompt: string; fileName: string }) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -306,7 +301,7 @@ export function GuidePrompt({ prompt: PROMPT }: { prompt: string }) {
   return (
     <div className="guide-prompt guide-dark">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-home-panel-rule p-3">
-        <span className="font-mono text-sm text-home-d2">validate-my-idea.txt</span>
+        <span className="font-mono text-sm text-home-d2">{fileName}</span>
         <button type="button" onClick={copy} className="guide-pill guide-pill-outline min-w-32">{copied ? "Copied" : "Copy prompt"}</button>
       </div>
       <pre className="m-3 whitespace-pre-wrap wrap-anywhere px-3 py-2 text-sm text-home-d2" data-copy-slot="The Prompt · Prompt text"><code>{PROMPT}</code></pre>
@@ -315,10 +310,10 @@ export function GuidePrompt({ prompt: PROMPT }: { prompt: string }) {
   );
 }
 
-export function SprintLink({ placement }: { placement: "mid" | "close" }) {
+export function SprintLink({ placement, href, label }: { placement: "mid" | "close"; href: string; label: string }) {
   return (
-    <Link className="guide-pill" href="/live/build-along" onClick={() => trackEvent("guide_sprint_click", { placement })}>
-      See the Build-Along
+    <Link className="guide-pill" href={href} onClick={() => trackEvent("guide_sprint_click", { placement })}>
+      {label}
     </Link>
   );
 }
