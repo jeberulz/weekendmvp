@@ -30,8 +30,9 @@
   background: var(--color-home-card);
 }
 
-.builder-guide :is(h1, h2, .guide-quote, .guide-meta strong, .guide-dark-card h3) {
-  font-family: var(--font-editorial);
+.builder-guide :is(h1, h2, .guide-quote, .guide-meta strong, .guide-dark-card h3),
+.builder-guide .font-editorial {
+  font-family: var(--font-editorial-serif), Georgia, serif;
   font-weight: 500;
   text-wrap: balance;
 }
@@ -296,8 +297,29 @@
   font: 500 12px/1.5 var(--font-mono);
 }
 
-.guide-placeholder > span {
-  font-weight: 400;
+.guide-copy {
+  margin-block: 8px 16px;
+}
+
+.guide-copy > * + * {
+  margin-top: 12px;
+}
+
+.guide-copy :is(ul, ol) {
+  padding-inline-start: 24px;
+}
+
+.guide-copy ul { list-style: disc; }
+.guide-copy ol { list-style: decimal; }
+
+.guide-copy blockquote {
+  border-inline-start: 2px solid var(--color-home-orange);
+  padding-inline-start: 14px;
+}
+
+.guide-copy a {
+  text-decoration: underline;
+  text-underline-offset: .15em;
 }
 
 
@@ -329,8 +351,10 @@
   border-radius: 6px;
 }
 
-.guide-catch .guide-placeholder {
-  margin-bottom: 0;
+.guide-catch .guide-copy {
+  margin-block: 0;
+  font-family: var(--font-editorial-serif), Georgia, serif;
+  font-size: 19px;
 }
 
 .guide-definition {
@@ -500,7 +524,7 @@
 }
 
 .guide-form .subscribe-status {
-  min-height: 3em;
+  min-height: 4.5em;
   color: var(--color-home-ink-2);
   font-size: 14px;
   line-height: 1.5;
@@ -550,7 +574,7 @@
   display: none;
 }
 
-.guide-steps li {
+.guide-steps > li {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
   gap: 12px;
@@ -634,6 +658,10 @@
   color: var(--color-home-paper);
 }
 
+.builder-guide .guide-dark .guide-section-number {
+  color: var(--color-home-paper);
+}
+
 .guide-dark .guide-placeholder {
   border-color: var(--color-home-d3);
   color: var(--color-home-d2);
@@ -700,7 +728,7 @@
 .guide-close-line {
   margin: 24px 0 0;
   color: var(--color-home-orange);
-  font: italic 28px/1.2 var(--font-editorial);
+  font: italic 28px/1.2 var(--font-editorial-serif), Georgia, serif;
   text-wrap: balance;
 }
 

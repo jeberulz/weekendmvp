@@ -1,6 +1,9 @@
+import { BUILD_ALONG } from "@/lib/live/config";
+
 export const GUIDE_PATH = "/guides/5-to-9-builder";
 export const GUIDE_TITLE = "The 5-to-9 Builder";
-export const BUILD_ALONG_PRICE = "$47";
+/** Display price for the sprint cards. Tied to the live standard ticket, not a one-off string. */
+export const BUILD_ALONG_PRICE = `$${BUILD_ALONG.standardUsd}`;
 export const GUIDE_HEADLINE = "AI made building free. Knowing what to build is the job now.";
 export const GUIDE_DESCRIPTION =
   "AI made building free. Knowing what to build is the job now. A free guide for 9-to-5ers: find an idea worth your evenings and prove someone will pay for it before you build it.";
