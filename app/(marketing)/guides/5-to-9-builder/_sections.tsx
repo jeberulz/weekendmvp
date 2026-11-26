@@ -19,8 +19,9 @@ import {
 import { GuideCopy as SharedGuideCopy } from "../_shared/copy";
 import { GuideChecklist, GuidePrompt, ContentsLinks, SprintLink } from "../_shared/GuideInteractions";
 import { navSections } from "../_shared/GuideLayout";
-import { BUILD_ALONG_PRICE, guideSpec as spec } from "./guide.spec";
+import { guideSpec as spec } from "./guide.spec";
 import { guideCopy, selfCheckItems, type GuideCopySlot } from "./guideCopy";
+import { BUILD_ALONG_PRICE } from "./price";
 
 /** Typed to this guide's deck, so a misspelt static slot is a compile error. */
 function GuideCopy({ slot, ideaCount }: { slot: GuideCopySlot; ideaCount?: number }) {

@@ -48,6 +48,7 @@
     "check:ideabrowser-attribution": "node scripts/check-ideabrowser-attribution.mjs",
     "check:ideabrowser-runtime": "node scripts/check-ideabrowser-runtime.mjs",
     "audit:idea": "bash scripts/run-engine-node.sh scripts/audit-idea-mdx.mjs",
+    "audit:guide": "bash scripts/run-engine-node.sh scripts/audit-guide.mjs",
     "engine:eval": "bash scripts/run-engine-node.sh scripts/engine-eval.mjs",
     "engine:research": "bash scripts/run-engine-node.sh scripts/engine-research.mjs",
     "engine:compile": "bash scripts/run-engine-node.sh scripts/engine-compile.mjs",
