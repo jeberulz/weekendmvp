@@ -158,7 +158,7 @@ Please do the following, in order:
 
 Keep it short and plain. Do not tell me it's a great idea unless the evidence I've given supports it.`,
   "The Prompt · Honest catch": "The model only knows what you tell it. It can't speak to your customers, and it may sound more certain than it should. Use it to prepare for your three conversations, not to stand in for them.",
-  "Founder note · Body": `I run WeekendMVP, and I run the Build-Along sprint live. I wrote this guide because the question I hear most isn't "how do I build it?" It's "what should I build?" AI has made the first one much easier. It hasn't touched the second.
+  "Founder note · Body": `I run WeekendMVP, and I run the Build-Along sprint live. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.
 
 So the guide is built around the second one. It's slow where it needs to be and honest about what can go wrong. Run the five steps on your own evenings. If an idea fails, good: that's the test doing its job.
 

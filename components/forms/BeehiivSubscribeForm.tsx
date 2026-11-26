@@ -137,7 +137,6 @@ export function BeehiivSubscribeForm({
       unlocked.current = true;
       const method = via === "fallback" ? "embed_fallback" : via;
       trackEvent("signup_form_submitted", { method, email_domain: emailDomain });
-      trackEvent("signup_form_success", { method });
       try {
         localStorage.setItem("weekendmvp_subscribed", "true");
       } catch {
@@ -170,7 +169,10 @@ export function BeehiivSubscribeForm({
 
     if (result.ok) {
       finish("api");
-      if (mounted.current) onConfirmed?.();
+      if (mounted.current) {
+        trackEvent("signup_form_success", { method: "api" });
+        onConfirmed?.();
+      }
       return;
     }
     if (!mounted.current && !unlocked.current) return;

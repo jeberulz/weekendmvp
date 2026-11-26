@@ -219,9 +219,9 @@ describe("5-to-9 Builder guide", () => {
     expect(document.activeElement?.textContent).toBe("The guide's open below.");
     expect(push).not.toHaveBeenCalled();
     expect(trackEvent).toHaveBeenCalledWith("signup_form_submitted", { method: "timer", email_domain: "example.com" });
-    expect(trackEvent).toHaveBeenCalledWith("signup_form_success", { method: "timer" });
+    expect(trackEvent).not.toHaveBeenCalledWith("signup_form_success", expect.anything());
     expect(trackEvent).toHaveBeenCalledWith("guide_unlocked", { via: "timer" });
-    expect(trackEvent).toHaveBeenCalledTimes(3);
+    expect(trackEvent).toHaveBeenCalledTimes(2);
   });
 
   test("recognizes a returning reader without a request or address in storage", () => {
@@ -247,6 +247,24 @@ describe("5-to-9 Builder guide", () => {
     expect(trackEvent).toHaveBeenCalledWith("guide_unlocked", { via: "api" });
     expect(trackEvent).toHaveBeenCalledTimes(3);
     expect(push).not.toHaveBeenCalled();
+  });
+
+  test("records API confirmation once after the timer opens the guide", async () => {
+    const reply = deferredSubscription();
+    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    submitGuide();
+    await act(() => vi.advanceTimersByTimeAsync(8000));
+
+    expect(activeGuide(container).dataset.guide).toBe("pending");
+    expect(trackEvent).not.toHaveBeenCalledWith("signup_form_success", expect.anything());
+    await reply({ ok: true, message: "Subscribed" });
+
+    expect(activeGuide(container).dataset.guide).toBe("confirmed");
+    expect(vi.mocked(trackEvent).mock.calls).toEqual([
+      ["signup_form_submitted", { method: "timer", email_domain: "example.com" }],
+      ["guide_unlocked", { via: "timer" }],
+      ["signup_form_success", { method: "api" }],
+    ]);
   });
 
   test("keeps a rejected address locked even after eight seconds", async () => {
@@ -277,11 +295,11 @@ describe("5-to-9 Builder guide", () => {
     expect(activeGuide(container).dataset.guide).toBe("pending");
     expect(submitEmbed).toHaveBeenCalledOnce();
     expect(trackEvent).toHaveBeenCalledWith("signup_form_submitted", { method: "timer", email_domain: "example.com" });
-    expect(trackEvent).toHaveBeenCalledWith("signup_form_success", { method: "timer" });
+    expect(trackEvent).not.toHaveBeenCalledWith("signup_form_success", expect.anything());
     expect(trackEvent).toHaveBeenCalledWith("guide_unlocked", { via: "timer" });
     expect(trackEvent).toHaveBeenCalledWith("api_failed_after_optimistic_success");
     expect(trackEvent).toHaveBeenCalledWith("signup_fallback_fired");
-    expect(trackEvent).toHaveBeenCalledTimes(5);
+    expect(trackEvent).toHaveBeenCalledTimes(4);
     expect(trackEvent).not.toHaveBeenCalledWith("signup_form_error", expect.anything());
     expect(trackEvent).not.toHaveBeenCalledWith(expect.stringMatching(/double_failure|both_methods_failed/));
     expect(screen.queryByText("That email didn't go through. Check it and try again.")).toBeNull();
@@ -323,7 +341,7 @@ describe("5-to-9 Builder guide", () => {
     expect(activeGuide(container).dataset.guide).toBe("pending");
     expect(submitEmbed).toHaveBeenCalledOnce();
     expect(trackEvent).toHaveBeenCalledWith("signup_form_submitted", { method: "embed_fallback", email_domain: "example.com" });
-    expect(trackEvent).toHaveBeenCalledWith("signup_form_success", { method: "embed_fallback" });
+    expect(trackEvent).not.toHaveBeenCalledWith("signup_form_success", expect.anything());
     expect(trackEvent).toHaveBeenCalledWith("guide_unlocked", { via: "fallback" });
     expect(trackEvent).toHaveBeenCalledWith("signup_fallback_fired");
     expect(trackEvent).not.toHaveBeenCalledWith("api_failed_after_optimistic_success");
