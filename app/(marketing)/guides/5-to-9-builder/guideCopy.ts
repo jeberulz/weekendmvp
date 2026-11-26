@@ -24,18 +24,18 @@ export const guideCopy = {
 - Keeping the scope vague so every idea scores well.
 - Picking the idea with the biggest market. A big market doesn't make a first idea easier to test.`,
   "Pick it · Worked example": "Score the Translator honestly, as a reader would. The live page puts the weekend scope at about 8 hours, which helps the first question. A customer-facing one-pager with annotated photos demos quickly. The outcome fits one sentence: *for auto shops, who lose approvals to jargon, this turns the estimate into plain English, without the advisor translating every line.* Whether you can find ten testers depends on your access to shops, and only you can score that. The scorecard exposes the weak point. It doesn't hide it.",
-  "Prove it · Reasoning": "Before you build, get someone to show intent. Pick one test for tonight. The post test: share the problem in their words where your three people gather and count real replies, not likes. The waitlist test: one page, one sentence, one button. The £5 test: offer to solve it by hand, once, for £5. The rule is the same for all three: no building until someone shows intent. Words are cheap. A reply, a signup or a fiver is proof. One person paying £5 tells you more than a hundred saying \"great idea\".",
+  "Prove it · Reasoning": "Before you build, get someone to show intent. Pick one test for tonight. The post test: share the problem in their words where your three people gather and count real replies, not likes. The waitlist test: one page, one sentence, one button. The $5 test: offer to solve it by hand, once, for $5. The rule is the same for all three: no building until someone shows intent. Words are cheap. A reply, a signup or a fiver is proof. One person paying $5 tells you more than a hundred saying \"great idea\".",
   "Prove it · Common mistakes": `- Building "a small version" first to have something to show.
 - Counting likes, views or compliments as intent.
 - Running all three tests at once, so you can't tell which one told you what.
 - Moving the goalposts after a quiet result. Decide beforehand what counts as a signal.`,
-  "Prove it · Worked example": "For the Translator, the lightest proof test is manual. Take one real estimate from someone willing to share it, rewrite it by hand in plain English with a note on what can wait, and offer it to a shop for £5 or ask the shop to try it on one customer. No code. No integration with their system. You are testing whether the shop sees the value, not whether you can build the product. We don't report a result here, because no such test is on the live page. Yours will be the first data point for your version.",
-  "Sell it · Reasoning": "A first paid offer doesn't need a product. It needs one person, one outcome and one price. \"I'll [solve the problem] for you, this week, for £29. One spot.\" That's the whole offer. A small paid offer teaches more than a large free launch, because a paying customer tells you the truth and a free user tells you what you want to hear. If someone pays, you have a business to test. Then build the weekend version.",
+  "Prove it · Worked example": "For the Translator, the lightest proof test is manual. Take one real estimate from someone willing to share it, rewrite it by hand in plain English with a note on what can wait, and offer it to a shop for $5 or ask the shop to try it on one customer. No code. No integration with their system. You are testing whether the shop sees the value, not whether you can build the product. We don't report a result here, because no such test is on the live page. Yours will be the first data point for your version.",
+  "Sell it · Reasoning": "A first paid offer doesn't need a product. It needs one person, one outcome and one price. \"I'll [solve the problem] for you, this week, for $29. One spot.\" That's the whole offer. A small paid offer teaches more than a large free launch, because a paying customer tells you the truth and a free user tells you what you want to hear. If someone pays, you have a business to test. Then build the weekend version.",
   "Sell it · Common mistakes": `- Building a landing page with twelve features before anyone has paid.
 - Offering tiers. One spot, one outcome, one price.
 - Pricing so low that nobody believes the outcome.
 - Treating "maybe" as a yes and waiting for it.`,
-  "Sell it · Worked example": "The Translator's offer, as a reader might write it: *\"I'll turn your next ten repair estimates into plain-English one-pagers this week, for £29. One spot.\"* Adjust the number of estimates to something you can actually deliver. This is an offer to write, not a claim that anyone has bought it. The idea page, by contrast, describes the eventual product: paste the repair order, get a one-pager with what failed, why, what it costs, annotated photos and a defer-or-do-now split, then send it by SMS. Sell the outcome by hand first. Build the product once someone has paid for the outcome.",
+  "Sell it · Worked example": "The Translator's offer, as a reader might write it: *\"I'll turn your next ten repair estimates into plain-English one-pagers this week, for $29. One spot.\"* Adjust the number of estimates to something you can actually deliver. This is an offer to write, not a claim that anyone has bought it. The idea page, by contrast, describes the eventual product: paste the repair order, get a one-pager with what failed, why, what it costs, annotated photos and a defer-or-do-now split, then send it by SMS. Sell the outcome by hand first. Build the product once someone has paid for the outcome.",
   "The Method · Honest catch": "Five steps don't guarantee an idea survives them. The method is built to let a weak idea fail quickly and cheaply, which is a good outcome even though it feels like losing.",
   "The 6 Skills · Lede": "The method is the order. The skills are what you practise inside it. There are six. Each one ends with a plain test, so you know when to move on instead of rereading.",
   "Spot problems in your own week · Explanation": "Your week is full of friction you've stopped noticing. This skill is learning to see it. Keep a running note for a few days. Write down what slowed you down, what you fixed, and what colleagues asked you to explain. Phrase each as a problem and a person, not a product. Over time you'll start noticing the repeated ones. Those are the ideas.",
@@ -44,17 +44,17 @@ export const guideCopy = {
   "The 3-person test · Readiness test": "You're ready when you've spoken to three people who really have the problem, written down what they said in their own words, and decided whether it's worth continuing.",
   "The 10-minute scorecard · Explanation": "A scorecard turns a debate into a decision. Five questions, scored 1 to 5: can you build the core flow in a weekend, demo it in 15 seconds, find ten testers, state the outcome in one sentence, and does it remove a real annoyance? Add up. Pick the highest. The point is speed. A slightly wrong pick that you test beats a perfect pick you never start.",
   "The 10-minute scorecard · Readiness test": "You're ready when every idea you're considering has a score, one has won, and you can say its promise in one sentence.",
-  "The proof test · Explanation": "Proof comes before building. Choose one: the post test, the waitlist test, or the £5 test. Decide in advance what counts as a signal, run it, and stop. A reply, a signup or a payment counts. A compliment doesn't. If nobody bites, you've saved yourself weeks.",
+  "The proof test · Explanation": "Proof comes before building. Choose one: the post test, the waitlist test, or the $5 test. Decide in advance what counts as a signal, run it, and stop. A reply, a signup or a payment counts. A compliment doesn't. If nobody bites, you've saved yourself weeks.",
   "The proof test · Readiness test": "You're ready when you've run one proof test, written down what you decided counted as a signal beforehand, and recorded what happened, including if the answer was nothing.",
   "The first offer · Explanation": "A first offer is the smallest thing you'd sell: one outcome, for one person, at one price, delivered by hand if needed. It doesn't need a product page or a payment system more complicated than a link. Its job is to find out whether someone will hand over money, not to be your business.",
   "The first offer · Readiness test": "You're ready when your offer fits in one sentence, names who it's for and what they get, and states one price.",
-  "Pricing and the honest catch · Explanation": "Price the first offer so that paying is easy and the outcome is believable. £29 is a sensible starting example. It's small enough to say yes to and large enough to mean it. Then write down the honest catch: what could stop this working, and what this offer can't tell you. Doing this yourself, before a customer does, keeps you from overclaiming.",
+  "Pricing and the honest catch · Explanation": "Price the first offer so that paying is easy and the outcome is believable. $29 is a sensible starting example. It's small enough to say yes to and large enough to mean it. Then write down the honest catch: what could stop this working, and what this offer can't tell you. Doing this yourself, before a customer does, keeps you from overclaiming.",
   "Pricing and the honest catch · Readiness test": "You're ready when your offer has a price you can say aloud without apologising, and you can name the two most likely reasons it might not sell.",
   "The 6 Skills · Honest catch": "Reading about a skill isn't the same as having it. Each test here asks for something you've actually done. If you can't tick it yet, the skill isn't done.",
   "The Catch · Lede": "This section is here because the rest of the guide would be dishonest without it. A guide that promises a side income and leaves this out is selling you something. Read it before you start.",
   "Most ideas won't work": "Most ideas won't work. That is not a flaw in the method. It is the reason for the method. Some problems turn out to be real but small. Some are real but already solved. Some are real, but nobody will pay to fix them. You'll probably go through several ideas before one holds up. If you need your first idea to be the one, you will either stop too early or fool yourself into carrying on. Treat each failed idea as a test that did its job.",
   "Time is the real constraint": "You have evenings, not a career's worth of hours. Tiredness is real. So are family, commuting and the days when work runs over. A plan that assumes ideal evenings will fail on the first bad week. That is why the steps are small and why you stop at the first weak signal rather than pushing through. Build only what the evidence has earned. If you can only manage two evenings a week, the plan still works. It takes longer.",
-  "What validation can't tell you": "Validation tells you that someone showed intent. It can't tell you whether you can keep them. It can't tell you whether the idea scales, whether you'll enjoy running it, or whether a person who paid £29 once will pay again. A positive test is a reason to continue, not a promise. A negative test is just as limited: it tells you about the idea and the way you tested it. It doesn't tell you what you're capable of.",
+  "What validation can't tell you": "Validation tells you that someone showed intent. It can't tell you whether you can keep them. It can't tell you whether the idea scales, whether you'll enjoy running it, or whether a person who paid $29 once will pay again. A positive test is a reason to continue, not a promise. A negative test is just as limited: it tells you about the idea and the way you tested it. It doesn't tell you what you're capable of.",
   "Where You're Starting From · Lede": "You aren't starting from a blank page. Your work gives you a head start and a gap, and the right skills to lean on depend on which. Find the closest match below. Designers are one of four, not a separate track.",
   "Designer · Head start": "You can see trust and clarity problems that most founders miss. You know how to make a promise legible on a page, and taste is a real edge when most products look alike.",
   "Designer · Gap": "Design skill can pass for evidence. A page that looks convincing isn't proof that anyone will pay for what's on it. You may also be tempted to polish before you test.",
@@ -81,28 +81,28 @@ export const guideCopy = {
 1. **Find it.** Start from a moment: someone handed an estimate they can't read, and an advisor translating the same line again.
 2. **Who pays?** Ask three people: shop owners or advisors, and customers who've been handed an estimate recently. How do they deal with it today? What does an unapproved or confusing estimate cost? What would a fix be worth?
 3. **Pick it.** Score it on the five questions. The live page puts the weekend scope at about 8 hours.
-4. **Prove it.** Rewrite one real estimate by hand in plain English and offer it, or try the £5 test with one shop.
-5. **Sell it.** Offer a small, hand-delivered version for £29. One spot.
+4. **Prove it.** Rewrite one real estimate by hand in plain English and offer it, or try the $5 test with one shop.
+5. **Sell it.** Offer a small, hand-delivered version for $29. One spot.
 
 That's the worked validation: a way to run the method, with the steps filled in. It isn't a test we've completed. No customers, results or approval-rate figures are claimed for this idea, and the idea page itself flags that kind of figure as a sales line, not a published result. Your own three conversations will tell you more than the listing can.`,
   "The Idea Bank · Honest catch": "A researched idea isn't a validated one. The research can tell you where the gap might be. Only your own tests can tell you whether anyone will pay for it, and whether you're the right person to build it.",
   "The First Sale · Lede": "A first sale proves one thing: someone handed over money for your outcome. It's a small result, and a useful one. This section covers the offer, the price, the ask and what to do when the answer is no.",
-  "The offer": "One person, one outcome, one price. Write it as a single sentence: \"I'll [solve the problem] for you, this week, for £29. One spot.\" No landing page with twelve features. No tiers. If you can deliver it by hand, do. The point is to learn whether it sells, not to scale it.",
-  "The price": "Start with £29 as your working example. It's low enough that saying yes is easy and high enough that it counts as a real signal. A small paid offer teaches you more than a big free launch, because a paying customer tells you the truth and a free user tells you what you want to hear. If £29 doesn't fit your idea, pick a number that does and keep it to one.",
+  "The offer": "One person, one outcome, one price. Write it as a single sentence: \"I'll [solve the problem] for you, this week, for $29. One spot.\" No landing page with twelve features. No tiers. If you can deliver it by hand, do. The point is to learn whether it sells, not to scale it.",
+  "The price": "Start with $29 as your working example. It's low enough that saying yes is easy and high enough that it counts as a real signal. A small paid offer teaches you more than a big free launch, because a paying customer tells you the truth and a free user tells you what you want to hear. If $29 doesn't fit your idea, pick a number that does and keep it to one.",
   "The ask": "Ask directly, to a real person, in the words they used with you. Use the language from your 3-person conversations, not your own business-speak. Say what they get, by when, and for how much. Then stop talking and let them answer. A clear no is useful. A vague maybe is not, so ask for a decision.",
   "First-sale scripts": `Adapt these. Replace the brackets with the words your people used.
 
 **To someone from your three conversations**
 
-> You mentioned [their problem, in their words]. I'm doing a small version of the fix this week: I'll [outcome] for you for £29. One spot. Want it?
+> You mentioned [their problem, in their words]. I'm doing a small version of the fix this week: I'll [outcome] for you for $29. One spot. Want it?
 
 **A public post**
 
-> I'm taking one spot this week to [outcome] for £29. If you [have the problem], reply and I'll send the details.
+> I'm taking one spot this week to [outcome] for $29. If you [have the problem], reply and I'll send the details.
 
 **When someone says "maybe"**
 
-> Totally fair. What would you need to see to say yes, and what would make it worth £29 to you?
+> Totally fair. What would you need to see to say yes, and what would make it worth $29 to you?
 
 **When someone says no**
 
@@ -122,7 +122,7 @@ Now find out why. It usually comes down to one of three things: wrong person, wr
   "Self-Check · Item 8": "I have scored every idea I'm considering on the five scorecard questions.",
   "Self-Check · Item 9": "I have picked the highest-scoring idea without reopening the debate.",
   "Self-Check · Item 10": "I can say its promise in one sentence: for [who], who [problem], this helps you [outcome], without [the old way].",
-  "Self-Check · Item 11": "I have chosen one proof test: post, waitlist or £5.",
+  "Self-Check · Item 11": "I have chosen one proof test: post, waitlist or $5.",
   "Self-Check · Item 12": "I decided in advance what counts as a signal.",
   "Self-Check · Item 13": "I have run the test and recorded the outcome, including a quiet one.",
   "Self-Check · Item 14": "I have not built anything the evidence hasn't earned yet.",
