@@ -60,8 +60,28 @@ function expectGuideCopy(html: string) {
   const slots = [...guide.querySelectorAll<HTMLElement>("[data-copy-slot]")];
   expect(slots.map((slot) => slot.dataset.copySlot).sort()).toEqual(Object.keys(guideCopy).sort());
   expect(guide.querySelector('[data-copy-slot="The Shift · Lede"]')?.textContent).toBe(
-    "I think building is free now. Knowing what to build is still the job.",
+    "Finding something worth building starts with a problem you can check.",
   );
+  expect(guide.querySelector('[data-copy-slot="The Shift · Validation paragraph"]')?.textContent).toBe(
+    "Before you spend an evening building, talk to someone who has the problem. Ask how they deal with it now and what it costs them. Then see whether they'll pay for a fix.",
+  );
+  expect(guide.querySelector('[data-copy-slot="The Shift · Definition"]')?.textContent).toBe(
+    "A 5-to-9 builder keeps their job and uses evenings to test an idea for extra income.",
+  );
+  expect(guide.querySelector('[data-copy-slot="FAQ · Do I need to code?"]')?.textContent).toContain(
+    "The method tests whether someone will pay before you build.",
+  );
+  expect(guide.querySelector('[data-copy-slot="Find it · Worked example"]')?.textContent).toContain("$1,800");
+  expect(guide.querySelector('[data-copy-slot="Find it · Worked example"]')?.textContent).toContain(
+    "R&R compressor, evac/recharge, orifice tube, dye test",
+  );
+  expect(guide.querySelector('[data-copy-slot="Find it · Worked example"]')?.textContent).toContain(
+    "I've watched advisors explain the same line.",
+  );
+  expect(guide.textContent).not.toContain("five times a day");
+  expect(guide.textContent).not.toContain("almost any idea without a team or a budget");
+  expect(guide.textContent).not.toContain("Most people skip that step");
+  expect(guide.textContent).not.toContain("The method proves someone will pay");
   expect(guide.querySelector('[data-copy-slot="Gate · Fine print"]')?.textContent).toBe(
     "Free. Unsubscribe anytime. We'll send the 5-day Starter.",
   );
