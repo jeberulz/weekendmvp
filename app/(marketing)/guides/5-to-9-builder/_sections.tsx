@@ -3,11 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Lock } from "lucide-react";
 
-import { Eyebrow } from "@/components/home/ui";
+import { Em, Eyebrow } from "@/components/home/ui";
 import { cn } from "@/lib/utils";
 
 import { ContentsLinks, GuideChecklist, GuidePrompt, SprintLink } from "./GuideInteractions";
 import { BUILD_ALONG_PRICE, GUIDE_HEADLINE, GUIDE_TITLE, SECTIONS } from "./guideContent";
+import { guideCopy, selfCheckItems, type GuideCopySlot } from "./guideCopy";
 import { HERO_IMAGE_SRC } from "./heroImageData";
 
 const META = [
@@ -17,8 +18,37 @@ const META = [
   ["30 days", ""],
 ];
 
-function CopyToWrite({ slot }: { slot: string }) {
-  return <div className="guide-placeholder" data-copy-slot={slot}>COPY TO WRITE <span>{slot}</span></div>;
+// The deck uses only links, emphasis, lists and block quotes in its prose slots.
+function renderInlineCopy(text: string) {
+  const parts = text.split(/(\[[^\]]+\]\(\/[^)]+\)|\*\*[^*]+\*\*|\*[^*]+\*)/);
+  return parts.map((part, index) => {
+    const link = part.match(/^\[([^\]]+)\]\((\/[^)]+)\)$/);
+    if (link) return <Link key={index} href={link[2]}>{link[1]}</Link>;
+    if (part.startsWith("**")) return <strong key={index}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith("*")) return <em key={index}>{part.slice(1, -1)}</em>;
+    return part;
+  });
+}
+
+function GuideCopy({ slot, ideaCount }: { slot: GuideCopySlot; ideaCount?: number }) {
+  const text = ideaCount === undefined ? guideCopy[slot] : guideCopy[slot].replaceAll("{ideaCount}", String(ideaCount));
+
+  return (
+    <div className="guide-copy" data-copy-slot={slot}>
+      {text.split("\n\n").map((block) => {
+        if (/^(?:- |\d+\. )/.test(block)) {
+          const List = block.startsWith("- ") ? "ul" : "ol";
+          return (
+            <List key={block}>
+              {block.split("\n").map((line) => <li key={line}>{renderInlineCopy(line.replace(/^(?:- |\d+\. )/, ""))}</li>)}
+            </List>
+          );
+        }
+        if (block.startsWith("> ")) return <blockquote key={block}>{renderInlineCopy(block.slice(2))}</blockquote>;
+        return <p key={block} className={slot.endsWith(" · Lede") ? "guide-lede" : undefined}>{renderInlineCopy(block)}</p>;
+      })}
+    </div>
+  );
 }
 
 function Section({ index, children }: { index: number; children: ReactNode }) {
@@ -36,11 +66,13 @@ function PullQuote({ children }: { children: string }) {
   return <figure className="guide-quote"><p>“{children}”</p></figure>;
 }
 
-function HonestCatch({ section }: { section: string }) {
+type HonestCatchSection<Slot> = Slot extends `${infer Section} · Honest catch` ? Section : never;
+
+function HonestCatch({ section }: { section: HonestCatchSection<GuideCopySlot> }) {
   return (
     <aside aria-label="The honest catch" className="guide-catch bg-home-sunk text-home-ink">
       <Eyebrow className="text-home-ink-2">The honest catch</Eyebrow>
-      <CopyToWrite slot={`${section} · Honest catch`} />
+      <GuideCopy slot={`${section} · Honest catch`} />
     </aside>
   );
 }
@@ -56,11 +88,15 @@ function Receipt({ kind, amount, children, source }: { kind: string; amount: str
 }
 
 export function GuideHero() {
+  const emphasisStart = GUIDE_HEADLINE.indexOf(". ") + 2;
+
   return (
     <section aria-labelledby="builder-hero-title" className="guide-hero">
       <div className="min-w-0">
         <Eyebrow>Free guide · WeekendMVP</Eyebrow>
-        <h1 id="builder-hero-title">{GUIDE_HEADLINE}</h1>
+        <h1 id="builder-hero-title">
+          {GUIDE_HEADLINE.slice(0, emphasisStart)}<Em>{GUIDE_HEADLINE.slice(emphasisStart)}</Em>
+        </h1>
         <p className="guide-lede">Turn your 9-to-5 expertise into a tested side income: one tested idea, then one first sale.</p>
         <ul className="guide-meta" aria-label="Free guide · 5 steps to a tested idea · 1 first sale · 30 days">
           {META.map(([value, label]) => (
@@ -117,17 +153,13 @@ export function GuideContents({ ideaCount }: { ideaCount: number }) {
 export function GuideOpening() {
   return (
     <Section index={0}>
-      <CopyToWrite slot="The Shift · Lede" />
+      <GuideCopy slot="The Shift · Lede" />
       <PullQuote>AI just made building an app free. It didn&apos;t make knowing what to build any easier.</PullQuote>
-      <CopyToWrite slot="The Shift · Validation paragraph" />
-      <aside role="note" aria-label="Receipt">
-        <Eyebrow>Receipt</Eyebrow>
-        <CopyToWrite slot="The Shift · Source for the building-is-free claim" />
-      </aside>
+      <GuideCopy slot="The Shift · Validation paragraph" />
       <h3>Your 9-to-5 is the edge</h3>
-      <CopyToWrite slot="The Shift · Your expertise" />
+      <GuideCopy slot="The Shift · Your expertise" />
       <h3>What a 5-to-9 builder is, and isn&apos;t</h3>
-      <CopyToWrite slot="The Shift · Definition" />
+      <GuideCopy slot="The Shift · Definition" />
       <ul className="guide-definition border-y border-home-rule">
         <li><span>Not</span> quitting</li>
         <li><span>Not</span> a course</li>
@@ -139,7 +171,7 @@ export function GuideOpening() {
   );
 }
 
-const STEPS = ["Find it", "Who pays?", "Pick it", "Prove it", "Sell it"];
+const STEPS = ["Find it", "Who pays?", "Pick it", "Prove it", "Sell it"] as const;
 const SKILLS = [
   "Spot problems in your own week",
   "The 3-person test",
@@ -147,9 +179,15 @@ const SKILLS = [
   "The proof test",
   "The first offer",
   "Pricing and the honest catch",
-];
-const START_LINES = ["Designer", "Developer", "Ops & marketing", "Non-technical"];
-const WEEKS = ["Find it, test it on 3 people.", "Scorecard, pick one.", "Proof test.", "First offer, first sale."];
+] as const;
+const START_LINES = ["Designer", "Developer", "Ops & marketing", "Non-technical"] as const;
+const ROLE_LABELS = ["Head start", "Gap", "Lean on"] as const;
+const WEEKS = [
+  [1, "Find it, test it on 3 people."],
+  [2, "Scorecard, pick one."],
+  [3, "Proof test."],
+  [4, "First offer, first sale."],
+] as const;
 
 function SprintCard({ placement }: { placement: "mid" | "close" }) {
   return (
@@ -169,16 +207,16 @@ export function GuideLessons({ ideaCount }: { ideaCount: number }) {
     <div className="guide-reading-grid">
       <article className="guide-measure">
         <Section index={1}>
-          <CopyToWrite slot="The Method · Lede" />
+          <GuideCopy slot="The Method · Lede" />
           <ol className="guide-steps">
             {STEPS.map((step, index) => (
               <li key={step}>
                 <span aria-hidden="true" className="guide-step-number">{index + 1}</span>
                 <div className="min-w-0">
                   <h3>{step}</h3>
-                  <CopyToWrite slot={`${step} · Reasoning`} />
-                  <CopyToWrite slot={`${step} · Common mistakes`} />
-                  <CopyToWrite slot={`${step} · Worked example`} />
+                  <GuideCopy slot={`${step} · Reasoning`} />
+                  <GuideCopy slot={`${step} · Common mistakes`} />
+                  <GuideCopy slot={`${step} · Worked example`} />
                   {step === "Prove it" && <PullQuote>Ten minutes of proof beats ten weeks of building.</PullQuote>}
                 </div>
               </li>
@@ -188,14 +226,14 @@ export function GuideLessons({ ideaCount }: { ideaCount: number }) {
         </Section>
 
         <Section index={2}>
-          <CopyToWrite slot="The 6 Skills · Lede" />
+          <GuideCopy slot="The 6 Skills · Lede" />
           {SKILLS.map((skill, index) => (
             <div key={skill}>
               <h3>{index + 1} · {skill}</h3>
-              <CopyToWrite slot={`${skill} · Explanation`} />
+              <GuideCopy slot={`${skill} · Explanation`} />
               <div className="guide-ready">
                 <Eyebrow className="text-home-ink-2">You&apos;re ready when…</Eyebrow>
-                <CopyToWrite slot={`${skill} · Readiness test`} />
+                <GuideCopy slot={`${skill} · Readiness test`} />
               </div>
             </div>
           ))}
@@ -203,20 +241,20 @@ export function GuideLessons({ ideaCount }: { ideaCount: number }) {
         </Section>
 
         <Section index={3}>
-          <CopyToWrite slot="The Catch · Lede" />
-          {["Most ideas won't work", "Time is the real constraint", "What validation can't tell you"].map((heading) => (
-            <div key={heading}><h3>{heading}</h3><CopyToWrite slot={heading} /></div>
+          <GuideCopy slot="The Catch · Lede" />
+          {(["Most ideas won't work", "Time is the real constraint", "What validation can't tell you"] as const).map((heading) => (
+            <div key={heading}><h3>{heading}</h3><GuideCopy slot={heading} /></div>
           ))}
         </Section>
 
         <Section index={4}>
-          <CopyToWrite slot="Where You're Starting From · Lede" />
+          <GuideCopy slot="Where You're Starting From · Lede" />
           <div className="guide-card-grid">
             {START_LINES.map((role) => (
               <div key={role} className="rounded-[10px] border border-home-rule bg-home-card p-4">
                 <h3>{role}</h3>
-                <dl>{["Head start", "Gap", "Lean on"].map((label) => (
-                  <div key={label}><dt className="mt-3 font-mono text-xs uppercase text-home-ink-3">{label}</dt><dd><CopyToWrite slot={`${role} · ${label}`} /></dd></div>
+                <dl>{ROLE_LABELS.map((label) => (
+                  <div key={label}><dt className="mt-3 font-mono text-xs uppercase text-home-ink-3">{label}</dt><dd><GuideCopy slot={`${role} · ${label}`} /></dd></div>
                 ))}</dl>
               </div>
             ))}
@@ -225,12 +263,12 @@ export function GuideLessons({ ideaCount }: { ideaCount: number }) {
         </Section>
 
         <Section index={5}>
-          <CopyToWrite slot="The 30-Day Plan · Lede" />
+          <GuideCopy slot="The 30-Day Plan · Lede" />
           <ol className="guide-weeks">
-            {WEEKS.map((week, index) => (
-              <li key={week}>
-                <Eyebrow>Week {index + 1}</Eyebrow>
-                <div><p>{week}</p><CopyToWrite slot={`Week ${index + 1} · Shipped proof`} /></div>
+            {WEEKS.map(([number, week]) => (
+              <li key={number}>
+                <Eyebrow>Week {number}</Eyebrow>
+                <div><p>{week}</p><GuideCopy slot={`Week ${number} · Shipped proof`} /></div>
               </li>
             ))}
           </ol>
@@ -240,10 +278,10 @@ export function GuideLessons({ ideaCount }: { ideaCount: number }) {
         <SprintCard placement="mid" />
 
         <Section index={6}>
-          <CopyToWrite slot="The Idea Bank · How to use the library" />
+          <GuideCopy slot="The Idea Bank · How to use the library" ideaCount={ideaCount} />
           <Receipt kind="Live count" amount={ideaCount} source="Homepage liveIdeas rule · re-checked at build">researched startup ideas in the library.</Receipt>
           <h3>One worked validation: Repair Estimate Translator</h3>
-          <CopyToWrite slot="Repair Estimate Translator · Worked validation" />
+          <GuideCopy slot="Repair Estimate Translator · Worked validation" />
           <Link href="/ideas/auto-repair-estimate-translator" className="guide-idea-link rounded-[10px] border border-home-rule bg-home-card">
             <Eyebrow>Idea page</Eyebrow>
             <strong>Repair Estimate Translator</strong>
@@ -253,27 +291,27 @@ export function GuideLessons({ ideaCount }: { ideaCount: number }) {
         </Section>
 
         <Section index={7}>
-          <CopyToWrite slot="The First Sale · Lede" />
+          <GuideCopy slot="The First Sale · Lede" />
           <Receipt kind="Price" amount="£29" source="5-day guide draft, Day 5">first paid offer.</Receipt>
-          {["The offer", "The price", "The ask", "First-sale scripts"].map((slot) => <CopyToWrite key={slot} slot={slot} />)}
+          {(["The offer", "The price", "The ask", "First-sale scripts"] as const).map((slot) => <GuideCopy key={slot} slot={slot} />)}
           <h3>When nobody buys</h3>
-          <CopyToWrite slot="The First Sale · When nobody buys" />
+          <GuideCopy slot="The First Sale · When nobody buys" />
           <HonestCatch section="The First Sale" />
         </Section>
 
         <Section index={8}>
-          <CopyToWrite slot="Self-Check · Lede" />
-          <GuideChecklist />
+          <GuideCopy slot="Self-Check · Lede" />
+          <GuideChecklist items={selfCheckItems} />
           <HonestCatch section="Self-Check" />
         </Section>
 
         <Section index={9}>
-          <CopyToWrite slot="The Prompt · Lede" />
-          <GuidePrompt />
+          <GuideCopy slot="The Prompt · Lede" />
+          <GuidePrompt prompt={guideCopy["The Prompt · Prompt text"]} />
           <HonestCatch section="The Prompt" />
           <aside aria-label="A note from the founder" className="guide-founder">
             <Eyebrow>A note from the founder</Eyebrow>
-            <CopyToWrite slot="Founder note · Body" />
+            <GuideCopy slot="Founder note · Body" />
             <p className="font-editorial text-2xl italic">John Iseghohi</p>
           </aside>
         </Section>
@@ -292,7 +330,7 @@ const FAQ = [
   "Do I need to code?",
   "What if nobody buys?",
   "What does the 5-day email add?",
-];
+] as const;
 
 export function GuideClose({ ideaCount }: { ideaCount: number }) {
   return (
@@ -324,11 +362,13 @@ export function GuideClose({ ideaCount }: { ideaCount: number }) {
           {FAQ.map((question) => (
             <details key={question} className="guide-faq">
               <summary>{question}<span aria-hidden="true" /></summary>
-              <CopyToWrite slot={`FAQ · ${question}`} />
+              <GuideCopy slot={`FAQ · ${question}`} ideaCount={ideaCount} />
             </details>
           ))}
           <p className="mt-8 font-editorial text-2xl">Follow for one idea a day.</p>
-          <CopyToWrite slot="Sign-off · Follow destination" />
+          <p data-copy-slot="Sign-off · Follow destination">
+            Follow <a href="https://www.instagram.com/weekendmvp/" rel="noopener noreferrer">@weekendmvp</a> on Instagram
+          </p>
         </Section>
       </div>
     </div>
