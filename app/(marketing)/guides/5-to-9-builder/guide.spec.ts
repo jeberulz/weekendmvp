@@ -1,9 +1,5 @@
-import { BUILD_ALONG } from "@/lib/live/config";
-
+// Data only, no value imports: `npm run audit:guide` loads this file under plain Node.
 import type { GuideSpec } from "../_shared/types";
-
-/** Display price for the sprint cards. Tied to the live standard ticket, not a one-off string. */
-export const BUILD_ALONG_PRICE = `$${BUILD_ALONG.standardUsd}`;
 
 const TITLE = "The 5-to-9 Builder";
 const HEADLINE = "AI made building free. Knowing what to build is the job now.";
@@ -56,6 +52,7 @@ export const guideSpec: GuideSpec = {
       width: 1000,
       height: 1250,
       sizes: "(min-width: 1024px) 458px, 100vw",
+      assetStatus: "approved",
     },
   },
   contents: { heading: "Eleven sections. One tested idea at the end." },

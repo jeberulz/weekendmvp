@@ -148,8 +148,12 @@ read the response as text before parsing JSON.
 - `app/(marketing)/guides/_shared/*` + `app/(marketing)/guides/{slug}/guide.spec.ts` — guide template (WP103).
   A guide is data (`guide.spec.ts`: sections, steps, skills, roles, weeks, FAQ, gate) plus a slotted copy deck
   (`guideCopy.ts`); layout, gate, checklist, prompt and SEO builders are shared. A missing copy slot throws at render
-  time. Slot naming is documented at the top of `_shared/blocks.tsx`. The unlock state lives on the `.builder-guide`
-  wrapper (`data-guide`), and `_shared/guide.css` is keyed to it. Plan: `docs/plans/publish-guide/PLAN.md`
+  time. Slot names live in `lib/guides/slots.ts` and the spec shape in `lib/guides/spec-schema.ts` (zod). The unlock
+  state lives on the `.builder-guide` wrapper (`data-guide`), and `_shared/guide.css` is keyed to it.
+  `npm run audit:guide -- --slug={slug}` checks schema, slots, placeholder text, internal labels, mixed currency and
+  the hero asset. Add `--live --url={page}` to check the deployed unlock behaviour in a headless browser. It never
+  submits a subscription unless `--email` is passed, and `--email` really subscribes that address. Plan:
+  `docs/plans/publish-guide/PLAN.md`
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

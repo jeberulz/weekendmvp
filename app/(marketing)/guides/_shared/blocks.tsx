@@ -3,22 +3,13 @@ import Image from "next/image";
 import { Lock } from "lucide-react";
 
 import { Em, Eyebrow } from "@/components/home/ui";
+import { slotName } from "@/lib/guides/slots";
 import { cn } from "@/lib/utils";
 
 import { GuideCopy } from "./copy";
 import type { GuideDeck, GuideSpec } from "./types";
 
-/*
- * Copy slot naming convention. Blocks read these slots from the deck and throw if one is missing.
- *   Section lede ................ "{Section title} · Lede"
- *   Honest catch ................ "{Section title} · Honest catch"
- *   Step ........................ "{step} · Reasoning" / "· Common mistakes" / "· Worked example"
- *   Skill ....................... "{skill} · Explanation" / "· Readiness test"
- *   Role ........................ "{role} · {label}"
- *   Week ........................ "Week {n} · Shipped proof"
- *   FAQ ......................... "FAQ · {question}"
- *   Founder note ................ "Founder note · Body"
- */
+/* Blocks read slots from the deck by the names in `lib/guides/slots.ts` and throw if one is missing. */
 
 export function GuideSection({ spec, index, children }: { spec: GuideSpec; index: number; children: ReactNode }) {
   const { id, title } = spec.sections[index];
@@ -39,7 +30,7 @@ export function HonestCatch({ deck, section }: { deck: GuideDeck; section: strin
   return (
     <aside aria-label="The honest catch" className="guide-catch bg-home-sunk text-home-ink">
       <Eyebrow className="text-home-ink-2">The honest catch</Eyebrow>
-      <GuideCopy deck={deck} slot={`${section} · Honest catch`} />
+      <GuideCopy deck={deck} slot={slotName.honestCatch(section)} />
     </aside>
   );
 }
@@ -127,9 +118,9 @@ export function StepsBlock({ spec, deck }: { spec: GuideSpec; deck: GuideDeck })
           <span aria-hidden="true" className="guide-step-number">{index + 1}</span>
           <div className="min-w-0">
             <h3>{step}</h3>
-            <GuideCopy deck={deck} slot={`${step} · Reasoning`} />
-            <GuideCopy deck={deck} slot={`${step} · Common mistakes`} />
-            <GuideCopy deck={deck} slot={`${step} · Worked example`} />
+            <GuideCopy deck={deck} slot={slotName.stepReasoning(step)} />
+            <GuideCopy deck={deck} slot={slotName.stepMistakes(step)} />
+            <GuideCopy deck={deck} slot={slotName.stepExample(step)} />
             {spec.stepPullQuotes[step] && <PullQuote>{spec.stepPullQuotes[step]}</PullQuote>}
           </div>
         </li>
@@ -144,10 +135,10 @@ export function SkillsBlock({ spec, deck }: { spec: GuideSpec; deck: GuideDeck }
       {spec.skills.map((skill, index) => (
         <div key={skill}>
           <h3>{index + 1} · {skill}</h3>
-          <GuideCopy deck={deck} slot={`${skill} · Explanation`} />
+          <GuideCopy deck={deck} slot={slotName.skillExplanation(skill)} />
           <div className="guide-ready">
             <Eyebrow className="text-home-ink-2">You&apos;re ready when…</Eyebrow>
-            <GuideCopy deck={deck} slot={`${skill} · Readiness test`} />
+            <GuideCopy deck={deck} slot={slotName.skillReadiness(skill)} />
           </div>
         </div>
       ))}
@@ -162,7 +153,7 @@ export function RolesBlock({ spec, deck }: { spec: GuideSpec; deck: GuideDeck })
         <div key={role} className="rounded-[10px] border border-home-rule bg-home-card p-4">
           <h3>{role}</h3>
           <dl>{spec.roles.labels.map((label) => (
-            <div key={label}><dt className="mt-3 font-mono text-xs uppercase text-home-ink-3">{label}</dt><dd><GuideCopy deck={deck} slot={`${role} · ${label}`} /></dd></div>
+            <div key={label}><dt className="mt-3 font-mono text-xs uppercase text-home-ink-3">{label}</dt><dd><GuideCopy deck={deck} slot={slotName.role(role, label)} /></dd></div>
           ))}</dl>
         </div>
       ))}
@@ -176,7 +167,7 @@ export function WeeksBlock({ spec, deck }: { spec: GuideSpec; deck: GuideDeck })
       {spec.weeks.map(([number, week]) => (
         <li key={number}>
           <Eyebrow>Week {number}</Eyebrow>
-          <div><p>{week}</p><GuideCopy deck={deck} slot={`Week ${number} · Shipped proof`} /></div>
+          <div><p>{week}</p><GuideCopy deck={deck} slot={slotName.weekProof(number)} /></div>
         </li>
       ))}
     </ol>
@@ -189,7 +180,7 @@ export function FaqBlock({ spec, deck, ideaCount }: { spec: GuideSpec; deck: Gui
       {spec.faq.map((question) => (
         <details key={question} className="guide-faq">
           <summary>{question}<span aria-hidden="true" /></summary>
-          <GuideCopy deck={deck} slot={`FAQ · ${question}`} ideaCount={ideaCount} />
+          <GuideCopy deck={deck} slot={slotName.faq(question)} ideaCount={ideaCount} />
         </details>
       ))}
     </>
@@ -200,7 +191,7 @@ export function FounderNote({ spec, deck }: { spec: GuideSpec; deck: GuideDeck }
   return (
     <aside aria-label="A note from the founder" className="guide-founder">
       <Eyebrow>A note from the founder</Eyebrow>
-      <GuideCopy deck={deck} slot="Founder note · Body" />
+      <GuideCopy deck={deck} slot={slotName.founderBody} />
       <p className="font-editorial text-2xl italic">{spec.founderName}</p>
     </aside>
   );
