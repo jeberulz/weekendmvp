@@ -14,7 +14,7 @@ import { SITE_NAV_SECTIONS } from "@/components/layout/site-navigation";
 type MegaNavVariant = "dark" | "cream";
 
 const TOKENS: Record<
-  MegaNavVariant,
+  MegaNavVariant | "starter",
   {
     shell: string;
     logo: string;
@@ -61,6 +61,21 @@ const TOKENS: Record<
     ctaRing: "focus:ring-black/30 focus:ring-offset-[#fcfaf7]",
     menuBtn: "text-black hover:text-neutral-600",
   },
+  starter: {
+    shell: "border-home-rule bg-[#FCFAF7]/82",
+    logo: "text-home-ink",
+    desktopLinks: "text-home-ink-3",
+    link: "hover:text-home-ink focus:text-home-ink",
+    linkActive: "text-home-ink",
+    panel: "border-home-rule bg-[#FCFAF7]",
+    heading: "text-home-orange-ink",
+    panelLink: "text-home-ink-3 hover:text-home-ink",
+    panelLinkActive: "text-home-ink",
+    divider: "border-home-rule",
+    footerLink: "text-home-orange-ink hover:text-home-ink",
+    ctaRing: "",
+    menuBtn: "text-home-ink hover:text-home-ink-3",
+  },
 };
 
 /**
@@ -78,8 +93,14 @@ export function MegaNav({
   /** Reader TOCs measure this fixed shell, including its top gap. */
   id?: string;
 }) {
-  const t = TOKENS[variant];
   const pathname = usePathname();
+  const starter = variant === "cream" && pathname?.replace(/\/$/, "") === "/5-to-9-starter";
+  const t = TOKENS[starter ? "starter" : variant];
+  const starterFocus = starter && "focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-home-orange-ink";
+  const starterMotion = starter && "motion-reduce:transition-none";
+  const shadow = starter
+    ? "shadow-[0_1px_0_rgb(26_24_20/4%),0_8px_24px_-12px_rgb(26_24_20/12%)]"
+    : "shadow-2xl";
   const [openId, setOpenId] = React.useState<string | null>(null);
   const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const navRef = React.useRef<HTMLElement>(null);
@@ -138,19 +159,29 @@ export function MegaNav({
     pathname === href || pathname === `${href}/`;
 
   return (
-    <header id={id} className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
+    <header id={id} className={cn("fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter", starter && "top-5 motion-reduce:animate-none")}>
+      {starter && (
+        <a
+          href="#starter-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:z-10 focus:rounded-full focus:bg-home-ink focus:px-4 focus:py-2 focus:text-home-paper focus:outline-2 focus:outline-offset-[3px] focus:outline-home-orange-light"
+        >
+          Skip to content
+        </a>
+      )}
       <nav
         aria-label="Primary"
         ref={navRef}
         className={cn(
-          "flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 backdrop-blur-xl border rounded-full shadow-2xl",
+          "flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 border rounded-full",
+          starter ? "backdrop-blur-[14px]" : "backdrop-blur-xl",
+          shadow,
           t.shell
         )}
       >
         <Link
           href="/"
           aria-label="Weekend MVP home"
-          className="flex items-center gap-2 rounded focus-visible:outline-2 focus-visible:outline-offset-4"
+          className={cn("flex items-center gap-2 rounded focus-visible:outline-2 focus-visible:outline-offset-4", starterFocus)}
         >
           <Logo className={cn("h-4 w-32 md:h-5 md:w-40", t.logo)} />
         </Link>
@@ -191,6 +222,8 @@ export function MegaNav({
                   }}
                   className={cn(
                     "flex items-center gap-1 rounded transition-colors focus-visible:outline-2 focus-visible:outline-offset-4",
+                    starterFocus,
+                    starterMotion,
                     t.link,
                     sectionActive && t.linkActive
                   )}
@@ -204,6 +237,7 @@ export function MegaNav({
                     aria-hidden="true"
                     className={cn(
                       "transition-transform duration-200",
+                      starterMotion,
                       open && "rotate-180"
                     )}
                   />
@@ -212,6 +246,7 @@ export function MegaNav({
                   id={panelId}
                   className={cn(
                     "absolute top-full left-1/2 -translate-x-1/2 pt-4 transition-all duration-200",
+                    starterMotion,
                     open
                       ? "opacity-100 visible"
                       : "opacity-0 invisible pointer-events-none"
@@ -219,7 +254,8 @@ export function MegaNav({
                 >
                   <div
                     className={cn(
-                      "backdrop-blur-xl border rounded-2xl p-6 shadow-2xl",
+                      "backdrop-blur-xl border rounded-2xl p-6",
+                      shadow,
                       t.panel,
                       dropdown.panelClassName
                     )}
@@ -229,7 +265,10 @@ export function MegaNav({
                         <div key={column.heading}>
                           <h4
                             className={cn(
-                              "text-[10px] font-bold uppercase tracking-widest mb-3",
+                              "mb-3 uppercase",
+                              starter
+                                ? "font-mono text-[11px] font-medium tracking-[0.08em]"
+                                : "text-[10px] font-bold tracking-widest",
                               t.heading
                             )}
                           >
@@ -242,6 +281,8 @@ export function MegaNav({
                                   href={link.href}
                                   className={cn(
                                     "transition-colors text-sm",
+                                    starterFocus,
+                                    starterMotion,
                                     t.panelLink,
                                     isActive(link.href) && t.panelLinkActive
                                   )}
@@ -265,6 +306,8 @@ export function MegaNav({
                         }
                         className={cn(
                           "flex items-center gap-1 text-sm transition-colors",
+                          starterFocus,
+                          starterMotion,
                           t.footerLink
                         )}
                       >
@@ -280,10 +323,13 @@ export function MegaNav({
         </div>
 
         <div className="flex items-center gap-2">
-          <NavAuthLinks variant="desktop" theme={variant} ctaRing={t.ctaRing} />
+          <NavAuthLinks variant="desktop" theme={variant} ctaRing={t.ctaRing} starter={starter} />
           <MobileNav
+            starter={starter}
             triggerClassName={cn(
               "md:hidden ml-2 p-2 transition-colors",
+              starterFocus,
+              starterMotion,
               t.menuBtn
             )}
           />
