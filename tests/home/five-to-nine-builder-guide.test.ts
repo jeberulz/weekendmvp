@@ -7,10 +7,14 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import FiveToNineBuilderGuidePage, { metadata } from "@/app/(marketing)/guides/5-to-9-builder/page";
+import { BUILD_ALONG_PRICE } from "@/app/(marketing)/guides/5-to-9-builder/guideContent";
+import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
 import { guideLiveIdeaCount } from "@/app/(marketing)/guides/5-to-9-builder/ideaCount";
+import { BUILD_ALONG } from "@/lib/live/config";
 import { BeehiivSubscribeForm } from "@/components/forms/BeehiivSubscribeForm";
 import manifest from "@/ideas/manifest.json";
 import { GUIDE_AUTOMATION_ID, subscribeViaApi, type SubscribeResult } from "@/lib/beehiiv-client";
+import { mergeHomeIdeas } from "@/lib/home/data";
 import { liveIdeas } from "@/lib/home/library";
 import type { ManifestIdea } from "@/lib/home/types";
 import { trackEvent } from "@/lib/track";
@@ -38,6 +42,39 @@ vi.mock("next/image", async () => {
 const guidePath = "app/(marketing)/guides/5-to-9-builder";
 const guideCss = readFileSync(`${guidePath}/guide.css`, "utf8");
 const subscribeMock = vi.mocked(subscribeViaApi);
+const productionGuideHtml = ".next/server/app/guides/5-to-9-builder.html";
+const johnTodoSlots = [
+  "The Shift · Source for the building-is-free claim",
+  "Gate · Fine print",
+  "Sign-off · Follow destination",
+];
+
+function expectGuideCopy(html: string) {
+  expect(html).not.toContain("COPY TO WRITE");
+  const container = document.createElement("div");
+  container.innerHTML = html;
+  const guide = activeGuide(container);
+  const slots = [...guide.querySelectorAll<HTMLElement>("[data-copy-slot]")];
+  expect(slots.map((slot) => slot.dataset.copySlot).sort()).toEqual(Object.keys(guideCopy).sort());
+  expect(slots.filter((slot) => slot.textContent?.includes("TODO [John]")).map((slot) => slot.dataset.copySlot))
+    .toEqual(johnTodoSlots);
+  expect([...guide.querySelectorAll(".guide-placeholder")].map((slot) => slot.getAttribute("data-copy-slot")))
+    .toEqual(johnTodoSlots);
+  expect(guide.querySelector('[data-copy-slot="The Shift · Source for the building-is-free claim"]')?.closest('aside[aria-label="Receipt"]'))
+    .toBeTruthy();
+
+  for (const slot of ["The Idea Bank · How to use the library", "FAQ · I have no idea yet. Where do I start?"]) {
+    expect(guide.querySelector(`[data-copy-slot="${slot}"]`)?.textContent).toContain(`${guideLiveIdeaCount()} researched ideas`);
+  }
+  expect(guide.textContent).not.toContain("{ideaCount}");
+  expect(guide.querySelectorAll('.guide-checklist input[type="checkbox"]')).toHaveLength(18);
+  expect(guide.querySelector('[data-copy-slot="The Prompt · Prompt text"] code')?.textContent).toBe(guideCopy["The Prompt · Prompt text"]);
+  expect(guide.querySelector('[data-copy-slot="Founder note · Body"]')?.textContent).not.toContain("John Iseghohi");
+  expect(BUILD_ALONG_PRICE).toBe(`$${BUILD_ALONG.standardUsd}`);
+  expect(BUILD_ALONG_PRICE).toBe("$29");
+  expect(guide.textContent).toContain("$29");
+  expect(guide.textContent).not.toContain("$47");
+}
 
 function deferredSubscription() {
   let resolve!: (result: SubscribeResult) => void;
@@ -72,6 +109,14 @@ afterEach(() => {
 });
 
 describe("5-to-9 Builder guide", () => {
+  test("renders the deck with only the three visible John TODOs in server markup", () => {
+    expectGuideCopy(renderToStaticMarkup(createElement(FiveToNineBuilderGuidePage)));
+  });
+
+  test.runIf(process.env.CHECK_BUILT_GUIDE === "1")("renders the same copy in the production HTML", () => {
+    expectGuideCopy(readFileSync(productionGuideHtml, "utf8"));
+  });
+
   test("renders the canonical static route and gated body in server markup", () => {
     const html = renderToStaticMarkup(createElement(FiveToNineBuilderGuidePage));
     const container = document.createElement("div");
@@ -145,7 +190,10 @@ describe("5-to-9 Builder guide", () => {
     expect(localStorage.getItem("weekendmvp_subscribed")).toBe("true");
     expect(document.activeElement?.textContent).toBe("The guide's open below.");
     expect(push).not.toHaveBeenCalled();
-    expect(trackEvent).toHaveBeenCalledExactlyOnceWith("guide_unlocked", { via: "timer" });
+    expect(trackEvent).toHaveBeenCalledWith("signup_form_submitted", { method: "timer", email_domain: "example.com" });
+    expect(trackEvent).toHaveBeenCalledWith("signup_form_success", { method: "timer" });
+    expect(trackEvent).toHaveBeenCalledWith("guide_unlocked", { via: "timer" });
+    expect(trackEvent).toHaveBeenCalledTimes(3);
   });
 
   test("recognizes a returning reader without a request or address in storage", () => {
@@ -166,7 +214,10 @@ describe("5-to-9 Builder guide", () => {
     expect(activeGuide(container).dataset.guide).toBe("confirmed");
     expect(localStorage.getItem("weekendmvp_subscribed")).toBe("true");
     await act(() => vi.advanceTimersByTimeAsync(8000));
-    expect(trackEvent).toHaveBeenCalledExactlyOnceWith("guide_unlocked", { via: "api" });
+    expect(trackEvent).toHaveBeenCalledWith("signup_form_submitted", { method: "api", email_domain: "example.com" });
+    expect(trackEvent).toHaveBeenCalledWith("signup_form_success", { method: "api" });
+    expect(trackEvent).toHaveBeenCalledWith("guide_unlocked", { via: "api" });
+    expect(trackEvent).toHaveBeenCalledTimes(3);
     expect(push).not.toHaveBeenCalled();
   });
 
@@ -181,7 +232,10 @@ describe("5-to-9 Builder guide", () => {
     expect(screen.getByLabelText("Email").getAttribute("aria-invalid")).toBe("true");
     expect(screen.getByText("That email didn't go through. Check it and try again.")).toBeTruthy();
     expect(localStorage.getItem("weekendmvp_subscribed")).toBeNull();
-    expect(trackEvent).not.toHaveBeenCalled();
+    expect(trackEvent).toHaveBeenCalledWith("signup_form_submitted", { method: "api", email_domain: "example.com" });
+    expect(trackEvent).toHaveBeenCalledWith("signup_form_error", { error: "address_rejected" });
+    expect(trackEvent).not.toHaveBeenCalledWith("guide_unlocked", expect.anything());
+    expect(trackEvent).not.toHaveBeenCalledWith("signup_fallback_fired");
   });
 
   test("late failure fires a quiet embed and one resend can confirm in place", async () => {
@@ -194,9 +248,14 @@ describe("5-to-9 Builder guide", () => {
 
     expect(activeGuide(container).dataset.guide).toBe("pending");
     expect(submitEmbed).toHaveBeenCalledOnce();
-    expect(trackEvent).toHaveBeenNthCalledWith(2, "api_failed_after_optimistic_success");
-    expect(trackEvent).toHaveBeenNthCalledWith(3, "signup_fallback_fired");
-    expect(trackEvent).toHaveBeenCalledTimes(3);
+    expect(trackEvent).toHaveBeenCalledWith("signup_form_submitted", { method: "timer", email_domain: "example.com" });
+    expect(trackEvent).toHaveBeenCalledWith("signup_form_success", { method: "timer" });
+    expect(trackEvent).toHaveBeenCalledWith("guide_unlocked", { via: "timer" });
+    expect(trackEvent).toHaveBeenCalledWith("api_failed_after_optimistic_success");
+    expect(trackEvent).toHaveBeenCalledWith("signup_fallback_fired");
+    expect(trackEvent).toHaveBeenCalledTimes(5);
+    expect(trackEvent).not.toHaveBeenCalledWith("signup_form_error", expect.anything());
+    expect(trackEvent).not.toHaveBeenCalledWith(expect.stringMatching(/double_failure|both_methods_failed/));
     expect(screen.queryByText("That email didn't go through. Check it and try again.")).toBeNull();
 
     const resendReply = deferredSubscription();
@@ -226,8 +285,36 @@ describe("5-to-9 Builder guide", () => {
     expect(trackEvent).not.toHaveBeenCalled();
   });
 
-  test("uses the homepage liveIdeas count", () => {
-    expect(guideLiveIdeaCount()).toBe(liveIdeas(manifest.ideas as ManifestIdea[]).length);
+  test("an early 5xx fallback unlocks quietly and fires signup_fallback_fired", async () => {
+    const reply = deferredSubscription();
+    const submitEmbed = vi.spyOn(HTMLFormElement.prototype, "submit").mockImplementation(() => {});
+    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    submitGuide();
+    await reply({ ok: false, status: 502, message: "Unavailable" });
+
+    expect(activeGuide(container).dataset.guide).toBe("pending");
+    expect(submitEmbed).toHaveBeenCalledOnce();
+    expect(trackEvent).toHaveBeenCalledWith("signup_form_submitted", { method: "embed_fallback", email_domain: "example.com" });
+    expect(trackEvent).toHaveBeenCalledWith("signup_form_success", { method: "embed_fallback" });
+    expect(trackEvent).toHaveBeenCalledWith("guide_unlocked", { via: "fallback" });
+    expect(trackEvent).toHaveBeenCalledWith("signup_fallback_fired");
+    expect(trackEvent).not.toHaveBeenCalledWith("api_failed_after_optimistic_success");
+    expect(trackEvent).not.toHaveBeenCalledWith("signup_form_error", expect.anything());
+    expect(screen.queryByText("That email didn't go through. Check it and try again.")).toBeNull();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  test("guide idea count matches the homepage count", () => {
+    const ideas = (manifest as { ideas: ManifestIdea[] }).ideas;
+    // Homepage membership in getHomeData: liveIdeas(mergeHomeIdeas(manifest, publications)).
+    const homepageCount = liveIdeas(mergeHomeIdeas(ideas, [])).length;
+    expect(guideLiveIdeaCount()).toBe(homepageCount);
+
+    const liveSlug = ideas.find((idea) => !idea._retiredAt)!.slug;
+    const withdrawn = [{ slug: liveSlug, state: "removed" }] as Parameters<typeof mergeHomeIdeas>[1];
+    const homepageAfterWithdraw = liveIdeas(mergeHomeIdeas(ideas, withdrawn)).length;
+    expect(guideLiveIdeaCount(withdrawn)).toBe(homepageAfterWithdraw);
+    expect(homepageAfterWithdraw).toBe(homepageCount - 1);
   });
 
   test("is omitted from the sitemap and marked noindex while it is a placeholder, and allows its campaign", () => {

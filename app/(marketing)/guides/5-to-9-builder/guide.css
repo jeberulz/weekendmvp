@@ -296,8 +296,29 @@
   font: 500 12px/1.5 var(--font-mono);
 }
 
-.guide-placeholder > span {
-  font-weight: 400;
+.guide-copy {
+  margin-block: 8px 16px;
+}
+
+.guide-copy > * + * {
+  margin-top: 12px;
+}
+
+.guide-copy :is(ul, ol) {
+  padding-inline-start: 24px;
+}
+
+.guide-copy ul { list-style: disc; }
+.guide-copy ol { list-style: decimal; }
+
+.guide-copy blockquote {
+  border-inline-start: 2px solid var(--color-home-orange);
+  padding-inline-start: 14px;
+}
+
+.guide-copy a {
+  text-decoration: underline;
+  text-underline-offset: .15em;
 }
 
 
@@ -329,8 +350,8 @@
   border-radius: 6px;
 }
 
-.guide-catch .guide-placeholder {
-  margin-bottom: 0;
+.guide-catch .guide-copy {
+  margin-block: 0;
 }
 
 .guide-definition {
@@ -550,7 +571,7 @@
   display: none;
 }
 
-.guide-steps li {
+.guide-steps > li {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
   gap: 12px;

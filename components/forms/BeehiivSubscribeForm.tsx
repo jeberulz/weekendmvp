@@ -130,9 +130,14 @@ export function BeehiivSubscribeForm({
       return;
     }
 
+    const emailDomain = email.split("@")[1] || "unknown";
+
     function finish(via: OptimisticUnlock["via"]) {
       if (unlocked.current || !mounted.current) return;
       unlocked.current = true;
+      const method = via === "fallback" ? "embed_fallback" : via;
+      trackEvent("signup_form_submitted", { method, email_domain: emailDomain });
+      trackEvent("signup_form_success", { method });
       try {
         localStorage.setItem("weekendmvp_subscribed", "true");
       } catch {
@@ -172,6 +177,8 @@ export function BeehiivSubscribeForm({
 
     const failedAfterUnlock = unlocked.current;
     if (!failedAfterUnlock && result.status && result.status >= 400 && result.status < 500) {
+      trackEvent("signup_form_submitted", { method: "api", email_domain: emailDomain });
+      trackEvent("signup_form_error", { error: "address_rejected" });
       showError("That email didn't go through. Check it and try again.");
       return;
     }
@@ -180,7 +187,9 @@ export function BeehiivSubscribeForm({
 
     try {
       submitViaBeehiivEmbed(email, firstName);
-      if (failedAfterUnlock) trackEvent("signup_fallback_fired");
+      // Fired for both early 5xx/network fallback and late failure after unlock.
+      // Outcome of the cross-origin embed is unknown. Do not claim a double failure.
+      trackEvent("signup_fallback_fired");
     } catch {
       // The guide is open and delivery remains unconfirmed.
     }

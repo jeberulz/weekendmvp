@@ -7,6 +7,7 @@ import { SITE, breadcrumbSchema, buildGraph, organizationSchema, PERSON_ID, pers
 import { GuideClose, GuideHero, GuideLessons, GuideOpening, GuideContents } from "./_sections";
 import { GuideGate, GuideNavigation } from "./GuideInteractions";
 import { GUIDE_BOOTSTRAP, GUIDE_DESCRIPTION, GUIDE_HEADLINE, GUIDE_PATH, GUIDE_TITLE } from "./guideContent";
+import { guideCopy } from "./guideCopy";
 import { guideLiveIdeaCount } from "./ideaCount";
 import "./guide.css";
 
@@ -65,7 +66,7 @@ export default function FiveToNineBuilderGuidePage() {
           <GuideContents ideaCount={ideaCount} />
           <GuideOpening />
         </div>
-        <GuideGate />
+        <GuideGate finePrint={guideCopy["Gate · Fine print"]} />
         <div className="guide-rest">
           <GuideLessons ideaCount={ideaCount} />
           <GuideClose ideaCount={ideaCount} />

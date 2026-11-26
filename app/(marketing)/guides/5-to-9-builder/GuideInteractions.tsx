@@ -13,7 +13,7 @@ import { GUIDE_TITLE, SECTIONS } from "./guideContent";
 const UTM_CAMPAIGN = "5-to-9-builder";
 const UNLOCKS = ["The Method", "The 6 Skills", "The Catch", "30-Day Plan", "Idea Bank", "First Sale", "Self-Check", "The prompt"];
 
-export function GuideGate() {
+export function GuideGate({ finePrint }: { finePrint: string }) {
   const gate = useRef<HTMLElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const email = useRef<string | null>(null);
@@ -101,7 +101,7 @@ export function GuideGate() {
               inputClassName="h-[52px] rounded-full border-home-ink-3 bg-home-card px-4 text-[17px] text-home-ink placeholder:text-home-ink-3 focus:ring-home-orange-ink"
               buttonClassName="h-[52px] rounded-full bg-home-ink px-5 text-base text-home-paper hover:bg-home-ink-2 focus:ring-home-orange-ink"
             />
-            <div className="guide-placeholder" data-copy-slot="Gate · Fine print">COPY TO WRITE <span>Gate · Fine print</span></div>
+            <p className="guide-placeholder" data-copy-slot="Gate · Fine print">{finePrint}</p>
           </div>
           <div className="guide-open-face">
             <Eyebrow>Unlocked</Eyebrow>
@@ -205,7 +205,6 @@ export function GuideNavigation() {
 }
 
 const CHECKLIST_KEY = "5-to-9-builder-checklist";
-const CHECKLIST_SIZE = 18;
 
 function readChecklist() {
   try {
@@ -220,7 +219,7 @@ function subscribeToChecklist(onChange: () => void) {
   return () => window.removeEventListener("storage", onChange);
 }
 
-export function GuideChecklist() {
+export function GuideChecklist({ items }: { items: readonly string[] }) {
   const stored = useSyncExternalStore(subscribeToChecklist, readChecklist, () => "[]");
   const [edited, setEdited] = useState<number[] | null>(null);
   let checked = edited ?? [];
@@ -229,7 +228,7 @@ export function GuideChecklist() {
       const parsed: unknown = JSON.parse(stored);
       if (Array.isArray(parsed)) {
         checked = [...new Set(parsed.filter((item): item is number =>
-          Number.isInteger(item) && item >= 1 && item <= CHECKLIST_SIZE,
+          Number.isInteger(item) && item >= 1 && item <= items.length,
         ))];
       }
     } catch {
@@ -249,23 +248,24 @@ export function GuideChecklist() {
 
   return (
     <div className="guide-checklist rounded-[10px] border border-home-rule bg-home-card">
-      <div className="flex flex-wrap items-center justify-between gap-2"><strong>You&apos;re ready when…</strong><span className="font-mono text-sm">{checked.length} of {CHECKLIST_SIZE} checked</span></div>
-      <progress max={CHECKLIST_SIZE} value={checked.length} aria-label="Self-check progress" />
+      <div className="flex flex-wrap items-center justify-between gap-2"><strong>You&apos;re ready when…</strong><span className="font-mono text-sm">{checked.length} of {items.length} checked</span></div>
+      <progress max={items.length} value={checked.length} aria-label="Self-check progress" />
       <ul>
-        {Array.from({ length: CHECKLIST_SIZE }, (_, index) => index + 1).map((item) => (
-          <li key={item}>
-            <label className="guide-placeholder" data-copy-slot={`Self-Check · Item ${item}`}>
-              <input type="checkbox" checked={checked.includes(item)} onChange={() => toggle(item)} />
-              <span><span className="sr-only">Item {item}: </span>COPY TO WRITE</span>
-            </label>
-          </li>
-        ))}
+        {items.map((text, index) => {
+          const item = index + 1;
+          return (
+            <li key={item}>
+              <label data-copy-slot={`Self-Check · Item ${item}`}>
+                <input type="checkbox" checked={checked.includes(item)} onChange={() => toggle(item)} />
+                <span>{text}</span>
+              </label>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
 }
-
-const PROMPT = "COPY TO WRITE";
 
 async function copyText(text: string) {
   try {
@@ -290,7 +290,7 @@ async function copyText(text: string) {
   }
 }
 
-export function GuidePrompt() {
+export function GuidePrompt({ prompt: PROMPT }: { prompt: string }) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -309,7 +309,7 @@ export function GuidePrompt() {
         <span className="font-mono text-sm text-home-d2">validate-my-idea.txt</span>
         <button type="button" onClick={copy} className="guide-pill guide-pill-outline min-w-32">{copied ? "Copied" : "Copy prompt"}</button>
       </div>
-      <pre className="guide-placeholder m-3 whitespace-pre-wrap wrap-anywhere" data-copy-slot="The Prompt · Prompt text"><code>{PROMPT}</code></pre>
+      <pre className="m-3 whitespace-pre-wrap wrap-anywhere px-3 py-2 text-sm text-home-d2" data-copy-slot="The Prompt · Prompt text"><code>{PROMPT}</code></pre>
       <p role="status" className="sr-only">{copied ? "Prompt copied." : ""}</p>
     </div>
   );
