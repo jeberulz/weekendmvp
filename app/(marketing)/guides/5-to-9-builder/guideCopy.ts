@@ -1,8 +1,7 @@
 // Copy deck: /workspace/wmvp-design/5-to-9-builder/source/copy.md
 export const guideCopy = {
-  "The Shift · Lede": "Building is free now. Knowing what to build is the job.",
-  "The Shift · Validation paragraph": "You can get a working first version of almost any idea without a team or a budget. So the scarce skill has moved. It is no longer \"can you build it?\" It is \"should you?\" Validation is how you answer that. You find out whether a real person has the problem, whether it costs them something, and whether they will pay, before you spend your evenings on it. Most people skip that step because building feels like progress. Asking feels like risk.",
-  "The Shift · Source for the building-is-free claim": "TODO [John]: PRD §4.1 has no verified source for \"building is free now\". Supply a real source (name, date, what it actually says), or cut the receipt and let the pull quote carry the line. Do not ship the empty receipt variant. See notes above.",
+  "The Shift · Lede": "I think building is free now. Knowing what to build is still the job.",
+  "The Shift · Validation paragraph": "In my view, you can get a working first version of almost any idea without a team or a budget. So the scarce skill has moved. It is no longer \"can you build it?\" It is \"should you?\" Validation is how you answer that. You find out whether a real person has the problem, whether it costs them something, and whether they will pay, before you spend your evenings on it. Most people skip that step because building feels like progress. Asking feels like risk.",
   "The Shift · Your expertise": "Your 9-to-5 is the edge. You already know where work is slow, confusing or expensive, because you live inside it. You know the words people use for the problem. You know who signs off on the spend. A stranger with the same tools has to guess at all of that. You don't. The best first idea is rarely a clever one. It is usually a problem you solved at work, thought nothing of, and someone said \"how did you do that?\"",
   "The Shift · Definition": "A 5-to-9 builder keeps their job and uses the hours after it to turn what they know into a small, tested source of income. One idea. One test. One first sale. Your 9-to-5 pays the bills while you find out, cheaply, whether the idea deserves more.",
   "The Shift · Honest catch": "Most ideas won't work, and your evenings are the real constraint. Section 4 doesn't soften either.",
@@ -169,8 +168,8 @@ If you'd rather do it with company, the live sprint is [here](/live/build-along)
   "FAQ · Do I need to code?": "Not to start. The method proves someone will pay before you build. Section 5 has a starting point for non-technical readers.",
   "FAQ · What if nobody buys?": "Then the test worked. You found out in a week, not a quarter. Section 8 covers what to do next.",
   "FAQ · What does the 5-day email add?": "The same method at a guided pace: one action a day for five days. The guide is the depth. The email is the pace. There's no second form. It goes to the email you unlocked with.",
-  "Gate · Fine print": "TODO [John]: design-spec §15 proposes \"One field, no download. You can unsubscribe from any email.\" but §16 D4 flags this as consent/legal copy the PRD doesn't supply. John to confirm or supply the wording. Not drafted here.",
-  "Sign-off · Follow destination": "TODO [John]: \"Follow for one idea a day.\" is already on the page. The handle and URL were never given, so none is invented here. John to supply where readers follow.",
+  "Gate · Fine print": "Free. Unsubscribe anytime. We'll send the 5-day Starter.",
+  "Sign-off · Follow destination": "Follow @weekendmvp on Instagram: https://www.instagram.com/weekendmvp/",
 } as const;
 
 export type GuideCopySlot = keyof typeof guideCopy;

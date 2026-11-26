@@ -43,25 +43,33 @@ const guidePath = "app/(marketing)/guides/5-to-9-builder";
 const guideCss = readFileSync(`${guidePath}/guide.css`, "utf8");
 const subscribeMock = vi.mocked(subscribeViaApi);
 const productionGuideHtml = ".next/server/app/guides/5-to-9-builder.html";
-const johnTodoSlots = [
-  "The Shift · Source for the building-is-free claim",
-  "Gate · Fine print",
-  "Sign-off · Follow destination",
-];
-
 function expectGuideCopy(html: string) {
   expect(html).not.toContain("COPY TO WRITE");
   const container = document.createElement("div");
   container.innerHTML = html;
   const guide = activeGuide(container);
+  expect(guide.textContent).not.toMatch(/TODO|COPY TO WRITE/i);
+  expect(guide.querySelectorAll(".guide-placeholder")).toHaveLength(0);
+  expect(guide.querySelector('[data-copy-slot="The Shift · Source for the building-is-free claim"]')).toBeNull();
+  expect(guideCopy).not.toHaveProperty("The Shift · Source for the building-is-free claim");
+  const receipts = [...guide.querySelectorAll('aside[aria-label="Receipt"]')];
+  expect(receipts.some((receipt) => /researched startup ideas in the library/.test(receipt.textContent ?? ""))).toBe(true);
+  for (const receipt of receipts) {
+    expect(receipt.textContent).not.toMatch(/building is free/i);
+  }
   const slots = [...guide.querySelectorAll<HTMLElement>("[data-copy-slot]")];
   expect(slots.map((slot) => slot.dataset.copySlot).sort()).toEqual(Object.keys(guideCopy).sort());
-  expect(slots.filter((slot) => slot.textContent?.includes("TODO [John]")).map((slot) => slot.dataset.copySlot))
-    .toEqual(johnTodoSlots);
-  expect([...guide.querySelectorAll(".guide-placeholder")].map((slot) => slot.getAttribute("data-copy-slot")))
-    .toEqual(johnTodoSlots);
-  expect(guide.querySelector('[data-copy-slot="The Shift · Source for the building-is-free claim"]')?.closest('aside[aria-label="Receipt"]'))
-    .toBeTruthy();
+  expect(guide.querySelector('[data-copy-slot="The Shift · Lede"]')?.textContent).toBe(
+    "I think building is free now. Knowing what to build is still the job.",
+  );
+  expect(guide.querySelector('[data-copy-slot="Gate · Fine print"]')?.textContent).toBe(
+    "Free. Unsubscribe anytime. We'll send the 5-day Starter.",
+  );
+  const follow = guide.querySelector('[data-copy-slot="Sign-off · Follow destination"]');
+  expect(follow?.textContent).toMatch(/@weekendmvp/);
+  expect(follow?.textContent).toMatch(/Instagram/);
+  expect(follow?.querySelector("a")?.getAttribute("href")).toBe("https://www.instagram.com/weekendmvp/");
+  expect(guide.textContent).toContain("Follow for one idea a day.");
 
   for (const slot of ["The Idea Bank · How to use the library", "FAQ · I have no idea yet. Where do I start?"]) {
     expect(guide.querySelector(`[data-copy-slot="${slot}"]`)?.textContent).toContain(`${guideLiveIdeaCount()} researched ideas`);
@@ -109,7 +117,7 @@ afterEach(() => {
 });
 
 describe("5-to-9 Builder guide", () => {
-  test("renders the deck with only the three visible John TODOs in server markup", () => {
+  test("renders the deck with no visible TODO or COPY TO WRITE in server markup", () => {
     expectGuideCopy(renderToStaticMarkup(createElement(FiveToNineBuilderGuidePage)));
   });
 

@@ -101,7 +101,7 @@ export function GuideGate({ finePrint }: { finePrint: string }) {
               inputClassName="h-[52px] rounded-full border-home-ink-3 bg-home-card px-4 text-[17px] text-home-ink placeholder:text-home-ink-3 focus:ring-home-orange-ink"
               buttonClassName="h-[52px] rounded-full bg-home-ink px-5 text-base text-home-paper hover:bg-home-ink-2 focus:ring-home-orange-ink"
             />
-            <p className="guide-placeholder" data-copy-slot="Gate · Fine print">{finePrint}</p>
+            <p data-copy-slot="Gate · Fine print">{finePrint}</p>
           </div>
           <div className="guide-open-face">
             <Eyebrow>Unlocked</Eyebrow>

@@ -51,10 +51,6 @@ function GuideCopy({ slot, ideaCount }: { slot: GuideCopySlot; ideaCount?: numbe
   );
 }
 
-function CopyTodo({ slot }: { slot: "The Shift · Source for the building-is-free claim" | "Sign-off · Follow destination" }) {
-  return <p className="guide-placeholder" data-copy-slot={slot}>{guideCopy[slot]}</p>;
-}
-
 function Section({ index, children }: { index: number; children: ReactNode }) {
   const { id, title } = SECTIONS[index];
   return (
@@ -156,10 +152,6 @@ export function GuideOpening() {
       <GuideCopy slot="The Shift · Lede" />
       <PullQuote>AI just made building an app free. It didn&apos;t make knowing what to build any easier.</PullQuote>
       <GuideCopy slot="The Shift · Validation paragraph" />
-      <aside role="note" aria-label="Receipt">
-        <Eyebrow>Receipt</Eyebrow>
-        <CopyTodo slot="The Shift · Source for the building-is-free claim" />
-      </aside>
       <h3>Your 9-to-5 is the edge</h3>
       <GuideCopy slot="The Shift · Your expertise" />
       <h3>What a 5-to-9 builder is, and isn&apos;t</h3>
@@ -370,7 +362,9 @@ export function GuideClose({ ideaCount }: { ideaCount: number }) {
             </details>
           ))}
           <p className="mt-8 font-editorial text-2xl">Follow for one idea a day.</p>
-          <CopyTodo slot="Sign-off · Follow destination" />
+          <p data-copy-slot="Sign-off · Follow destination">
+            Follow <a href="https://www.instagram.com/weekendmvp/" rel="noopener noreferrer">@weekendmvp</a> on Instagram
+          </p>
         </Section>
       </div>
     </div>
