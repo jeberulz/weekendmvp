@@ -51,7 +51,8 @@ export const offerSchema = z
     const issue = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message });
     if (offer.kind === "paid") {
       if (!offer.price) issue("price", "a paid offer needs price.configKey");
-      if (!offer.promise.includes(PRICE_TOKEN)) issue("promise", `a paid offer's promise needs the ${PRICE_TOKEN} token`);
+      const tokens = offer.promise.split(PRICE_TOKEN).length - 1;
+      if (tokens !== 1) issue("promise", `a paid offer's promise needs the ${PRICE_TOKEN} token exactly once, found ${tokens}`);
     } else {
       if (offer.price) issue("price", `a ${offer.kind} offer cannot state a price`);
       if (offer.promise.includes(PRICE_TOKEN)) issue("promise", `a ${offer.kind} offer cannot use the ${PRICE_TOKEN} token`);

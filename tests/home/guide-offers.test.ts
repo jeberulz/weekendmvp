@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -66,6 +68,11 @@ describe("offers registry", () => {
     expect(offerSchema.safeParse({ ...waitlist, price: { configKey: "BUILD_ALONG.standardUsd" } }).success).toBe(false);
     expect(offerSchema.safeParse({ ...waitlist, promise: "Only {price} today" }).success).toBe(false);
     expect(offerSchema.safeParse({ ...real, bullets: ["a", "b", "c", "d"] }).success).toBe(false);
+    // Exactly one price token: none would hide the price, two would be cut off by the card.
+    expect(offerSchema.safeParse({ ...real, promise: "No token here." }).success).toBe(false);
+    const twice = offerSchema.safeParse({ ...real, promise: "Pay {price}, then {price} after launch." });
+    expect(twice.success).toBe(false);
+    expect(JSON.stringify(twice.error?.issues)).toContain("exactly once, found 2");
     expect(offerSchema.safeParse({ ...real, urgency: { text: "Seats are going", source: "" } }).success).toBe(false);
   });
 });
@@ -133,6 +140,25 @@ describe("rankOffers", () => {
 
 describe("app route check", () => {
   const appDir = path.join(process.cwd(), "app");
+
+  test("an optional catch-all matches its parent URL, a required catch-all does not", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "routes-"));
+    try {
+      for (const dir of ["shop/[[...slug]]", "docs/[...rest]", "(group)/plain"]) {
+        fs.mkdirSync(path.join(root, dir), { recursive: true });
+        fs.writeFileSync(path.join(root, dir, "page.tsx"), "export default function Page() { return null; }\n");
+      }
+      expect(appRouteExists(root, "/shop")).toBe(true);
+      expect(appRouteExists(root, "/shop/a/b")).toBe(true);
+      expect(appRouteExists(root, "/docs")).toBe(false);
+      expect(appRouteExists(root, "/docs/a")).toBe(true);
+      expect(appRouteExists(root, "/docs/a/b")).toBe(true);
+      expect(appRouteExists(root, "/plain")).toBe(true);
+      expect(appRouteExists(root, "/missing")).toBe(false);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
 
   test("finds pages through route groups and dynamic segments, and rejects missing ones", () => {
     expect(appRouteExists(appDir, "/live/build-along")).toBe(true);

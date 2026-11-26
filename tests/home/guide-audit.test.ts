@@ -4,7 +4,7 @@ import { describe, expect, test } from "vitest";
 
 import { guideSpec } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
 import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
-import { auditGuide, currencySymbols, publicSpecStrings, receiptAmounts, receiptSources, type AuditInput } from "@/lib/guides/audit";
+import { auditGuide, currencySymbols, offerReaderStrings, publicSpecStrings, receiptAmounts, receiptSources, type AuditInput } from "@/lib/guides/audit";
 import { evaluateLive, type LiveSnapshot, type PageState } from "@/lib/guides/audit-live";
 import { effectiveStatus, resolvePrice } from "@/lib/guides/offer-live";
 import { offers, type Offer } from "@/lib/guides/offers";
@@ -387,6 +387,44 @@ describe("upsell and offer audit", () => {
     for (const url of ["#", "https://example.com/join", "http://insecure.test/join", "mailto:hi@x.test", "TODO"]) {
       expect(errorsOf(withOffer((o) => { o.url = url; })), url).toContain("offer-link-placeholder");
     }
+  });
+
+  test("an https link with no host, and a protocol-relative link, fail. A real https link passes", () => {
+    for (const url of ["https://", "https://   ", "//evil.test/x"]) {
+      expect(errorsOf(withOffer((o) => { o.url = url; })), url).toContain("offer-link-placeholder");
+    }
+    const ok = withOffer((o) => { o.url = "https://shop.test/join"; });
+    expect(errorsOf(ok)).not.toContain("offer-link-placeholder");
+  });
+
+  test("the text a card renders from the registry gets the same placeholder, label and currency checks as the deck", () => {
+    expect(errorsOf(withOffer((o) => { o.promise = "TODO {price}"; }))).toContain("placeholder-text");
+    expect(errorsOf(withOffer((o) => { o.title = "Placeholder title"; }))).toContain("placeholder-text");
+    expect(errorsOf(withOffer((o) => { o.notFor = "anyone, see the liveIdeas rule"; }))).toContain("internal-label");
+    const mixed = withOffer((o) => { o.bullets = ["Extra seats cost £5", "two", "three"]; });
+    expect(errorsOf(mixed)).toContain("currency-mixed");
+    // The guide shows this offer in two placements, but its text is counted once.
+    expect(mixed.findings.find((f) => f.rule === "currency-mixed")?.message).toMatch(/£ x1/);
+    const twice = withOffer((o) => { o.promise = "TODO {price}"; });
+    expect(twice.findings.filter((f) => f.rule === "placeholder-text")).toHaveLength(1);
+  });
+
+  test("offer text is only checked for offers the guide actually shows", () => {
+    const unused = base();
+    unused.id = "unused-offer";
+    unused.promise = "TODO {price}";
+    const result = audit({ offers: [base(), unused] });
+    expect(errorsOf(result)).not.toContain("placeholder-text");
+  });
+
+  test("offerReaderStrings lists every rendered field and drops the price token", () => {
+    const offer = base();
+    offer.bullets = ["one", "two", "three"];
+    offer.notFor = "people who want a course";
+    offer.urgency = { text: "Seats close Friday", source: "seat counter" };
+    const strings = offerReaderStrings(offer);
+    expect(strings).toEqual(expect.arrayContaining([offer.title, offer.eyebrow, offer.ariaLabel, offer.linkLabel, "one", "two", "three", "people who want a course", "Seats close Friday"]));
+    expect(strings.join(" ")).not.toContain("{price}");
   });
 
   test("a price key that does not resolve, or resolves to nothing, fails", () => {

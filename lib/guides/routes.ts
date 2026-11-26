@@ -26,6 +26,8 @@ function walk(dir: string, segments: readonly string[]): boolean {
   const names = subdirs(dir);
   if (segments.length === 0) {
     if (hasPage(dir)) return true;
+    // An optional catch-all like [[...slug]] also matches its parent URL. A required [...slug] does not.
+    if (names.some((name) => /^\[\[\.\.\..+\]\]$/.test(name) && hasPage(path.join(dir, name)))) return true;
     return names.filter((name) => /^\(.+\)$/.test(name)).some((group) => walk(path.join(dir, group), segments));
   }
   const [segment, ...rest] = segments;
