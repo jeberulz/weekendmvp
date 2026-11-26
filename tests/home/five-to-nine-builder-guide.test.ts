@@ -56,7 +56,9 @@ function expectGuideCopy(html: string) {
   expect(receipts.some((receipt) => /researched startup ideas in the library/.test(receipt.textContent ?? ""))).toBe(true);
   for (const receipt of receipts) {
     expect(receipt.textContent).not.toMatch(/building is free/i);
+    expect(receipt.textContent).not.toMatch(/draft|liveIdeas|re-checked at build/i);
   }
+  expect(guide.textContent).not.toContain("£");
   const slots = [...guide.querySelectorAll<HTMLElement>("[data-copy-slot]")];
   expect(slots.map((slot) => slot.dataset.copySlot).sort()).toEqual(Object.keys(guideCopy).sort());
   expect(guide.querySelector('[data-copy-slot="The Shift · Lede"]')?.textContent).toBe(

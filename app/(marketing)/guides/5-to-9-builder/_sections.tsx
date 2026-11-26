@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { ContentsLinks, GuideChecklist, GuidePrompt, SprintLink } from "./GuideInteractions";
 import { BUILD_ALONG_PRICE, GUIDE_HEADLINE, GUIDE_TITLE, SECTIONS } from "./guideContent";
 import { guideCopy, selfCheckItems, type GuideCopySlot } from "./guideCopy";
-import { HERO_IMAGE_SRC } from "./heroImageData";
 
 const META = [
   ["Free", "guide"],
@@ -113,11 +112,12 @@ export function GuideHero() {
       </div>
       <Image
         className="guide-hero-image"
-        src={HERO_IMAGE_SRC}
-        alt="Placeholder hero for John's working photo. An illustration of a late-night desk with a laptop, notebook and coffee."
-        width={640}
-        height={800}
-        unoptimized
+        src="/image/john-portrait.webp"
+        alt="John Iseghohi, founder of WeekendMVP, working at his desk"
+        width={1000}
+        height={1250}
+        sizes="(min-width: 1024px) 458px, 100vw"
+        priority
       />
     </section>
   );
@@ -279,7 +279,7 @@ export function GuideLessons({ ideaCount }: { ideaCount: number }) {
 
         <Section index={6}>
           <GuideCopy slot="The Idea Bank · How to use the library" ideaCount={ideaCount} />
-          <Receipt kind="Live count" amount={ideaCount} source="Homepage liveIdeas rule · re-checked at build">researched startup ideas in the library.</Receipt>
+          <Receipt kind="Live count" amount={ideaCount} source="WeekendMVP idea library, live count">researched startup ideas in the library.</Receipt>
           <h3>One worked validation: Repair Estimate Translator</h3>
           <GuideCopy slot="Repair Estimate Translator · Worked validation" />
           <Link href="/ideas/auto-repair-estimate-translator" className="guide-idea-link rounded-[10px] border border-home-rule bg-home-card">
@@ -292,7 +292,7 @@ export function GuideLessons({ ideaCount }: { ideaCount: number }) {
 
         <Section index={7}>
           <GuideCopy slot="The First Sale · Lede" />
-          <Receipt kind="Price" amount="£29" source="5-day guide draft, Day 5">first paid offer.</Receipt>
+          <Receipt kind="Price" amount="$29" source="A working example, not a benchmark">first paid offer.</Receipt>
           {(["The offer", "The price", "The ask", "First-sale scripts"] as const).map((slot) => <GuideCopy key={slot} slot={slot} />)}
           <h3>When nobody buys</h3>
           <GuideCopy slot="The First Sale · When nobody buys" />
