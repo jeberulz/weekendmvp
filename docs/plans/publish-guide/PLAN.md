@@ -136,7 +136,11 @@ Placement and rules:
 - mid card after the plan, close card after the self-check and asset, optional soft link in the footer.
 - Each card links to the guide's own outcome, for example "You finished week 2. Do week 3 live."
 - Urgency lines (seats, price rises) need a backing data source, or the audit fails.
-- Click tracking uses the existing `placement` prop on `SprintLink`. Add `guide` and `offerId` to the event.
+- Click tracking keeps the event name `guide_sprint_click` and carries `placement`, `guide` and `offerId`
+  (WP103-S3). Rename the event when a second offer exists.
+- An offer's status can be derived from config instead of typed (WP103-S3). The Build-Along reads
+  `BUILD_ALONG`, `NEXT_BUILD_ALONG` and `NEXT_SESSION_CHECKOUT_ENABLED` in `lib/live/config.ts`. A guide whose offer
+  is closed fails the audit. It reads config only, so a seat counter that is sold out is not seen.
 
 ## Gate options per guide
 

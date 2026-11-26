@@ -1,3 +1,4 @@
+import { offerSchema, offers as registry, type EffectiveStatus, type Offer, type PriceConfigKey } from "./offers.ts";
 import { requiredSlots } from "./slots.ts";
 import { guideSpecSchema, type GuideSpec } from "./spec-schema.ts";
 
@@ -27,7 +28,20 @@ export type AuditInput = {
   fileExists: (publicPath: string) => boolean;
   /** Guide source files, to scan Receipt sources and similar inline strings. */
   sources?: readonly { file: string; text: string }[];
+  /** Offers to check the guide's upsells against. Defaults to the real registry. */
+  offers?: readonly unknown[];
+  /** The time to judge offer status at, in ms. Needed with `effectiveStatus`. */
+  now?: number;
+  /** Looks up a paid offer's price from config. Without it the price check is reported as skipped. */
+  resolvePrice?: (key: PriceConfigKey) => number;
+  /** Works out an offer's status from config. Without it the status check is reported as skipped. */
+  effectiveStatus?: (offer: Offer, now: number) => EffectiveStatus;
+  /** True when an internal URL path hits a page. Without it internal links are not checked. */
+  routeExists?: (urlPath: string) => boolean;
 };
+
+/** An offer link must be an internal path or an https URL, and must not be a stand-in. */
+export const LINK_PLACEHOLDER_RE = /example\.(?:com|org|net)|\bTODO\b|\bTBD\b|localhost|^#|^$/i;
 
 export type AuditResult = {
   ok: boolean;
@@ -168,5 +182,94 @@ export function auditGuide(input: AuditInput): AuditResult {
     add("og-image-missing", "warn", `social image not found under public/: ${spec.ogImagePath}`, "ogImagePath");
   }
 
+  auditUpsells(spec, input, add);
+
   return { ok: !findings.some((finding) => finding.severity === "error"), findings, spec };
+}
+
+type AddFinding = (rule: string, severity: FindingSeverity, message: string, path?: string) => void;
+
+/** Upsell and offer rules (WP103-S3). */
+function auditUpsells(spec: GuideSpec, input: AuditInput, add: AddFinding) {
+  // Every offer in the registry must be well formed.
+  const known = new Map<string, Offer>();
+  (input.offers ?? registry).forEach((raw, index) => {
+    const parsed = offerSchema.safeParse(raw);
+    if (parsed.success) {
+      known.set(parsed.data.id, parsed.data);
+      return;
+    }
+    const id = (raw as { id?: unknown } | null)?.id;
+    for (const issue of parsed.error.issues) {
+      add("offer-schema", "error", `offer ${typeof id === "string" ? `"${id}"` : index}: ${issue.message}`, `offers.${index}${issue.path.length ? `.${issue.path.join(".")}` : ""}`);
+    }
+  });
+
+  if (spec.upsells.length === 0) add("upsell-missing", "error", "the guide lists no upsell, a gated guide needs at least one offer", "upsells");
+  if (spec.upsells.length > 2) add("upsell-cap", "error", `the guide lists ${spec.upsells.length} upsell cards, the cap is two`, "upsells");
+  const placements = spec.upsells.map((upsell) => upsell.placement);
+  for (const placement of new Set(placements.filter((p, i) => placements.indexOf(p) !== i))) {
+    add("upsell-cap", "error", `the "${placement}" placement is used more than once`, "upsells");
+  }
+
+  const checked = new Set<string>();
+  spec.upsells.forEach((upsell, index) => {
+    const offer = known.get(upsell.offer);
+    if (!offer) {
+      add("offer-unknown", "error", `upsell "${upsell.offer}" is not in the offers registry`, `upsells.${index}.offer`);
+      return;
+    }
+    if (checked.has(offer.id)) return;
+    checked.add(offer.id);
+    auditOffer(offer, input, add);
+  });
+}
+
+function auditOffer(offer: Offer, input: AuditInput, add: AddFinding) {
+  const at = `offer:${offer.id}`;
+
+  // The link must be real: an internal page that exists, or an https URL.
+  if (LINK_PLACEHOLDER_RE.test(offer.url)) {
+    add("offer-link-placeholder", "error", `offer "${offer.id}" links to a stand-in: "${offer.url}"`, at);
+  } else if (offer.url.startsWith("/")) {
+    if (input.routeExists && !input.routeExists(offer.url)) {
+      add("offer-link-dead", "error", `offer "${offer.id}" links to ${offer.url}, which is not a page in the app`, at);
+    }
+  } else if (!offer.url.startsWith("https://")) {
+    add("offer-link-placeholder", "error", `offer "${offer.id}" must link to an internal path or an https URL, not "${offer.url}"`, at);
+  }
+
+  // A paid offer's price must resolve from config.
+  if (offer.kind === "paid" && offer.price) {
+    if (!input.resolvePrice) {
+      add("offer-price-unchecked", "info", `offer "${offer.id}": no config was loaded, so the price was not resolved`, at);
+    } else {
+      try {
+        const amount = input.resolvePrice(offer.price.configKey);
+        if (!Number.isFinite(amount) || amount <= 0) {
+          add("offer-price", "error", `offer "${offer.id}": ${offer.price.configKey} resolved to ${String(amount)}, expected a positive number`, at);
+        }
+      } catch (error) {
+        add("offer-price", "error", `offer "${offer.id}": ${error instanceof Error ? error.message : String(error)}`, at);
+      }
+    }
+  }
+
+  // The status must allow a sale. A closed offer, or a paid card for an offer that is not open, fails.
+  if (!input.effectiveStatus || input.now === undefined) {
+    add("offer-status-unchecked", "info", `offer "${offer.id}": no config or time was given, so its status was not checked`, at);
+  } else {
+    const { status, reason } = input.effectiveStatus(offer, input.now);
+    if (status === "closed") {
+      add("offer-status", "error", `offer "${offer.id}" is closed: ${reason}`, at);
+    } else if (offer.kind === "paid" && status === "waitlist") {
+      add("offer-status", "error", `offer "${offer.id}" is paid but its status is waitlist: ${reason}`, at);
+    }
+  }
+
+  // Thin offers are allowed, but the owner should approve wording for the full card.
+  const bullets = offer.bullets?.length ?? 0;
+  if (bullets < 3 || !offer.notFor) {
+    add("offer-thin", "warn", `offer "${offer.id}" has ${bullets} of 3 bullets${offer.notFor ? "" : " and no \"not for\" line"}, add owner-approved wording`, at);
+  }
 }

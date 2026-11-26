@@ -152,8 +152,10 @@ read the response as text before parsing JSON.
   state lives on the `.builder-guide` wrapper (`data-guide`), and `_shared/guide.css` is keyed to it.
   `npm run audit:guide -- --slug={slug}` checks schema, slots, placeholder text, internal labels, mixed currency and
   the hero asset. Add `--live --url={page}` to check the deployed unlock behaviour in a headless browser. It never
-  submits a subscription unless `--email` is passed, and `--email` really subscribes that address. Plan:
-  `docs/plans/publish-guide/PLAN.md`
+  submits a subscription unless `--email` is passed, and `--email` really subscribes that address.
+  Upsell cards come from the offers registry `lib/guides/offers.ts`: a guide lists offers by id and placement, a paid
+  offer's price and an offer's open or closed status are read from `lib/live/config.ts`, never typed. The audit fails
+  a guide whose offer is closed. Plan: `docs/plans/publish-guide/PLAN.md`
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

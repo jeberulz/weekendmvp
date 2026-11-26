@@ -11,6 +11,7 @@
  * Usage:
  *   npm run audit:guide -- --slug=5-to-9-builder
  *   npm run audit:guide -- --slug=5-to-9-builder --json
+ *   npm run audit:guide -- --slug=5-to-9-builder --now=2026-11-10   (judge offer status as of that date)
  *   npm run audit:guide -- --slug=5-to-9-builder --live --url=http://localhost:3000/guides/5-to-9-builder
  *   npm run audit:guide -- --slug=... --live --url=... --email=you@example.com   (submits that address)
  *
@@ -21,7 +22,7 @@
  */
 
 import fs from "node:fs";
-import { createRequire } from "node:module";
+import { createRequire, register } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -45,6 +46,7 @@ function parseArgs(argv) {
     else if (flag === "--slug") args.slug = value();
     else if (flag === "--url") args.url = value();
     else if (flag === "--email") args.email = value();
+    else if (flag === "--now") args.now = value();
     else if (flag === "--help" || flag === "-h") usage();
     else usage(`unknown argument: ${argv[i]}`);
   }
@@ -55,12 +57,22 @@ const args = parseArgs(process.argv.slice(2));
 if (!args.slug || !/^[a-z0-9-]+$/.test(args.slug)) usage("--slug is required and must be lowercase words and hyphens");
 if (args.live && !args.url) usage("--live needs --url (the page to load)");
 if (args.email && !args.live) usage("--email only applies with --live");
+let now = Date.now();
+if (args.now !== undefined) {
+  now = Date.parse(`${args.now}T12:00:00Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(args.now) || Number.isNaN(now)) usage("--now must be a date like 2026-11-10");
+}
 
 const guideDir = path.join(ROOT, "app", "(marketing)", "guides", args.slug);
 if (!fs.existsSync(path.join(guideDir, "guide.spec.ts"))) usage(`no guide.spec.ts in ${path.relative(ROOT, guideDir)}`);
 
+// Lets plain Node resolve the `@/` alias, so the audit can load lib/live/config.ts for prices and offer status.
+register(pathToFileURL(path.join(ROOT, "scripts", "lib", "alias-hooks.mjs")), { data: { root: ROOT } });
+
 const load = (file) => import(pathToFileURL(file).href);
 const { auditGuide } = await load(path.join(ROOT, "lib", "guides", "audit.ts"));
+const { resolvePrice, effectiveStatus } = await load(path.join(ROOT, "lib", "guides", "offer-live.ts"));
+const { appRouteExists } = await load(path.join(ROOT, "lib", "guides", "routes.ts"));
 const { evaluateLive } = await load(path.join(ROOT, "lib", "guides", "audit-live.ts"));
 const { guideSpec } = await load(path.join(guideDir, "guide.spec.ts"));
 const { guideCopy } = await load(path.join(guideDir, "guideCopy.ts"));
@@ -75,6 +87,10 @@ const result = auditGuide({
   deck: guideCopy,
   fileExists: (publicPath) => fs.existsSync(path.join(ROOT, "public", publicPath)),
   sources,
+  now,
+  resolvePrice,
+  effectiveStatus,
+  routeExists: (urlPath) => appRouteExists(path.join(ROOT, "app"), urlPath),
 });
 const findings = [...result.findings];
 

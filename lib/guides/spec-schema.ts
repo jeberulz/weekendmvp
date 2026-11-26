@@ -72,6 +72,8 @@ export const guideSpecSchema = z.object({
   roles: z.object({ names: z.array(text).min(1), labels: z.array(text).min(1) }),
   weeks: z.array(z.tuple([z.number().int().positive(), text])).min(1),
   faq: z.array(text).min(1),
+  /** Offers this guide shows, by registry id. At most one card per placement, two cards in all. */
+  upsells: z.array(z.object({ offer: text, placement: z.enum(["mid", "close"]) })),
   founderName: text,
 });
 

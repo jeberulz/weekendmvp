@@ -712,6 +712,14 @@
   color: var(--color-home-d2);
 }
 
+/* Offer bullets and the "not for" line. Unused until an offer sets them, so this needs a design check first. */
+.guide-dark-card .guide-offer-bullets {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-home-d2);
+  font-size: 15px;
+}
+
 .guide-close .guide-dark-card:first-child {
   background: color-mix(in srgb, var(--color-home-paper) 6%, var(--color-home-panel));
 }

@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { Eyebrow } from "@/components/home/ui";
-import { cn } from "@/lib/utils";
 
 import {
   FaqBlock,
@@ -14,14 +13,14 @@ import {
   RolesBlock,
   SkillsBlock,
   StepsBlock,
+  UpsellCard,
   WeeksBlock,
 } from "../_shared/blocks";
 import { GuideCopy as SharedGuideCopy } from "../_shared/copy";
-import { GuideChecklist, GuidePrompt, ContentsLinks, SprintLink } from "../_shared/GuideInteractions";
+import { GuideChecklist, GuidePrompt, ContentsLinks } from "../_shared/GuideInteractions";
 import { navSections } from "../_shared/GuideLayout";
 import { guideSpec as spec } from "./guide.spec";
 import { guideCopy, selfCheckItems, type GuideCopySlot } from "./guideCopy";
-import { BUILD_ALONG_PRICE } from "./price";
 
 /** Typed to this guide's deck, so a misspelt static slot is a compile error. */
 function GuideCopy({ slot, ideaCount }: { slot: GuideCopySlot; ideaCount?: number }) {
@@ -60,20 +59,6 @@ export function GuideOpening() {
   );
 }
 
-/* The Build-Along sprint card is guide-local until WP103-S3 replaces it with the offers registry. */
-function SprintCard({ placement }: { placement: "mid" | "close" }) {
-  return (
-    <aside aria-label="Build-Along sprint" className={cn("guide-dark-card guide-dark", placement === "mid" && "guide-mid-card")}>
-      <div>
-        <Eyebrow dark>Paid · Live</Eyebrow>
-        <h3>Do this live with John</h3>
-        <p>The <strong className={placement === "mid" ? "text-2xl font-medium text-home-orange" : undefined}>{BUILD_ALONG_PRICE}</strong> Build-Along sprint. Two hours, live.</p>
-      </div>
-      <SprintLink placement={placement} href="/live/build-along" label="See the Build-Along" />
-    </aside>
-  );
-}
-
 export function GuideLessons({ ideaCount }: { ideaCount: number }) {
   return (
     <div className="guide-reading-grid">
@@ -109,7 +94,7 @@ export function GuideLessons({ ideaCount }: { ideaCount: number }) {
           <HonestCatch section="The 30-Day Plan" />
         </Section>
 
-        <SprintCard placement="mid" />
+        <UpsellCard spec={spec} placement="mid" />
 
         <Section index={6}>
           <GuideCopy slot="The Idea Bank · How to use the library" ideaCount={ideaCount} />
@@ -168,7 +153,7 @@ export function GuideClose({ ideaCount }: { ideaCount: number }) {
             <span className="guide-returning">The 5-to-9 Starter: five daily emails, one action a day.</span>
           </div>
           <div className="guide-card-grid">
-            <SprintCard placement="close" />
+            <UpsellCard spec={spec} placement="close" />
             <aside className="guide-dark-card" aria-label="Idea library">
               <div>
                 <Eyebrow dark>Free · Library</Eyebrow>

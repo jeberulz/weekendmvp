@@ -7,7 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import FiveToNineBuilderGuidePage, { metadata } from "@/app/(marketing)/guides/5-to-9-builder/page";
-import { BUILD_ALONG_PRICE } from "@/app/(marketing)/guides/5-to-9-builder/price";
+import { formatPrice, resolvePrice } from "@/lib/guides/offer-live";
 import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
 import { guideLiveIdeaCount } from "@/app/(marketing)/guides/5-to-9-builder/ideaCount";
 import { BUILD_ALONG } from "@/lib/live/config";
@@ -99,8 +99,9 @@ function expectGuideCopy(html: string) {
   expect(guide.querySelectorAll('.guide-checklist input[type="checkbox"]')).toHaveLength(18);
   expect(guide.querySelector('[data-copy-slot="The Prompt · Prompt text"] code')?.textContent).toBe(guideCopy["The Prompt · Prompt text"]);
   expect(guide.querySelector('[data-copy-slot="Founder note · Body"]')?.textContent).not.toContain("John Iseghohi");
-  expect(BUILD_ALONG_PRICE).toBe(`$${BUILD_ALONG.standardUsd}`);
-  expect(BUILD_ALONG_PRICE).toBe("$29");
+  const buildAlongPrice = formatPrice(resolvePrice("BUILD_ALONG.standardUsd"));
+  expect(buildAlongPrice).toBe(`$${BUILD_ALONG.standardUsd}`);
+  expect(buildAlongPrice).toBe("$29");
   expect(guide.textContent).toContain("$29");
   expect(guide.textContent).not.toContain("$47");
 }
