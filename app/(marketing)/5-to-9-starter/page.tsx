@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/primitives/JsonLd";
+import { newsreaderEditorial } from "@/lib/fonts";
 import { liveIdeas } from "@/lib/home/library";
 import {
   SITE,
@@ -23,11 +24,11 @@ import {
   WhoItIsFor,
 } from "./_sections";
 
-const TITLE = "The 5-to-9 Starter | Turn your 9-to-5 expertise into a 5-to-9 income";
+import styles from "./starter.module.css";
+
+const TITLE = "The 5-to-9 Starter: a free 5-day email guide | Weekend MVP";
 const DESCRIPTION =
-  "Turn your 9-to-5 expertise into a 5-to-9 income — in 5 days. One short email a day. One action a day. By Friday, you'll have a tested idea, not just a notebook full of them.";
-const OG_DESCRIPTION =
-  "Turn your 9-to-5 expertise into a 5-to-9 income — in 5 days. One short email a day, one action a day, one tested idea by Friday.";
+  "A free 5-day email guide for people with day jobs. One short email and one 10-minute action each evening. By Friday you'll have a tested idea, not a notebook full of untested ones.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
     type: "website",
     url: `${SITE}/5-to-9-starter`,
     title: TITLE,
-    description: OG_DESCRIPTION,
+    description: DESCRIPTION,
     images: [
       {
         url: `${SITE}/image/og-image.png`,
@@ -52,7 +53,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: TITLE,
-    description: OG_DESCRIPTION,
+    description: DESCRIPTION,
     images: [`${SITE}/image/og-image.png`],
   },
 };
@@ -85,7 +86,11 @@ function liveIdeaCount(): number {
 export default function FiveToNineStarterPage() {
   const total = liveIdeaCount();
   return (
-    <div className="bg-home-paper text-home-ink min-h-screen selection:bg-black/10 selection:text-black">
+    <main
+      id="starter-content"
+      tabIndex={-1}
+      className={`${newsreaderEditorial.variable} ${styles.page} min-h-screen bg-home-paper text-home-ink selection:bg-home-orange/18`}
+    >
       <JsonLd schema={FIVE_TO_NINE_STARTER_SCHEMA} />
 
       <Suspense fallback={null}>
@@ -98,6 +103,6 @@ export default function FiveToNineStarterPage() {
       <WhoItIsFor />
       <GuideFaq />
       <FinalCapture />
-    </div>
+    </main>
   );
 }

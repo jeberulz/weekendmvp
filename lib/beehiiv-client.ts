@@ -30,6 +30,7 @@ export type SubscribeParams = {
   firstName?: string;
   automationIds?: AllowedAutomationId[];
   utmCampaign?: string;
+  utmSource?: string;
 };
 
 export type SubscribeResult = {
@@ -49,6 +50,7 @@ export async function subscribeViaApi({
   firstName,
   automationIds,
   utmCampaign,
+  utmSource,
 }: SubscribeParams): Promise<SubscribeResult> {
   try {
     const response = await fetch("/api/subscribe", {
@@ -61,6 +63,7 @@ export async function subscribeViaApi({
           ? { automation_ids: automationIds }
           : {}),
         ...(utmCampaign ? { utm_campaign: utmCampaign } : {}),
+        ...(utmSource ? { utm_source: utmSource } : {}),
       }),
     });
 

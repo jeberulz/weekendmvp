@@ -19,7 +19,11 @@ function readServerSessionHint() {
   return false;
 }
 
+const STARTER_FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-home-orange-ink motion-reduce:transition-none";
+const STARTER_GHOST = "border border-home-ink text-home-ink hover:bg-home-ink hover:text-home-paper";
+
 type NavAuthLinksProps = {
+  starter?: boolean;
   /** Desktop MegaNav trailing CTAs vs mobile sheet stack. */
   variant: "desktop" | "mobile";
   /** MegaNav visual theme (desktop only). */
@@ -31,6 +35,7 @@ type NavAuthLinksProps = {
 
 export function NavAuthLinks({
   variant,
+  starter = false,
   theme = "dark",
   ctaRing,
   onNavigate,
@@ -66,7 +71,12 @@ export function NavAuthLinks({
         <Link
           href="/signup"
           onClick={onNavigate}
-          className="flex h-12 items-center justify-center rounded-full bg-home-ink px-4 font-semibold text-home-paper transition-colors hover:bg-home-ink-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+          className={cn(
+            "flex h-12 items-center justify-center rounded-full px-4 font-semibold transition-colors",
+            starter
+              ? cn(STARTER_GHOST, STARTER_FOCUS)
+              : "bg-home-ink text-home-paper hover:bg-home-ink-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink",
+          )}
         >
           Sign up
         </Link>
@@ -74,7 +84,8 @@ export function NavAuthLinks({
     );
   }
 
-  const loginClass = cn(
+  const starterLink = "inline-flex min-h-9 items-center justify-center rounded-full px-4 text-[13px] font-medium transition-colors duration-180";
+  const loginClass = starter ? cn(starterLink, STARTER_FOCUS, "text-home-ink-3 hover:text-home-ink") : cn(
     "inline-flex items-center justify-center rounded-full border px-4 py-2 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2",
     theme === "cream"
       ? "border-neutral-400 text-neutral-800 hover:border-neutral-600 hover:text-black"
@@ -82,7 +93,7 @@ export function NavAuthLinks({
     ctaRing,
   );
 
-  const primaryClass = cn(
+  const primaryClass = starter ? cn(starterLink, STARTER_FOCUS, "bg-home-ink text-home-paper hover:bg-home-ink-2") : cn(
     "inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2",
     theme === "cream"
       ? "bg-neutral-950 text-white hover:bg-black"
@@ -103,9 +114,9 @@ export function NavAuthLinks({
   return (
     <div className="hidden md:flex items-center gap-2">
       <Link href="/login" className={loginClass}>
-        Login
+        {starter ? "Log in" : "Login"}
       </Link>
-      <Link href="/signup" className={primaryClass}>
+      <Link href="/signup" className={starter ? cn(starterLink, STARTER_GHOST, STARTER_FOCUS) : primaryClass}>
         Sign up
       </Link>
     </div>

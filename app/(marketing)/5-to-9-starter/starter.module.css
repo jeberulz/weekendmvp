@@ -1,0 +1,47 @@
+.page :is(a, button, summary):focus-visible {
+  outline: 2px solid var(--color-home-orange-ink);
+  outline-offset: 3px;
+}
+
+.page .dots {
+  background-image: radial-gradient(var(--color-home-rule) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+}
+
+.wrap {
+  padding-inline: clamp(20px, 5vw, 40px);
+}
+
+.section {
+  padding-block: clamp(56px, 8vw, 96px);
+}
+
+.tight {
+  padding-top: 0;
+}
+
+.hero {
+  padding-top: calc(80px + clamp(48px, 7vw, 88px));
+}
+
+.card {
+  border: 1px solid var(--color-home-rule);
+  border-radius: 10px;
+  background-color: var(--color-home-card);
+  box-shadow: 0 1px 0 rgb(26 24 20 / 4%), 0 8px 24px -12px rgb(26 24 20 / 12%);
+}
+
+.page + :global(footer) a:hover {
+  color: var(--color-home-orange-light);
+}
+
+.page + :global(footer) a:focus-visible {
+  outline: 2px solid var(--color-home-orange-light);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *, .page + :global(footer) * {
+    transition-duration: 0ms;
+  }
+}
