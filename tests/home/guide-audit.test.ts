@@ -64,6 +64,14 @@ describe("static audit", () => {
     expect(result.ok).toBe(true);
   });
 
+  test("fails on the real 5-to-9 guide before ticket sales open", () => {
+    const result = audit({ now: Date.parse("2026-10-31T12:00:00Z") });
+    expect(result.ok).toBe(false);
+    expect(result.findings).toContainEqual(
+      expect.objectContaining({ rule: "offer-status", severity: "error", message: expect.stringContaining("SALES_OPEN_AT") }),
+    );
+  });
+
   test("fails on the real 5-to-9 guide once the Build-Along session has ended and next-session checkout is off", () => {
     const result = audit({ now: AFTER_EVENT_ENDS });
     expect(result.ok).toBe(false);
@@ -300,6 +308,12 @@ describe("audit:guide CLI", () => {
     expect(result.status).toBe(1);
     expect(result.stdout).toContain("offer-status");
     expect(result.stdout).toContain("FAIL 5-to-9-builder: 1 errors");
+  });
+
+  test("fails with exit 1 before ticket sales open", () => {
+    const result = run("--slug=5-to-9-builder", "--now=2026-10-31");
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain("SALES_OPEN_AT");
   });
 
   test("a bad --now date is a usage error", () => {

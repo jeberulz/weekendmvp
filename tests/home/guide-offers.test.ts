@@ -8,7 +8,8 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { UpsellCard } from "@/app/(marketing)/guides/_shared/blocks";
 import { guideSpec } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
-import { BUILD_ALONG, NEXT_BUILD_ALONG } from "@/lib/live/config";
+import { BUILD_ALONG, NEXT_BUILD_ALONG, SALES_OPEN_AT } from "@/lib/live/config";
+import { buildAlongPhase } from "@/lib/live/schedule";
 import { effectiveStatus, formatPrice, resolvablePriceKeys, resolvePrice } from "@/lib/guides/offer-live";
 import { PRICE_CONFIG_KEYS, STATUS_RESOLVER_KEYS, offerById, offerSchema, offers, rankOffers, type Offer } from "@/lib/guides/offers";
 import { appRouteExists } from "@/lib/guides/routes";
@@ -75,6 +76,29 @@ describe("offer status from config", () => {
 
   test("open before the session ends", () => {
     expect(effectiveStatus(real, during).status).toBe("open");
+  });
+
+  test("closed before ticket sales open, because the checkout page disables the button then", () => {
+    const beforeSales = SALES_OPEN_AT - 24 * 3600 * 1000;
+    expect(buildAlongPhase(beforeSales)).toBe("pre_sale");
+    const result = effectiveStatus(real, beforeSales);
+    expect(result.status).toBe("closed");
+    expect(result.reason).toContain("SALES_OPEN_AT");
+  });
+
+  test("the sales-opening boundary is exact: closed one millisecond before, open at the opening time", () => {
+    expect(effectiveStatus(real, SALES_OPEN_AT - 1).status).toBe("closed");
+    expect(effectiveStatus(real, SALES_OPEN_AT).status).toBe("open");
+  });
+
+  test("the status always agrees with the page's own phase clock", () => {
+    const offsets = [-1, 0, 1].flatMap((delta) => [SALES_OPEN_AT, BUILD_ALONG.startAt, BUILD_ALONG.endAt].map((edge) => edge + delta * 1000));
+    for (const now of offsets) {
+      const phase = buildAlongPhase(now);
+      const { status } = effectiveStatus(real, now);
+      if (phase === "pre_sale") expect(status).toBe("closed");
+      else if (phase !== "ended") expect(status).toBe("open");
+    }
   });
 
   test("closed after the session ends while next-session checkout is off, and the reason names the switch", () => {

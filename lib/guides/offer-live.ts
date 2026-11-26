@@ -1,4 +1,5 @@
-import { BUILD_ALONG, NEXT_BUILD_ALONG, NEXT_SESSION_CHECKOUT_ENABLED } from "@/lib/live/config";
+import { BUILD_ALONG, NEXT_BUILD_ALONG, NEXT_SESSION_CHECKOUT_ENABLED, SALES_OPEN_AT } from "@/lib/live/config";
+import { buildAlongPhase } from "@/lib/live/schedule";
 
 import type { EffectiveStatus, Offer, PriceConfigKey, StatusResolverKey } from "./offers.ts";
 
@@ -29,12 +30,20 @@ const day = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
 const STATUS_RESOLVERS: Record<StatusResolverKey, (now: number) => EffectiveStatus> = {
   /**
-   * Reads config only. The live page can also be sold out from a seat counter that this does not see,
-   * so "open" here means "config allows a purchase", not "a seat is free".
+   * Follows the checkout page's own clock, `buildAlongPhase`, so the audit and the page agree on when a
+   * ticket can be bought. It reads config only. The live page can also be sold out from a seat counter
+   * that this does not see, so "open" here means "config allows a purchase", not "a seat is free".
    */
   "build-along": (now) => {
-    if (now < BUILD_ALONG.endAt) {
-      return { status: "open", reason: `the ${day(BUILD_ALONG.startAt)} session has not ended` };
+    const phase = buildAlongPhase(now);
+    if (phase === "pre_sale") {
+      return {
+        status: "closed",
+        reason: `ticket sales for the ${day(BUILD_ALONG.startAt)} session open on ${day(SALES_OPEN_AT)} (SALES_OPEN_AT in lib/live/config.ts), until then the checkout page disables the ticket button`,
+      };
+    }
+    if (phase !== "ended") {
+      return { status: "open", reason: `the ${day(BUILD_ALONG.startAt)} session is in its ${phase} phase` };
     }
     if (NEXT_SESSION_CHECKOUT_ENABLED && now < NEXT_BUILD_ALONG.endAt) {
       return { status: "open", reason: `checkout is on for the ${day(NEXT_BUILD_ALONG.startAt)} session` };
