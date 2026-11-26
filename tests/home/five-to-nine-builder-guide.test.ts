@@ -103,7 +103,12 @@ describe("5-to-9 Builder guide", () => {
       expect(getComputedStyle(rest!).display).not.toBe("none");
       const script = guide.querySelector("script")!;
       expect(script.id).toBe("builder-guide-bootstrap");
-      const runBootstrap = () => new Function("document", "localStorage", script.textContent!)({ currentScript: script }, localStorage);
+      const runBootstrap = () => {
+        const runner = document.createElement("script");
+        runner.textContent = script.textContent;
+        script.parentElement!.append(runner);
+        runner.remove();
+      };
       runBootstrap();
       expect(guide.dataset.guide).toBe("locked");
       expect(getComputedStyle(rest!).display).toBe("none");
@@ -225,9 +230,9 @@ describe("5-to-9 Builder guide", () => {
     expect(guideLiveIdeaCount()).toBe(liveIdeas(manifest.ideas as ManifestIdea[]).length);
   });
 
-  test("lists the guide in the sitemap and allows its campaign", () => {
-    expect(readFileSync("app/sitemap.ts", "utf8"))
-      .toContain('entry("/guides/5-to-9-builder", { priority: 0.85, changeFrequency: "monthly" })');
+  test("is omitted from the sitemap and marked noindex while it is a placeholder, and allows its campaign", () => {
+    expect(readFileSync("app/sitemap.ts", "utf8")).not.toContain('"/guides/5-to-9-builder"');
+    expect(metadata.robots).toEqual({ index: false, follow: false });
     expect(readFileSync("app/api/subscribe/route.ts", "utf8"))
       .toMatch(/ALLOWED_UTM_CAMPAIGNS = new Set\(\[[^\]]*"5-to-9-builder"/);
   });
