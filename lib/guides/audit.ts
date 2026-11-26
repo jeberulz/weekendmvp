@@ -82,6 +82,17 @@ export function receiptSources(text: string): string[] {
   return sources;
 }
 
+/** Text `amount` values on `<Receipt ...>` tags, which a reader sees. Numeric expressions like `{count}` are skipped. */
+export function receiptAmounts(text: string): string[] {
+  const amounts: string[] = [];
+  for (const tag of text.matchAll(/<Receipt\b[^>]*>/g)) {
+    const attr = tag[0].match(/\bamount=(?:"([^"]*)"|\{`([^`]*)`\}|\{"([^"]*)"\})/);
+    const value = attr?.[1] ?? attr?.[2] ?? attr?.[3];
+    if (value !== undefined) amounts.push(value);
+  }
+  return amounts;
+}
+
 export function auditGuide(input: AuditInput): AuditResult {
   const findings: Finding[] = [];
   const add = (rule: string, severity: FindingSeverity, message: string, path?: string) =>
@@ -108,10 +119,18 @@ export function auditGuide(input: AuditInput): AuditResult {
   }
 
   // Every slot the shared blocks read must exist and hold text.
+  const reportedEmpty = new Set<string>();
   for (const slot of requiredSlots(spec)) {
     const value = deck[slot];
     if (value === undefined) add("slot-missing", "error", `copy slot is missing from the deck: "${slot}"`, slot);
-    else if (value.trim() === "") add("slot-empty", "error", `copy slot is empty: "${slot}"`, slot);
+    else if (value.trim() === "") {
+      add("slot-empty", "error", `copy slot is empty: "${slot}"`, slot);
+      reportedEmpty.add(slot);
+    }
+  }
+  // Slots the guide's own sections read (ledes, honest catches, self-check items) can be empty too.
+  for (const [slot, value] of Object.entries(deck)) {
+    if (value.trim() === "" && !reportedEmpty.has(slot)) add("slot-empty", "error", `copy slot is empty: "${slot}"`, slot);
   }
 
   // Self-check items run 1..N with no gaps.
@@ -147,7 +166,9 @@ export function auditGuide(input: AuditInput): AuditResult {
       }
     }
   }
-  const symbols = currencySymbols(readerStrings);
+  // Receipt amounts are reader-facing text that lives in the guide's source, so they join the currency check.
+  const amountStrings = (input.sources ?? []).flatMap((source) => receiptAmounts(source.text));
+  const symbols = currencySymbols([...readerStrings, ...amountStrings]);
   if (symbols.size > 1) {
     const list = [...symbols].map(([symbol, count]) => `${symbol} x${count}`).join(", ");
     add("currency-mixed", "error", `copy mixes currencies: ${list}`);
