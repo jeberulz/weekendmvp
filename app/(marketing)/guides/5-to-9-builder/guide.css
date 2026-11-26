@@ -30,8 +30,9 @@
   background: var(--color-home-card);
 }
 
-.builder-guide :is(h1, h2, .guide-quote, .guide-meta strong, .guide-dark-card h3) {
-  font-family: var(--font-editorial);
+.builder-guide :is(h1, h2, .guide-quote, .guide-meta strong, .guide-dark-card h3),
+.builder-guide .font-editorial {
+  font-family: var(--font-editorial-serif), Georgia, serif;
   font-weight: 500;
   text-wrap: balance;
 }
@@ -352,6 +353,8 @@
 
 .guide-catch .guide-copy {
   margin-block: 0;
+  font-family: var(--font-editorial-serif), Georgia, serif;
+  font-size: 19px;
 }
 
 .guide-definition {
@@ -521,7 +524,7 @@
 }
 
 .guide-form .subscribe-status {
-  min-height: 3em;
+  min-height: 4.5em;
   color: var(--color-home-ink-2);
   font-size: 14px;
   line-height: 1.5;
@@ -655,6 +658,10 @@
   color: var(--color-home-paper);
 }
 
+.builder-guide .guide-dark .guide-section-number {
+  color: var(--color-home-paper);
+}
+
 .guide-dark .guide-placeholder {
   border-color: var(--color-home-d3);
   color: var(--color-home-d2);
@@ -721,7 +728,7 @@
 .guide-close-line {
   margin: 24px 0 0;
   color: var(--color-home-orange);
-  font: italic 28px/1.2 var(--font-editorial);
+  font: italic 28px/1.2 var(--font-editorial-serif), Georgia, serif;
   text-wrap: balance;
 }
 

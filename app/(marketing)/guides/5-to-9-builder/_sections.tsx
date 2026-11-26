@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Lock } from "lucide-react";
 
-import { Eyebrow } from "@/components/home/ui";
+import { Em, Eyebrow } from "@/components/home/ui";
 import { cn } from "@/lib/utils";
 
 import { ContentsLinks, GuideChecklist, GuidePrompt, SprintLink } from "./GuideInteractions";
@@ -88,11 +88,15 @@ function Receipt({ kind, amount, children, source }: { kind: string; amount: str
 }
 
 export function GuideHero() {
+  const emphasisStart = GUIDE_HEADLINE.indexOf(". ") + 2;
+
   return (
     <section aria-labelledby="builder-hero-title" className="guide-hero">
       <div className="min-w-0">
         <Eyebrow>Free guide · WeekendMVP</Eyebrow>
-        <h1 id="builder-hero-title">{GUIDE_HEADLINE}</h1>
+        <h1 id="builder-hero-title">
+          {GUIDE_HEADLINE.slice(0, emphasisStart)}<Em>{GUIDE_HEADLINE.slice(emphasisStart)}</Em>
+        </h1>
         <p className="guide-lede">Turn your 9-to-5 expertise into a tested side income: one tested idea, then one first sale.</p>
         <ul className="guide-meta" aria-label="Free guide · 5 steps to a tested idea · 1 first sale · 30 days">
           {META.map(([value, label]) => (
