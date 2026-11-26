@@ -35,6 +35,7 @@ export type SubscribeParams = {
 export type SubscribeResult = {
   ok: boolean;
   message: string;
+  status?: number;
 };
 
 /**
@@ -74,6 +75,7 @@ export async function subscribeViaApi({
     if (!response.ok) {
       return {
         ok: false,
+        status: response.status,
         message:
           data.message ||
           data.error ||

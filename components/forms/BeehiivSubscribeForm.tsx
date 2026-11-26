@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   subscribeViaApi,
@@ -50,17 +50,23 @@ function submitViaBeehiivEmbed(email: string, firstName: string) {
   setTimeout(() => form.remove(), 2000);
 }
 
+type OptimisticUnlock = { email: string; via: "api" | "timer" | "fallback" };
+
 type BeehiivSubscribeFormProps = {
   automationId?: AllowedAutomationId;
   utmCampaign?: string;
   /** Where to send the user after success. Default mirrors legacy behavior. */
   successHref?: string | null;
   /** Called instead of (or in addition to) redirecting. */
-  onSuccess?: () => void;
+  onSuccess?: (details?: OptimisticUnlock) => void;
+  /** Opt in to opening while enrollment continues in the background. */
+  optimisticSuccessMs?: number;
+  onConfirmed?: () => void;
   showFirstName?: boolean;
   submitLabel?: string;
   /** Placeholder for the email field. Defaults to jane@example.com. */
   emailPlaceholder?: string;
+  emailLabel?: string;
   className?: string;
   inputClassName?: string;
   buttonClassName?: string;
@@ -73,9 +79,12 @@ export function BeehiivSubscribeForm({
   utmCampaign,
   successHref = "/starter-kit?subscribed=true",
   onSuccess,
+  optimisticSuccessMs,
+  onConfirmed,
   showFirstName = true,
   submitLabel = "Get the Starter Kit",
   emailPlaceholder = "jane@example.com",
+  emailLabel = "Email address",
   className,
   inputClassName,
   buttonClassName,
@@ -83,16 +92,109 @@ export function BeehiivSubscribeForm({
 }: BeehiivSubscribeFormProps) {
   const emailId = useId();
   const nameId = useId();
+  const statusId = useId();
   const router = useRouter();
   const [status, setStatus] = useState<"idle" | "submitting" | "error">(
     "idle",
   );
+  const [phase, setPhase] = useState<"idle" | "sending" | "slow" | "error" | "unlocked">("idle");
+  const [message, setMessage] = useState("");
+  const emailInput = useRef<HTMLInputElement>(null);
+  const mounted = useRef(false);
+  const inFlight = useRef(false);
+  const unlocked = useRef(false);
+  const unlockTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const slowTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const optimistic = optimisticSuccessMs !== undefined
+    && Number.isFinite(optimisticSuccessMs) && optimisticSuccessMs > 0;
+
+  useEffect(() => {
+    if (!optimistic) return;
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      clearTimeout(unlockTimer.current);
+      clearTimeout(slowTimer.current);
+    };
+  }, [optimistic]);
+
+  async function submitOptimistically(email: string, firstName: string, delay: number) {
+    if (inFlight.current || unlocked.current) return;
+    function showError(text: string) {
+      setPhase("error");
+      setMessage(text);
+      emailInput.current?.focus();
+    }
+    if (!email || !emailInput.current?.validity.valid) {
+      showError(email ? "That doesn't look like an email address. Check for a typo." : "Enter your email to unlock the guide.");
+      return;
+    }
+
+    function finish(via: OptimisticUnlock["via"]) {
+      if (unlocked.current || !mounted.current) return;
+      unlocked.current = true;
+      try {
+        localStorage.setItem("weekendmvp_subscribed", "true");
+      } catch {
+        // Storage may be unavailable in embedded browsers.
+      }
+      setPhase("unlocked");
+      setMessage("");
+      onSuccess?.({ email, via });
+      if (successHref) router.push(successHref);
+    }
+
+    inFlight.current = true;
+    setPhase("sending");
+    setMessage("Opening the guide…");
+    slowTimer.current = setTimeout(() => {
+      setPhase("slow");
+      setMessage("Taking a moment. The guide opens in a few seconds either way.");
+    }, 3000);
+    unlockTimer.current = setTimeout(() => finish("timer"), delay);
+
+    const result = await subscribeViaApi({
+      email,
+      firstName: firstName || undefined,
+      automationIds: automationId ? [automationId] : undefined,
+      utmCampaign,
+    });
+    clearTimeout(unlockTimer.current);
+    clearTimeout(slowTimer.current);
+    inFlight.current = false;
+
+    if (result.ok) {
+      finish("api");
+      if (mounted.current) onConfirmed?.();
+      return;
+    }
+    if (!mounted.current && !unlocked.current) return;
+
+    const failedAfterUnlock = unlocked.current;
+    if (!failedAfterUnlock && result.status && result.status >= 400 && result.status < 500) {
+      showError("That email didn't go through. Check it and try again.");
+      return;
+    }
+    if (failedAfterUnlock) trackEvent("api_failed_after_optimistic_success");
+    else finish("fallback");
+
+    try {
+      submitViaBeehiivEmbed(email, firstName);
+      if (failedAfterUnlock) trackEvent("signup_fallback_fired");
+    } catch {
+      // The guide is open and delivery remains unconfirmed.
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const email = String(data.get("email") ?? "").trim();
     const firstName = String(data.get("first_name") ?? "").trim();
+    if (optimistic) {
+      await submitOptimistically(email, firstName, optimisticSuccessMs);
+      return;
+    }
     if (!email) return;
 
     setStatus("submitting");
@@ -133,8 +235,10 @@ export function BeehiivSubscribeForm({
     }
   }
 
+  const busy = phase === "sending" || phase === "slow" || phase === "unlocked";
+
   return (
-    <form onSubmit={handleSubmit} className={cn("space-y-4", className)}>
+    <form onSubmit={handleSubmit} className={cn("space-y-4", className)} noValidate={optimistic || undefined} data-phase={optimistic ? phase : undefined}>
       {showFirstName && (
         <div>
           <label htmlFor={nameId} className="sr-only">
@@ -155,7 +259,7 @@ export function BeehiivSubscribeForm({
       )}
       <div>
         <label htmlFor={emailId} className={emailLabelClassName}>
-          Email address
+          {emailLabel}
         </label>
         <input
           type="email"
@@ -164,6 +268,19 @@ export function BeehiivSubscribeForm({
           required
           placeholder={emailPlaceholder}
           autoComplete="email"
+          ref={optimistic ? emailInput : undefined}
+          inputMode={optimistic ? "email" : undefined}
+          autoCapitalize={optimistic ? "off" : undefined}
+          spellCheck={optimistic ? false : undefined}
+          readOnly={optimistic && busy ? true : undefined}
+          aria-invalid={optimistic && phase === "error" ? true : undefined}
+          aria-describedby={optimistic ? statusId : undefined}
+          onChange={optimistic ? () => {
+            if (phase === "error") {
+              setPhase("idle");
+              setMessage("");
+            }
+          } : undefined}
           className={cn(
             "w-full rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white/40",
             inputClassName,
@@ -172,18 +289,27 @@ export function BeehiivSubscribeForm({
       </div>
       <button
         type="submit"
-        disabled={status === "submitting"}
+        disabled={!optimistic && status === "submitting"}
+        aria-disabled={optimistic && busy ? true : undefined}
         className={cn(
           "w-full rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-white/40 disabled:opacity-60",
           buttonClassName,
         )}
       >
-        {status === "submitting"
+        {optimistic
+          ? busy ? "Opening…" : submitLabel
+          : status === "submitting"
           ? "Sending..."
           : status === "error"
             ? "Error. Try again?"
             : submitLabel}
       </button>
+      {optimistic && (
+        <p id={statusId} role="status" className="subscribe-status">
+          {message && phase === "error" && <span aria-hidden="true">! </span>}
+          {message}
+        </p>
+      )}
     </form>
   );
 }
