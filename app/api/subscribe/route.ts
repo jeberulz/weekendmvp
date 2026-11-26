@@ -33,6 +33,7 @@ const ALLOWED_UTM_CAMPAIGNS = new Set([
   "idea-page",
   "404-page",
   "5-to-9-starter",
+  "5-to-9-builder",
 ]);
 
 function corsHeaders(origin: string | null): Record<string, string> {
