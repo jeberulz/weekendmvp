@@ -14,10 +14,13 @@
  *   npm run audit:guide -- --slug=5-to-9-builder --now=2026-11-10   (judge offer status as of that date)
  *   npm run audit:guide -- --slug=5-to-9-builder --live --url=http://localhost:3000/guides/5-to-9-builder
  *   npm run audit:guide -- --slug=... --live --url=... --email=you@example.com   (submits that address)
+ *   npm run audit:guide -- --slug=... --live --url=... --proxy=http://host:port  (browser goes through a proxy)
  *
  * --live never submits a subscription unless --email is passed. Without it, the unlocked state is
  * checked by setting the stored "already subscribed" flag in the browser, which subscribes nobody.
  * Use an address you control with --email: the page's form really subscribes it.
+ * --proxy is an explicit flag, the script reads no environment variables. With a proxy that
+ * intercepts HTTPS, the browser is told to accept the proxy's certificate.
  * Playwright is not a repo dependency. --live loads it from wherever Node can resolve it.
  */
 
@@ -31,7 +34,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 function usage(message) {
   if (message) console.error(`audit-guide: ${message}\n`);
   console.error(
-    "usage: npm run audit:guide -- --slug=<slug> [--json] [--live --url=<page url> [--email=<address>]]",
+    "usage: npm run audit:guide -- --slug=<slug> [--json] [--live --url=<page url> [--email=<address>] [--proxy=<url>]]",
   );
   process.exit(2);
 }
@@ -47,6 +50,7 @@ function parseArgs(argv) {
     else if (flag === "--url") args.url = value();
     else if (flag === "--email") args.email = value();
     else if (flag === "--now") args.now = value();
+    else if (flag === "--proxy") args.proxy = value();
     else if (flag === "--help" || flag === "-h") usage();
     else usage(`unknown argument: ${argv[i]}`);
   }
@@ -62,6 +66,7 @@ if (args.now !== undefined) {
   now = Date.parse(`${args.now}T12:00:00Z`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(args.now) || Number.isNaN(now)) usage("--now must be a date like 2026-11-10");
 }
+if (args.proxy && !args.live) usage("--proxy only applies with --live");
 
 const guideDir = path.join(ROOT, "app", "(marketing)", "guides", args.slug);
 if (!fs.existsSync(path.join(guideDir, "guide.spec.ts"))) usage(`no guide.spec.ts in ${path.relative(ROOT, guideDir)}`);
@@ -94,11 +99,8 @@ const result = auditGuide({
 });
 const findings = [...result.findings];
 
-async function collectSnapshot(chromium, spec, { url, email }) {
-  const host = new URL(url).hostname;
-  const local = host === "localhost" || host === "127.0.0.1";
-  const proxy = process.env.HTTPS_PROXY || process.env.https_proxy;
-  const viaProxy = !local && Boolean(proxy);
+async function collectSnapshot(chromium, spec, { url, email, proxy }) {
+  const viaProxy = Boolean(proxy);
   const browser = await chromium.launch(viaProxy ? { proxy: { server: proxy } } : {});
   // Behind an intercepting proxy the browser needs this to accept the proxy's certificate.
   const contextOptions = { ignoreHTTPSErrors: viaProxy };
@@ -167,19 +169,23 @@ async function collectSnapshot(chromium, spec, { url, email }) {
 if (args.live && result.spec) {
   const require = createRequire(import.meta.url);
   let chromium = null;
-  for (const name of ["playwright", "@playwright/test"]) {
+  try {
+    chromium = require("playwright").chromium;
+  } catch {
+    // Not installed under that name, try the test package.
+  }
+  if (!chromium) {
     try {
-      chromium = require(name).chromium;
-      break;
+      chromium = require("@playwright/test").chromium;
     } catch {
-      // Try the next name.
+      // Neither is installed. Reported below.
     }
   }
   if (!chromium) {
     console.error("audit-guide: --live needs Playwright, and Node could not resolve `playwright` or `@playwright/test` from here.");
     process.exit(3);
   }
-  const snapshot = await collectSnapshot(chromium, result.spec, { url: args.url, email: args.email });
+  const snapshot = await collectSnapshot(chromium, result.spec, { url: args.url, email: args.email, proxy: args.proxy });
   findings.push(...evaluateLive(result.spec, snapshot));
 }
 
