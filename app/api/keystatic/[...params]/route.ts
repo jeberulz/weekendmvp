@@ -22,6 +22,11 @@ async function dispatch(request: Request): Promise<Response> {
     localBaseDirectory: resolve(landingContentDirectory),
   });
   const response = await handlers[request.method === "POST" ? "POST" : "GET"](request);
+  // The stock OAuth handler returns relative redirects to its native UI.
+  const location = response.headers.get("location");
+  if (location && /^\/keystatic(?:[/?#]|$)/.test(location)) {
+    response.headers.set("location", "/admin/pages" + location.slice("/keystatic".length));
+  }
   scopeEditorCookies(response.headers);
   for (const [key, value] of Object.entries(privacyHeaders)) response.headers.set(key, value);
   return response;

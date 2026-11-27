@@ -13,7 +13,7 @@ export function scopeEditorCookies(headers: Headers) {
     }
     const attributes = cookie.replace(/;\s*Path=[^;]*/ig, "").replace(/;\s*HttpOnly\b/ig, "");
     if (name === "keystatic-gh-access-token") {
-      headers.append("set-cookie", attributes + "; Path=/keystatic");
+      headers.append("set-cookie", attributes + "; Path=/admin/pages");
     }
     headers.append("set-cookie", attributes + "; Path=/api/keystatic; HttpOnly");
   }

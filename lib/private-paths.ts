@@ -84,19 +84,18 @@ export function isAllowedAuthReturnPath(pathname: string): boolean {
 
 /** Operator surfaces: never indexed, cached, referred from or measured by analytics. */
 export function isOperatorPath(pathname: string): boolean {
-  return underPrefix(pathname, "/admin") || underPrefix(pathname, "/keystatic");
+  return underPrefix(pathname, "/admin");
 }
 
 function operatorPrefix(pathname: string): boolean {
-  return isOperatorPath(pathname) || pathname.startsWith("/admin.") || pathname.startsWith("/keystatic.");
+  return isOperatorPath(pathname) || pathname.startsWith("/admin.");
 }
 
 /** File-backed editor access always needs the live operator, even in local-demo mode. */
 export function isLandingEditorRequestPath(pathname: string): boolean {
   try {
     const path = decodeURIComponent(pathname);
-    return underPrefix(path, "/keystatic") || path.startsWith("/keystatic.") ||
-      underPrefix(path, "/admin/pages") || path.startsWith("/admin/pages.");
+    return underPrefix(path, "/admin/pages") || path.startsWith("/admin/pages.");
   } catch {
     return false;
   }

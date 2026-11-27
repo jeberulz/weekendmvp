@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
+import { assertEditorialRoutesEnabled } from "@/lib/editorial/runtime/route-guard";
 import { requireLandingEditor } from "@/lib/landing/editor-server";
 import { LandingEditor } from "./keystatic";
 
@@ -14,5 +15,11 @@ async function AuthorizedEditor() {
 }
 
 export default function EditorLayout({ children }: { children: ReactNode }) {
-  return <><Suspense fallback={null}><AuthorizedEditor /></Suspense>{children}</>;
+  assertEditorialRoutesEnabled();
+  return (
+    <>
+      <Suspense fallback={null}><AuthorizedEditor /></Suspense>
+      {children}
+    </>
+  );
 }

@@ -291,7 +291,15 @@ export function applyOperatorResponseHeaders(pathname: string, response: Respons
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
     response.headers.set("Referrer-Policy", "no-referrer");
     response.headers.set("X-Frame-Options", "DENY");
-    response.headers.set("Content-Security-Policy", "frame-ancestors 'none'");
+    // Editor documents handle the GitHub session. Only first-party scripts
+    // may run there, including on direct visits from a marketing page.
+    const editorScripts = process.env.NODE_ENV === "development"
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+      : "script-src 'self' 'unsafe-inline'";
+    response.headers.set("Content-Security-Policy", isLandingEditorRequestPath(pathname)
+      ? "frame-ancestors 'none'; " + editorScripts
+      : "frame-ancestors 'none'");
+
   }
   return response;
 }
@@ -619,7 +627,6 @@ export const config = {
     // skip the editorial gate and its headers.
     "/admin",
     "/admin/:path*",
-    "/keystatic/:path*",
     "/api/keystatic/:path*",
     // Dynamic idea/build routes may have extension-like slugs. They must still
     // hit the request-time 404 gate before a PPR shell can stream.

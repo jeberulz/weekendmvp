@@ -32,13 +32,13 @@ test("local storage requires development and four empty credentials", () => {
   }
 });
 
-test("editor entry and native router get operator protection, including segment requests", () => {
-  for (const path of ["/admin/pages", "/keystatic", "/keystatic/singleton/guide.js"]) {
+test("editor and its deep links get operator protection, including segment requests", () => {
+  for (const path of ["/admin/pages", "/admin/pages/singleton/guide.js"]) {
     expect(isOperatorPath(path)).toBe(true);
     expect(isOperatorRequestPath(path)).toBe(true);
     expect(isLandingEditorRequestPath(path)).toBe(true);
   }
-  for (const path of ["/%6beystatic", "/keystatic.segments/_tree.segment", "/admin/pages.segments/_tree.segment"]) {
+  for (const path of ["/%61dmin/pages", "/admin/%70ages", "/admin/pages.segments/_tree.segment"]) {
     expect(isOperatorRequestPath(path)).toBe(true);
     expect(isLandingEditorRequestPath(path)).toBe(true);
   }
@@ -104,9 +104,21 @@ test.each([3600, 0])("token cookies are scoped when issued, refreshed or expired
   headers.append("set-cookie", "ks-state=test; Path=/; HttpOnly");
   scopeEditorCookies(headers);
   expect(headers.getSetCookie()).toEqual([
-    `keystatic-gh-access-token=test; ${attrs}; Path=/keystatic`,
+    `keystatic-gh-access-token=test; ${attrs}; Path=/admin/pages`,
     `keystatic-gh-access-token=test; ${attrs}; Path=/api/keystatic; HttpOnly`,
     `keystatic-gh-refresh-token=test; ${attrs}; Path=/api/keystatic; HttpOnly`,
     "ks-state=test; Path=/; HttpOnly",
   ]);
+});
+
+test("upstream OAuth and logout returns stay inside the editor", async () => {
+  server.editorAccessAllowed.mockResolvedValue(true);
+  for (const native of ["/keystatic", "/keystatic/branch/content%2Fcopy/singleton/guide"]) {
+    adapter.mockResolvedValueOnce(new Response(null, { status: 307, headers: { location: native } }));
+    const response = await GET(request("github/oauth/callback?code=sample"));
+    expect(response.headers.get("location")).toBe(native.replace("/keystatic", "/admin/pages"));
+  }
+  const github = "https://github.com/login/oauth/authorize";
+  adapter.mockResolvedValueOnce(new Response(null, { status: 307, headers: { location: github } }));
+  expect((await GET(request("github/login"))).headers.get("location")).toBe(github);
 });
