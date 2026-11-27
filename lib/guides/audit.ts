@@ -1,3 +1,4 @@
+import { PRICE_TOKEN, offerSchema, offers as registry, type EffectiveStatus, type Offer, type PriceConfigKey } from "./offers.ts";
 import { requiredSlots } from "./slots.ts";
 import { guideSpecSchema, type GuideSpec } from "./spec-schema.ts";
 
@@ -27,7 +28,20 @@ export type AuditInput = {
   fileExists: (publicPath: string) => boolean;
   /** Guide source files, to scan Receipt sources and similar inline strings. */
   sources?: readonly { file: string; text: string }[];
+  /** Offers to check the guide's upsells against. Defaults to the real registry. */
+  offers?: readonly unknown[];
+  /** The time to judge offer status at, in ms. Needed with `effectiveStatus`. */
+  now?: number;
+  /** Looks up a paid offer's price from config. Without it the price check is reported as skipped. */
+  resolvePrice?: (key: PriceConfigKey) => number;
+  /** Works out an offer's status from config. Without it the status check is reported as skipped. */
+  effectiveStatus?: (offer: Offer, now: number) => EffectiveStatus;
+  /** True when an internal URL path hits a page. Without it internal links are not checked. */
+  routeExists?: (urlPath: string) => boolean;
 };
+
+/** An offer link must be an internal path or an https URL, and must not be a stand-in. */
+export const LINK_PLACEHOLDER_RE = /example\.(?:com|org|net)|\bTODO\b|\bTBD\b|localhost|^#|^$/i;
 
 export type AuditResult = {
   ok: boolean;
@@ -105,6 +119,7 @@ export function auditGuide(input: AuditInput): AuditResult {
   }
   const spec = parsed.data;
   const { deck } = input;
+  const offerList = loadOffers(input.offers ?? registry);
 
   // Section ids run s01, s02, ... in order, and titles are unique.
   spec.sections.forEach((section, index) => {
@@ -152,8 +167,14 @@ export function auditGuide(input: AuditInput): AuditResult {
     add("gate-next-link", "error", `gate.nextHref "${spec.gate.nextHref}" does not match a section id`, "gate.nextHref");
   }
 
-  // Placeholder, internal-label and currency checks run over everything a reader sees.
-  const readerStrings = [...Object.values(deck), ...publicSpecStrings(spec)];
+  // Placeholder, internal-label and currency checks run over everything a reader sees. That includes the
+  // text of every offer the guide shows, because the card renders it from the registry, not from the deck.
+  // A guide can show one offer in two placements, so each offer is counted once.
+  const offerStrings = [...new Set(spec.upsells.map((upsell) => upsell.offer))].flatMap((id) => {
+    const offer = offerList.known.get(id);
+    return offer ? offerReaderStrings(offer) : [];
+  });
+  const readerStrings = [...Object.values(deck), ...publicSpecStrings(spec), ...offerStrings];
   const placeholderHits = readerStrings.filter((text) => PLACEHOLDER_RE.test(text));
   for (const text of placeholderHits) add("placeholder-text", "error", `placeholder wording in copy: "${text.slice(0, 80)}"`);
   for (const text of readerStrings.filter((t) => INTERNAL_LABEL_RE.test(t))) {
@@ -189,5 +210,134 @@ export function auditGuide(input: AuditInput): AuditResult {
     add("og-image-missing", "warn", `social image not found under public/: ${spec.ogImagePath}`, "ogImagePath");
   }
 
+  auditUpsells(spec, input, offerList, add);
+
   return { ok: !findings.some((finding) => finding.severity === "error"), findings, spec };
+}
+
+type AddFinding = (rule: string, severity: FindingSeverity, message: string, path?: string) => void;
+
+type OfferList = { known: Map<string, Offer>; problems: { rule: string; message: string; path: string }[] };
+
+/** Validate every offer once. Well-formed offers are kept by id, malformed ones become findings. */
+function loadOffers(raw: readonly unknown[]): OfferList {
+  const known = new Map<string, Offer>();
+  const problems: OfferList["problems"] = [];
+  raw.forEach((entry, index) => {
+    const parsed = offerSchema.safeParse(entry);
+    if (parsed.success) {
+      known.set(parsed.data.id, parsed.data);
+      return;
+    }
+    const id = (entry as { id?: unknown } | null)?.id;
+    for (const issue of parsed.error.issues) {
+      problems.push({
+        rule: "offer-schema",
+        message: `offer ${typeof id === "string" ? `"${id}"` : index}: ${issue.message}`,
+        path: `offers.${index}${issue.path.length ? `.${issue.path.join(".")}` : ""}`,
+      });
+    }
+  });
+  return { known, problems };
+}
+
+/** Text a reader sees on an offer card. The price token is filled in at render time, so it is dropped here. */
+export function offerReaderStrings(offer: Offer): string[] {
+  return [
+    offer.title,
+    offer.eyebrow,
+    offer.ariaLabel,
+    offer.promise.replaceAll(PRICE_TOKEN, ""),
+    offer.linkLabel,
+    ...(offer.bullets ?? []),
+    ...(offer.notFor ? [offer.notFor] : []),
+    ...(offer.urgency ? [offer.urgency.text] : []),
+  ];
+}
+
+/** Upsell and offer rules (WP103-S3). */
+function auditUpsells(spec: GuideSpec, input: AuditInput, offerList: OfferList, add: AddFinding) {
+  // Every offer in the registry must be well formed.
+  const { known } = offerList;
+  for (const problem of offerList.problems) add(problem.rule, "error", problem.message, problem.path);
+
+  if (spec.upsells.length === 0) add("upsell-missing", "error", "the guide lists no upsell, a gated guide needs at least one offer", "upsells");
+  if (spec.upsells.length > 2) add("upsell-cap", "error", `the guide lists ${spec.upsells.length} upsell cards, the cap is two`, "upsells");
+  const placements = spec.upsells.map((upsell) => upsell.placement);
+  for (const placement of new Set(placements.filter((p, i) => placements.indexOf(p) !== i))) {
+    add("upsell-cap", "error", `the "${placement}" placement is used more than once`, "upsells");
+  }
+
+  const checked = new Set<string>();
+  spec.upsells.forEach((upsell, index) => {
+    const offer = known.get(upsell.offer);
+    if (!offer) {
+      add("offer-unknown", "error", `upsell "${upsell.offer}" is not in the offers registry`, `upsells.${index}.offer`);
+      return;
+    }
+    if (checked.has(offer.id)) return;
+    checked.add(offer.id);
+    auditOffer(offer, input, add);
+  });
+}
+
+function isHttpsUrlWithHost(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function auditOffer(offer: Offer, input: AuditInput, add: AddFinding) {
+  const at = `offer:${offer.id}`;
+
+  // The link must be real: an internal page that exists, or an https URL.
+  if (LINK_PLACEHOLDER_RE.test(offer.url)) {
+    add("offer-link-placeholder", "error", `offer "${offer.id}" links to a stand-in: "${offer.url}"`, at);
+  } else if (offer.url.startsWith("//")) {
+    // A leading double slash is a protocol-relative URL, so it leaves the site.
+    add("offer-link-placeholder", "error", `offer "${offer.id}" must link to an internal path or an https URL, not "${offer.url}"`, at);
+  } else if (offer.url.startsWith("/")) {
+    if (input.routeExists && !input.routeExists(offer.url)) {
+      add("offer-link-dead", "error", `offer "${offer.id}" links to ${offer.url}, which is not a page in the app`, at);
+    }
+  } else if (!isHttpsUrlWithHost(offer.url)) {
+    add("offer-link-placeholder", "error", `offer "${offer.id}" must link to an internal path or an https URL with a host, not "${offer.url}"`, at);
+  }
+
+  // A paid offer's price must resolve from config.
+  if (offer.kind === "paid" && offer.price) {
+    if (!input.resolvePrice) {
+      add("offer-price-unchecked", "info", `offer "${offer.id}": no config was loaded, so the price was not resolved`, at);
+    } else {
+      try {
+        const amount = input.resolvePrice(offer.price.configKey);
+        if (!Number.isFinite(amount) || amount <= 0) {
+          add("offer-price", "error", `offer "${offer.id}": ${offer.price.configKey} resolved to ${String(amount)}, expected a positive number`, at);
+        }
+      } catch (error) {
+        add("offer-price", "error", `offer "${offer.id}": ${error instanceof Error ? error.message : String(error)}`, at);
+      }
+    }
+  }
+
+  // The status must allow a sale. A closed offer, or a paid card for an offer that is not open, fails.
+  if (!input.effectiveStatus || input.now === undefined) {
+    add("offer-status-unchecked", "info", `offer "${offer.id}": no config or time was given, so its status was not checked`, at);
+  } else {
+    const { status, reason } = input.effectiveStatus(offer, input.now);
+    if (status === "closed") {
+      add("offer-status", "error", `offer "${offer.id}" is closed: ${reason}`, at);
+    } else if (offer.kind === "paid" && status === "waitlist") {
+      add("offer-status", "error", `offer "${offer.id}" is paid but its status is waitlist: ${reason}`, at);
+    }
+  }
+
+  // Thin offers are allowed, but the owner should approve wording for the full card.
+  const bullets = offer.bullets?.length ?? 0;
+  if (bullets < 3 || !offer.notFor) {
+    add("offer-thin", "warn", `offer "${offer.id}" has ${bullets} of 3 bullets${offer.notFor ? "" : " and no \"not for\" line"}, add owner-approved wording`, at);
+  }
 }

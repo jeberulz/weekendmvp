@@ -39,7 +39,24 @@ Definition of done: `npm run typecheck` green, `npm run lint` with 0 errors, `np
     - `npm run audit:guide -- --slug=5-to-9-builder`
     - `npm run audit:guide -- --slug=5-to-9-builder --live --url=http://localhost:3000/guides/5-to-9-builder --no-submit`
   - Not in S2: claim and source rules (S4), upsell rules (S3), word floors and honest-catch caps (thresholds need a second guide), rendering `gate.mode: none` in the layout (reported by the audit as unsupported).
-- [ ] `WP103-S3` - Offers registry and `UpsellCard` (replaces the guide-local `SprintCard`)
+- [x] `WP103-S3` - Offers registry and `UpsellCard` (replaces the guide-local `SprintCard`)
+  - Branch: `claude/wp103-s3-offers-upsell` (cut from the S2 branch while PR 335 is open).
+  - Scope: `lib/guides/{offers,offer-live,routes}.ts` (new), `lib/guides/{audit,spec-schema}.ts`, `scripts/audit-guide.mjs`, `scripts/lib/alias-hooks.mjs` (new), `app/(marketing)/guides/_shared/{blocks,GuideInteractions}.tsx`, `app/(marketing)/guides/5-to-9-builder/{guide.spec,_sections}.ts*`, tests, docs.
+  - Acceptance criteria:
+    - An offers registry holds each offer's kind (`paid`, `waitlist`, `free-asset`), status, copy, link, topic and audience tags and fit note. It validates at import, so a bad entry fails the build.
+    - A paid offer reads its price from `lib/live/config.ts` through a named key. No price is typed into an offer. Waitlist and free offers cannot carry a price.
+    - An offer's status can be derived from config, not typed. The Build-Along derives open or closed from `BUILD_ALONG`, `NEXT_BUILD_ALONG` and `NEXT_SESSION_CHECKOUT_ENABLED`.
+    - A shared `UpsellCard` replaces the guide-local `SprintCard`. The 5-to-9 guide's rendered markup is byte-identical before and after.
+    - The guide spec lists its upsells by offer id and placement (`mid`, `close`).
+    - Click tracking keeps the event name `guide_sprint_click` and gains `guide` and `offerId`. This is the one deliberate behaviour change in S3.
+    - `audit:guide` gains rules, each with a failing fixture test: no upsell, more than two cards or a repeated placement, unknown offer, closed offer, paid card for an offer that is not open, dead internal link, placeholder or non-https link, paid offer without a resolvable price, invalid offer entry. A thin offer (fewer than three bullets or no "not for" line) is a warning.
+    - `rankOffers` ranks offers by topic and audience overlap, for the skill in S5.
+    - The audit CLI loads `lib/live/config.ts` under plain Node through an alias hook, so prices and statuses are checked against the real config.
+  - Verification:
+    - `npm run typecheck`, `npx eslint` on changed folders, `npm run test:home`
+    - `npm run audit:guide -- --slug=5-to-9-builder`
+    - `CHECK_BUILT_GUIDE=1 npm run test:home` after `next build`
+  - Not in S3: writing offer copy the owner has not approved (bullets and "not for" lines stay empty for the Build-Along), a waitlist offer for a real product (none exists), the footer soft link, renaming the click event.
 - [ ] `WP103-S4` - Extend Source Critic claim kinds for guides
 - [ ] `WP103-S5` - `.claude/skills/publish-guide/SKILL.md`
 - [ ] `WP103-S6` - Pilot guide two (mastering Claude Code), needs the owner's evidence file

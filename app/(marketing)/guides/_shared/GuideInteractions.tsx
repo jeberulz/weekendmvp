@@ -310,9 +310,25 @@ export function GuidePrompt({ prompt: PROMPT, fileName }: { prompt: string; file
   );
 }
 
-export function SprintLink({ placement, href, label }: { placement: "mid" | "close"; href: string; label: string }) {
+/**
+ * Offer link with click tracking. The event keeps its original name, `guide_sprint_click`, so existing
+ * reports keep working. It now also carries `guide` and `offerId`. Rename it when a second offer exists.
+ */
+export function OfferLink({
+  placement,
+  href,
+  label,
+  guide,
+  offerId,
+}: {
+  placement: "mid" | "close";
+  href: string;
+  label: string;
+  guide: string;
+  offerId: string;
+}) {
   return (
-    <Link className="guide-pill" href={href} onClick={() => trackEvent("guide_sprint_click", { placement })}>
+    <Link className="guide-pill" href={href} onClick={() => trackEvent("guide_sprint_click", { placement, guide, offerId })}>
       {label}
     </Link>
   );

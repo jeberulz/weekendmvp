@@ -94,5 +94,9 @@ export const guideSpec: GuideSpec = {
     "What if nobody buys?",
     "What does the 5-day email add?",
   ],
+  upsells: [
+    { offer: "build-along", placement: "mid" },
+    { offer: "build-along", placement: "close" },
+  ],
   founderName: "John Iseghohi",
 };

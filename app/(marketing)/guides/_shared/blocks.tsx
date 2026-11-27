@@ -3,10 +3,13 @@ import Image from "next/image";
 import { Lock } from "lucide-react";
 
 import { Em, Eyebrow } from "@/components/home/ui";
+import { formatPrice, resolvePrice } from "@/lib/guides/offer-live";
+import { PRICE_TOKEN, offerById, offers as registry, type Offer } from "@/lib/guides/offers";
 import { slotName } from "@/lib/guides/slots";
 import { cn } from "@/lib/utils";
 
 import { GuideCopy } from "./copy";
+import { OfferLink } from "./GuideInteractions";
 import type { GuideDeck, GuideSpec } from "./types";
 
 /* Blocks read slots from the deck by the names in `lib/guides/slots.ts` and throw if one is missing. */
@@ -193,6 +196,46 @@ export function FounderNote({ spec, deck }: { spec: GuideSpec; deck: GuideDeck }
       <Eyebrow>A note from the founder</Eyebrow>
       <GuideCopy deck={deck} slot={slotName.founderBody} />
       <p className="font-editorial text-2xl italic">{spec.founderName}</p>
+    </aside>
+  );
+}
+
+/**
+ * The upsell card for one placement. The offer comes from the registry by the id the spec lists, and a
+ * paid offer's price comes from config. A missing placement or unknown offer throws, so it fails the build.
+ * `offers` is only passed by tests.
+ */
+export function UpsellCard({
+  spec,
+  placement,
+  offers = registry,
+}: {
+  spec: GuideSpec;
+  placement: "mid" | "close";
+  offers?: readonly Offer[];
+}) {
+  const upsell = spec.upsells.find((item) => item.placement === placement);
+  if (!upsell) throw new Error(`Guide "${spec.slug}" lists no upsell for the "${placement}" placement`);
+  const offer = offerById(upsell.offer, offers);
+  const price = offer.price ? formatPrice(resolvePrice(offer.price.configKey)) : null;
+  const [before, after = ""] = offer.promise.split(PRICE_TOKEN);
+
+  return (
+    <aside aria-label={offer.ariaLabel} className={cn("guide-dark-card guide-dark", placement === "mid" && "guide-mid-card")}>
+      <div>
+        <Eyebrow dark>{offer.eyebrow}</Eyebrow>
+        <h3>{offer.title}</h3>
+        <p>
+          {before}
+          {price && <strong className={placement === "mid" ? "text-2xl font-medium text-home-orange" : undefined}>{price}</strong>}
+          {after}
+        </p>
+        {offer.bullets && offer.bullets.length > 0 && (
+          <ul className="guide-offer-bullets">{offer.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>
+        )}
+        {offer.notFor && <p className="guide-offer-note">Not for: {offer.notFor}</p>}
+      </div>
+      <OfferLink placement={placement} href={offer.url} label={offer.linkLabel} guide={spec.slug} offerId={offer.id} />
     </aside>
   );
 }

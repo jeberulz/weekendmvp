@@ -1,12 +1,20 @@
 import { spawnSync } from "node:child_process";
+import path from "node:path";
 import { describe, expect, test } from "vitest";
 
 import { guideSpec } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
 import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
-import { auditGuide, currencySymbols, publicSpecStrings, receiptAmounts, receiptSources, type AuditInput } from "@/lib/guides/audit";
+import { auditGuide, currencySymbols, offerReaderStrings, publicSpecStrings, receiptAmounts, receiptSources, type AuditInput } from "@/lib/guides/audit";
 import { evaluateLive, type LiveSnapshot, type PageState } from "@/lib/guides/audit-live";
+import { effectiveStatus, resolvePrice } from "@/lib/guides/offer-live";
+import { offers, type Offer } from "@/lib/guides/offers";
+import { appRouteExists } from "@/lib/guides/routes";
 import { requiredSlots } from "@/lib/guides/slots";
 import { guideSpecSchema } from "@/lib/guides/spec-schema";
+
+/** A date before the 14 Nov session ended, so the Build-Along offer is open. Fixed so tests do not depend on the clock. */
+const BEFORE_EVENT_ENDS = Date.parse("2026-11-10T12:00:00Z");
+const AFTER_EVENT_ENDS = Date.parse("2026-11-26T12:00:00Z");
 
 /** Deep copy that keeps function values, which `structuredClone` cannot copy. */
 function clone<T>(value: T): T {
@@ -19,7 +27,16 @@ function clone<T>(value: T): T {
 const everythingExists = () => true;
 
 function audit(overrides: Partial<AuditInput> & { spec?: unknown } = {}) {
-  return auditGuide({ spec: clone(guideSpec), deck: guideCopy, fileExists: everythingExists, ...overrides });
+  return auditGuide({
+    spec: clone(guideSpec),
+    deck: guideCopy,
+    fileExists: everythingExists,
+    now: BEFORE_EVENT_ENDS,
+    resolvePrice,
+    effectiveStatus,
+    routeExists: (urlPath) => appRouteExists(path.join(process.cwd(), "app"), urlPath),
+    ...overrides,
+  });
 }
 const rulesOf = (result: ReturnType<typeof audit>) => result.findings.map((finding) => finding.rule);
 const errorsOf = (result: ReturnType<typeof audit>) => result.findings.filter((f) => f.severity === "error").map((f) => f.rule);
@@ -41,10 +58,26 @@ describe("guide spec schema", () => {
 });
 
 describe("static audit", () => {
-  test("passes on the real 5-to-9 guide", () => {
+  test("passes on the real 5-to-9 guide while its offer is open, with one warning for thin offer copy", () => {
     const result = audit();
-    expect(result.findings).toEqual([]);
+    expect(result.findings).toEqual([expect.objectContaining({ rule: "offer-thin", severity: "warn" })]);
     expect(result.ok).toBe(true);
+  });
+
+  test("fails on the real 5-to-9 guide before ticket sales open", () => {
+    const result = audit({ now: Date.parse("2026-10-31T12:00:00Z") });
+    expect(result.ok).toBe(false);
+    expect(result.findings).toContainEqual(
+      expect.objectContaining({ rule: "offer-status", severity: "error", message: expect.stringContaining("SALES_OPEN_AT") }),
+    );
+  });
+
+  test("fails on the real 5-to-9 guide once the Build-Along session has ended and next-session checkout is off", () => {
+    const result = audit({ now: AFTER_EVENT_ENDS });
+    expect(result.ok).toBe(false);
+    expect(result.findings).toContainEqual(
+      expect.objectContaining({ rule: "offer-status", severity: "error", message: expect.stringContaining("NEXT_SESSION_CHECKOUT_ENABLED") }),
+    );
   });
 
   test("a schema failure stops the audit and is reported with its path", () => {
@@ -116,7 +149,8 @@ describe("static audit", () => {
 
   test("the clean Receipt sources pass", () => {
     const source = `<Receipt kind="Price" amount="$29" source="A working example, not a benchmark">first paid offer.</Receipt>`;
-    expect(audit({ sources: [{ file: "_sections.tsx", text: source }] }).findings).toEqual([]);
+    const findings = audit({ sources: [{ file: "_sections.tsx", text: source }] }).findings.filter((f) => f.rule !== "offer-thin");
+    expect(findings).toEqual([]);
   });
 
   test("a Receipt amount in another currency is caught even though it lives in the source, not the deck", () => {
@@ -264,14 +298,31 @@ describe("audit:guide CLI", () => {
     spawnSync(process.execPath, ["--experimental-strip-types", "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", "scripts/audit-guide.mjs", ...args], { encoding: "utf8" });
 
   test("passes on the real guide with exit 0", () => {
-    const result = run("--slug=5-to-9-builder");
+    const result = run("--slug=5-to-9-builder", "--now=2026-11-10");
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain("PASS 5-to-9-builder (static): 0 errors");
+    expect(result.stdout).toContain("PASS 5-to-9-builder (static): 0 errors, 1 warnings");
+  });
+
+  test("fails with exit 1 and names the closed offer once the session has ended", () => {
+    const result = run("--slug=5-to-9-builder", "--now=2026-11-26");
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain("offer-status");
+    expect(result.stdout).toContain("FAIL 5-to-9-builder: 1 errors");
+  });
+
+  test("fails with exit 1 before ticket sales open", () => {
+    const result = run("--slug=5-to-9-builder", "--now=2026-10-31");
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain("SALES_OPEN_AT");
+  });
+
+  test("a bad --now date is a usage error", () => {
+    expect(run("--slug=5-to-9-builder", "--now=tomorrow").status).toBe(2);
   });
 
   test("--json prints a machine-readable result", () => {
-    const parsed = JSON.parse(run("--slug=5-to-9-builder", "--json").stdout);
-    expect(parsed).toMatchObject({ slug: "5-to-9-builder", live: false, ok: true, findings: [] });
+    const parsed = JSON.parse(run("--slug=5-to-9-builder", "--json", "--now=2026-11-10").stdout);
+    expect(parsed).toMatchObject({ slug: "5-to-9-builder", live: false, ok: true, findings: [expect.objectContaining({ rule: "offer-thin" })] });
   });
 
   test("usage errors exit 2: no slug, unknown guide, --live without --url, --email without --live", () => {
@@ -279,5 +330,128 @@ describe("audit:guide CLI", () => {
     expect(run("--slug=no-such-guide").status).toBe(2);
     expect(run("--slug=5-to-9-builder", "--live").status).toBe(2);
     expect(run("--slug=5-to-9-builder", "--email=a@b.test").status).toBe(2);
+  });
+});
+
+describe("upsell and offer audit", () => {
+  const base = (): Offer => clone(offers[0]);
+  /** The real offer with overrides, as the only entry in a fixture registry. */
+  const withOffer = (change: (offer: Offer) => void) => {
+    const offer = base();
+    change(offer);
+    return audit({ offers: [offer] });
+  };
+
+  test("a guide with no upsell fails", () => {
+    const spec = clone(guideSpec);
+    spec.upsells = [];
+    expect(errorsOf(audit({ spec }))).toContain("upsell-missing");
+  });
+
+  test("three cards, or one placement used twice, fails the cap", () => {
+    const three = clone(guideSpec);
+    three.upsells = [...three.upsells, { offer: "build-along", placement: "close" }];
+    expect(errorsOf(audit({ spec: three }))).toContain("upsell-cap");
+
+    const twice = clone(guideSpec);
+    twice.upsells = [{ offer: "build-along", placement: "mid" }, { offer: "build-along", placement: "mid" }];
+    const result = audit({ spec: twice });
+    expect(result.findings).toContainEqual(expect.objectContaining({ rule: "upsell-cap", message: expect.stringContaining('"mid"') }));
+  });
+
+  test("an upsell that names an offer not in the registry fails", () => {
+    const spec = clone(guideSpec);
+    spec.upsells[0].offer = "no-such-offer";
+    expect(errorsOf(audit({ spec }))).toContain("offer-unknown");
+  });
+
+  test("a closed offer fails, and a paid card for an offer on a waitlist fails", () => {
+    expect(errorsOf(withOffer((o) => { o.status = "closed"; delete o.statusResolver; }))).toContain("offer-status");
+    expect(errorsOf(withOffer((o) => { o.status = "waitlist"; delete o.statusResolver; }))).toContain("offer-status");
+  });
+
+  test("a waitlist offer with a waitlist status is fine", () => {
+    const result = withOffer((o) => {
+      o.kind = "waitlist";
+      o.status = "waitlist";
+      delete o.statusResolver;
+      delete o.price;
+      o.promise = "Join the list for the next cohort.";
+      o.url = "https://example-waitlist.test/join";
+    });
+    expect(errorsOf(result)).toEqual([]);
+  });
+
+  test("a dead internal link fails and a placeholder or non-https link fails", () => {
+    expect(errorsOf(withOffer((o) => { o.url = "/live/no-such-page"; }))).toContain("offer-link-dead");
+    for (const url of ["#", "https://example.com/join", "http://insecure.test/join", "mailto:hi@x.test", "TODO"]) {
+      expect(errorsOf(withOffer((o) => { o.url = url; })), url).toContain("offer-link-placeholder");
+    }
+  });
+
+  test("an https link with no host, and a protocol-relative link, fail. A real https link passes", () => {
+    for (const url of ["https://", "https://   ", "//evil.test/x"]) {
+      expect(errorsOf(withOffer((o) => { o.url = url; })), url).toContain("offer-link-placeholder");
+    }
+    const ok = withOffer((o) => { o.url = "https://shop.test/join"; });
+    expect(errorsOf(ok)).not.toContain("offer-link-placeholder");
+  });
+
+  test("the text a card renders from the registry gets the same placeholder, label and currency checks as the deck", () => {
+    expect(errorsOf(withOffer((o) => { o.promise = "TODO {price}"; }))).toContain("placeholder-text");
+    expect(errorsOf(withOffer((o) => { o.title = "Placeholder title"; }))).toContain("placeholder-text");
+    expect(errorsOf(withOffer((o) => { o.notFor = "anyone, see the liveIdeas rule"; }))).toContain("internal-label");
+    const mixed = withOffer((o) => { o.bullets = ["Extra seats cost £5", "two", "three"]; });
+    expect(errorsOf(mixed)).toContain("currency-mixed");
+    // The guide shows this offer in two placements, but its text is counted once.
+    expect(mixed.findings.find((f) => f.rule === "currency-mixed")?.message).toMatch(/£ x1/);
+    const twice = withOffer((o) => { o.promise = "TODO {price}"; });
+    expect(twice.findings.filter((f) => f.rule === "placeholder-text")).toHaveLength(1);
+  });
+
+  test("offer text is only checked for offers the guide actually shows", () => {
+    const unused = base();
+    unused.id = "unused-offer";
+    unused.promise = "TODO {price}";
+    const result = audit({ offers: [base(), unused] });
+    expect(errorsOf(result)).not.toContain("placeholder-text");
+  });
+
+  test("offerReaderStrings lists every rendered field and drops the price token", () => {
+    const offer = base();
+    offer.bullets = ["one", "two", "three"];
+    offer.notFor = "people who want a course";
+    offer.urgency = { text: "Seats close Friday", source: "seat counter" };
+    const strings = offerReaderStrings(offer);
+    expect(strings).toEqual(expect.arrayContaining([offer.title, offer.eyebrow, offer.ariaLabel, offer.linkLabel, "one", "two", "three", "people who want a course", "Seats close Friday"]));
+    expect(strings.join(" ")).not.toContain("{price}");
+  });
+
+  test("a price key that does not resolve, or resolves to nothing, fails", () => {
+    expect(errorsOf(audit({ resolvePrice: () => 0 }))).toContain("offer-price");
+    expect(errorsOf(audit({ resolvePrice: () => { throw new Error("no resolver"); } }))).toContain("offer-price");
+  });
+
+  test("the registry entries are checked: a paid offer needs a price and the price token, a waitlist offer cannot have one", () => {
+    const noPrice = withOffer((o) => { delete o.price; });
+    expect(noPrice.findings.filter((f) => f.rule === "offer-schema").map((f) => f.path)).toContain("offers.0.price");
+
+    const waitlistWithPrice = withOffer((o) => { o.kind = "waitlist"; o.status = "waitlist"; delete o.statusResolver; });
+    expect(errorsOf(waitlistWithPrice)).toContain("offer-schema");
+
+    const derivedNoResolver = withOffer((o) => { delete o.statusResolver; });
+    expect(derivedNoResolver.findings.map((f) => f.path)).toContain("offers.0.statusResolver");
+  });
+
+  test("an offer with three bullets and a not-for line has no thin warning", () => {
+    const result = withOffer((o) => { o.bullets = ["one", "two", "three"]; o.notFor = "people who want a course"; });
+    expect(result.findings).toEqual([]);
+  });
+
+  test("without config or a clock, price and status are reported as skipped, not passed", () => {
+    const result = audit({ resolvePrice: undefined, effectiveStatus: undefined, now: undefined });
+    const rules = result.findings.map((f) => f.rule);
+    expect(rules).toEqual(expect.arrayContaining(["offer-price-unchecked", "offer-status-unchecked"]));
+    expect(result.findings.filter((f) => f.severity === "info")).toHaveLength(2);
   });
 });
