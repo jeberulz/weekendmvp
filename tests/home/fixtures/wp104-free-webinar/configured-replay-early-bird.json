@@ -1,0 +1,74 @@
+{
+  "sections": [
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "This session has ended.Registrants: the replay is in your email, for 7 days after the session. After that, an edited version goes up on YouTube. Missed it? Start with the free library and the Starter Kit.Browse free ideas→See the build-along on Sat 14 Nov",
+      "links": [
+        [
+          "/startup-ideas?utm_campaign=live-w1",
+          "Browse free ideas→"
+        ],
+        [
+          "/live/build-along",
+          "See the build-along on Sat 14 Nov"
+        ]
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "HydroTrail sets your water by the trailDay-hikers plan to sip every 20 minutes. Then the heat and the climbs break the plan.Apple Health, Garmin and kitchen water apps remind you on a wall clock. They don't know you just climbed 550 m (1,800 ft) in the heat.HydroTrail starts from your weight and the packets you carry, then adjusts for heat, altitude and pace.A sip targetMillilitres per hour, updated as the heat, the climb and your pace change.A next-packet timeWhen to take your next electrolyte or carb packet.A “Took a sip” buttonOne tap logs it, with your other hand still on a pole.The rules are plain TypeScript, with no AI call on each step. Heat over 24°C, altitude over 2,500 m or a grade over 8% raises the target. It never goes past 1.2 L/h. At the cap it tells you to slow down and find shade.Read the HydroTrail idea page",
+      "links": [
+        [
+          "/ideas/hydration-app-for-hikers",
+          "Read the HydroTrail idea page"
+        ]
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "The four screens, in the order I build themThe landing screen is the one I promise to get working. Setup and the live hike come next. The recap comes last, if time holds.Your bladder is full. Your plan is already wrong.Start a hikeLandingPromisedWhat HydroTrail is and who it's for.Before you goWeight72 kgDuration4 hHeat27°CPackets3StartSetupPlannedWeight, duration, temperature, humidity and your packets.Sip target650 ml/hNext sip04:12Packet dueTook a sipLive hikePlannedThe sip target, a countdown and the packet prompt.RecapPlannedConfirmedPackets2 of 3Sweat rate +10%RecapIf time holdsPlanned against confirmed intake, and a sweat-rate tweak.Built with Claude Code on Next.js, Tailwind and shadcn. Data stays on the device for now. Supabase sign-in is the next step, and you can add it yourself afterwards.",
+      "links": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "How the hour runsAll times GMT on Saturday 31 October.16:00Why HydroTrailI explain the idea and open an empty folder. Put the idea you've been sitting on in the chat, in five words.16:08The weekend testI score HydroTrail against the six checks, then two ideas from the chat.16:18The idea page and Prompt 1I open the HydroTrail idea page and its research, then paste Prompt 1 into Claude Code.~About 16:25First screen workingThe landing screen runs, built from the empty folder. This is the promise.16:27–16:43Setup and the live hikeThe next two screens, then the recap if time holds.~About 16:45DeployIf it holds, it goes live on a public link before the hour's up. A bonus, not a promise.16:50Your questionsAsk anything, including how to run the same steps on your own idea.17:00Close",
+      "links": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "What I promise, and what I don'tPromisedHydroTrail's first working screen, built live from an empty folder.PlannedSetup and the live hike, then the recap if time holds.Not promisedA public link. If it holds, it goes live before the hour's up.If something breaks, you'll see me fix it.",
+      "links": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "Why HydroTrail passes the weekend testIf an idea passes all six checks, a first version fits in one weekend. Here is how HydroTrail scores.One core featureA sip target that moves with the trail.Three screensSetup, live hike and recap.Existing toolsClaude Code, Next.js, Tailwind and shadcn.A buyer you can nameWeekend day-hikers.About 10 hoursTo a first version, around a day job.Prompts includedThe build prompts are on the idea page.",
+      "links": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "What you leave withThe order I work in: prompts first, then one screen at a time. You can run it on your own idea.The six weekend-test checks, to score your own idea.The 48-hour plan from the free Starter Kit, for Friday night, Saturday and Sunday.Who this is forDesigners who want to build their own product with AI.Non-technical founders with a day job and no co-founder.Anyone with an idea, or several, who has never got one live.It isn't a coding course or a six-month program.John IseghohiStaff product designer and founder of Weekend MVP. I build Weekend MVP around a full-time job, on evenings and Saturdays. On Saturday I take one idea from the site and build it in front of you.",
+      "links": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "QuestionsIs it really free?+–Yes. Watching is free, and so is registering, which gets you the replay for 7 days.Do I need to code?+–No. We use AI tools and copy-paste prompts. Knowing some code helps, but you don't need it to follow along or to get a first screen working.Do I have to register to watch?+–No. It's on YouTube Live, the link is public, and it'll be on this page when we start. Register on Luma if you want a reminder and the replay.I can't make it live. Is there a replay?+–Yes, for registrants. You'll get the replay link by email, and it stays up for 7 days. After that, an edited version goes up publicly on YouTube.What time is it for me?+–16:00 GMT on Sat 31 Oct, which is 12:00 in New York and 09:00 in Los Angeles. The line under the register button shows your own time.Will you email me?+–Yes: a confirmation, reminders before the session, the replay link afterwards, and the Weekend MVP newsletter. You can unsubscribe at any time. Questions? Email iseghohi.john@gmail.com.Do I need an idea already?+–No. If you don't have one, you'll leave knowing how to pick one from the library.",
+      "links": [
+        [
+          "mailto:iseghohi.john@gmail.com",
+          "iseghohi.john@gmail.com"
+        ]
+      ]
+    }
+  ],
+  "jsonLd": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"Person\",\"@id\":\"https://www.weekendmvp.app/john-iseghohi\",\"name\":\"John Iseghohi\",\"jobTitle\":\"Founder, Weekend MVP\",\"url\":\"https://www.weekendmvp.app/john-iseghohi\",\"image\":\"https://www.weekendmvp.app/image/john-portrait.jpg\",\"sameAs\":[\"https://twitter.com/weekendmvp\",\"https://cal.com/switchtoux\"],\"worksFor\":{\"@id\":\"https://www.weekendmvp.app/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://www.weekendmvp.app/#organization\",\"name\":\"Weekend MVP\",\"url\":\"https://www.weekendmvp.app/\",\"logo\":\"https://www.weekendmvp.app/image/weekendmvp-logo.svg\",\"founder\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"},\"sameAs\":[\"https://twitter.com/weekendmvp\"]},{\"@type\":\"BreadcrumbList\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":{\"@id\":\"https://www.weekendmvp.app/\",\"name\":\"Home\"}},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"Live\",\"item\":{\"@id\":\"https://www.weekendmvp.app/live\",\"name\":\"Live\"}},{\"@type\":\"ListItem\",\"position\":3,\"name\":\"Live in one hour\",\"item\":{\"@id\":\"https://www.weekendmvp.app/live/48-hours\",\"name\":\"Live in one hour\"}}]},{\"@type\":\"EducationEvent\",\"name\":\"Build a real app live in one hour (free)\",\"description\":\"Free 60-minute live build on Sat 31 Oct 2026, 16:00 GMT. Watch HydroTrail, a hydration coach for hikers, go from an empty folder to its first working screen with Claude Code. Register for reminders and the 7-day replay.\",\"about\":\"Build a hydration app with AI: HydroTrail, a hydration coach for hikers\",\"startDate\":\"2026-10-31T16:00:00.000Z\",\"endDate\":\"2026-10-31T17:00:00.000Z\",\"eventAttendanceMode\":\"https://schema.org/OnlineEventAttendanceMode\",\"eventStatus\":\"https://schema.org/EventScheduled\",\"isAccessibleForFree\":true,\"location\":{\"@type\":\"VirtualLocation\",\"url\":\"https://www.weekendmvp.app/live/48-hours\"},\"organizer\":{\"@id\":\"https://www.weekendmvp.app/#organization\"}}]}"
+  ]
+}

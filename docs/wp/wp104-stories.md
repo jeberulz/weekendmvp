@@ -40,3 +40,9 @@
 - Move the hub's editorial copy, host paragraph and FAQ into the `live-hub` Keystatic singleton. Keep registration and checkout actions, dates, prices, inventory, phase logic and the conditional host claim owned by code.
 - Preserve the dynamic rendering strategy, the session cards and local-time displays. The next Build-Along label in the FAQ comes from configuration through a token. Keep the existing absence of page JSON-LD.
 - Record the published hub before changing its reader. Compare all six time and inventory scenarios at both widths and run the existing live tests.
+
+## PR 7 · Free webinar
+
+- Move phase copy and editorial sections into the `live-48-hours` singleton. Preserve the existing layout and render state for open, live, replay and ended.
+- Keep the session title, date, agenda timing, platform, sketches, proof availability, Luma/YouTube URLs and register bar wiring in code.
+- Compare the four clocks at both widths and the production section tree, links and JSON-LD. Exercise both missing and configured registration and replay URLs without contacting those services.

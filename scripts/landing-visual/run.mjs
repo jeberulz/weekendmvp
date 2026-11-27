@@ -35,6 +35,7 @@ const updatedReferences = new Map([
   [shipable, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "shipable-baseline" }],
   [dare, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "dare-baseline" }],
   [hub, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "live-hub-baseline" }],
+  [free, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "free-webinar-baseline" }],
 ]);
 const scenarios = [
   { phase: "ended", clock: "2026-11-27T12:00:00Z", paths: ["/", starter, guide, starterKit, shipable, dare, hub, free, paid] },

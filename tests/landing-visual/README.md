@@ -50,3 +50,7 @@ The two images in `dare-baseline/` come from a clean production build of main at
 ## Live hub reference
 
 The twelve images in `live-hub-baseline/` come from a clean production build of main at `692b7b3f`. They cover the same six clocks and inventory settings as the initial matrix. Point `LANDING_VISUAL_APP` at that build and run `npm run test:visual -- --record --route=/live` to reproduce them.
+
+## Free webinar reference
+
+The eight images in `free-webinar-baseline/` come from a clean production build of main at `692b7b3f`. They cover the open, live, replay and ended phases. Point `LANDING_VISUAL_APP` at that build and run `npm run test:visual -- --record --route=/live/48-hours` to reproduce them. The HTML fixtures also record each phase with synthetic Luma and YouTube URLs supplied at server startup.
