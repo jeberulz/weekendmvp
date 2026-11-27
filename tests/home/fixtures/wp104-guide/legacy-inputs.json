@@ -93,13 +93,13 @@
     "The Prompt · Lede": "Paste this into Claude or Grok with your idea filled in. It asks the model to be a sceptical reviewer, not a cheerleader. It doesn't replace talking to three people. It helps you sharpen the questions and find the weak points before you do.",
     "The Prompt · Prompt text": "You are a sceptical but fair reviewer helping me validate a side-income idea before I build anything. I have a full-time job and only evenings to work on this. Do not flatter me. Do not invent market sizes, statistics, competitors or customer quotes. If you don't know something, say so and tell me how I could find out.\n\nMy idea:\n- The problem, in one sentence: [PROBLEM]\n- Who has it: [WHO]\n- How they deal with it today: [CURRENT WORKAROUND]\n- Why I know this problem (my job or experience): [MY BACKGROUND]\n- What I would offer, and the price I have in mind: [OFFER AND PRICE]\n\nPlease do the following, in order:\n\n1. Restate the idea in one sentence in this form: \"For [who], who [problem], this helps you [outcome], without [the painful old way].\" If it does not fit, tell me what to cut.\n2. Tell me the three weakest assumptions in my idea. For each, say what evidence would prove it wrong.\n3. Write three interview questions I can ask three real people who have this problem. They must not pitch my idea. They should reveal how people cope today, what it costs them, and what a fix would be worth.\n4. Score my idea from 1 to 5 on each of these, with one sentence of reasoning per score:\n   - Can I build the core flow in a weekend?\n   - Can I demo it in 15 seconds?\n   - Can I find ten testers easily?\n   - Is the outcome obvious in one sentence?\n   - Does it remove a real annoyance?\n5. Suggest one proof test I could run in ten minutes before building anything: a post, a waitlist page, or manually solving it once for a small fee. Tell me what result would count as a signal and what would count as a no.\n6. Write my first offer in one sentence: one person, one outcome, one price.\n7. Finish with \"The honest catch\": the most likely reason this fails, and what this test cannot tell me.\n\nKeep it short and plain. Do not tell me it's a great idea unless the evidence I've given supports it.",
     "The Prompt · Honest catch": "The model only knows what you tell it. It can't speak to your customers, and it may sound more certain than it should. Use it to prepare for your three conversations, not to stand in for them.",
-    "Founder note · Body": "I run WeekendMVP. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.\n\nSo the guide is built around the second one. It's slow where it needs to be and honest about what can go wrong. Run the five steps on your own evenings. If an idea fails, good: that's the test doing its job.\n\nI'd like to hear what you test.",
+    "Founder note · Body": "I run Weekend MVP. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.\n\nSo the guide is built around the second one. It's slow where it needs to be and honest about what can go wrong. Run the five steps on your own evenings. If an idea fails, good: that's the test doing its job.\n\nI'd like to hear what you test.",
     "FAQ · Who is this for?": "9-to-5ers who are building, or want to build, in their 5-to-9. Designers too. They're one of the four starting points in Section 5.",
     "FAQ · I have no idea yet. Where do I start?": "At step 1, Find it: spot problems in your own week. Or start from one of the {ideaCount} researched ideas in the Idea Bank (Section 7).",
     "FAQ · Do I need to code?": "Not to start. The method tests whether someone will pay before you build. Section 5 has a starting point for non-technical readers.",
     "FAQ · What if nobody buys?": "Then the test worked. You found out in a week, not a quarter. Section 8 covers what to do next.",
     "FAQ · What does the 5-day email add?": "The same method at a guided pace: one action a day for five days. The guide is the depth. The email is the pace. There's no second form. It goes to the email you unlocked with.",
-    "Gate · Fine print": "Free. Unsubscribe anytime. We'll send the 5-day Starter.",
+    "Gate · Fine print": "Free. Unsubscribe anytime. We'll send the [5-day Starter](/5-to-9-starter).",
     "Sign-off · Follow destination": "Follow @weekendmvp on Instagram: https://www.instagram.com/weekendmvp/"
   },
   "selfCheckItems": [
@@ -127,8 +127,10 @@
     "path": "/guides/5-to-9-builder",
     "title": "The 5-to-9 Builder",
     "headline": "AI made building free. Knowing what to build is the job now.",
-    "description": "AI made building free. Knowing what to build is the job now. A free guide for 9-to-5ers: find an idea worth your evenings and prove someone will pay for it before you build it.",
-    "metaTitle": "The 5-to-9 Builder — Turn Your 9-to-5 Expertise Into a Tested Side Income | WeekendMVP",
+    "description": "AI made building free. Knowing what to build is the job now. A free guide for 9-to-5ers to find an idea and prove someone will pay before you build.",
+    "metaTitle": "The 5-to-9 Builder: a tested side income | Weekend MVP",
+    "datePublished": "2026-11-26T07:53:49Z",
+    "dateModified": "2026-11-27",
     "ogImagePath": "/image/5-to-9-builder-og.png",
     "lang": "en-GB",
     "authorName": "John Iseghohi",
@@ -193,7 +195,7 @@
       }
     ],
     "hero": {
-      "eyebrow": "Free guide · WeekendMVP",
+      "eyebrow": "Free guide · Weekend MVP",
       "lede": "Turn your 9-to-5 expertise into a tested side income: one tested idea, then one first sale.",
       "meta": [
         [
@@ -219,7 +221,7 @@
       "subscribedNote": "The whole guide is open on this device.",
       "image": {
         "src": "/image/john-portrait.webp",
-        "alt": "John Iseghohi, founder of WeekendMVP, working at his desk",
+        "alt": "John Iseghohi, founder of Weekend MVP, working at his desk",
         "width": 1000,
         "height": 1250,
         "sizes": "(min-width: 1024px) 458px, 100vw",
@@ -234,7 +236,7 @@
       "stubEyebrow": "Free · Sections 02–11",
       "stubNote": "One email · No download",
       "heading": "The rest of the guide is free. One email opens it.",
-      "body": "It opens right here, on this page. The same email starts the 5-to-9 Starter: five daily emails, one action a day.",
+      "body": "It opens right here, on this page. The same email starts the [5-to-9 Starter](/5-to-9-starter): five daily emails, one action a day.",
       "unlocks": [
         "The Method",
         "The 6 Skills",

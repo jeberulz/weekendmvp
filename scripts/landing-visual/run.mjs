@@ -17,6 +17,8 @@ const app = path.resolve(process.env.LANDING_VISUAL_APP || project);
 const baseline = path.join(project, "tests/landing-visual/baseline");
 const actual = path.join(project, "tmp/landing-visual");
 const source = "43721c0fb8a7bfd827a1a4ca80cf12ae82537ba0";
+const guideSource = "692b7b3f5dd1109dd32c4902a6a658f82daee272";
+const guideBaseline = path.join(project, "tests/landing-visual/guide-baseline");
 const record = process.argv.includes("--record");
 const git = (...args) => execFileSync("git", ["-C", app, ...args], { encoding: "utf8" }).trim();
 
@@ -41,7 +43,7 @@ async function checkInput() {
   await access(path.join(app, ".next/server/preview-props.json"));
   assert.equal(git("hash-object", "ideas/manifest.json"), "53a8348cdccfa223cb64cc2338445a76bd388170", "Unexpected idea manifest");
   if (record) {
-    assert.equal(git("rev-parse", "HEAD"), source, "Record from the pre-migration main revision");
+    assert.equal(git("rev-parse", "HEAD"), routeFilter === guide ? guideSource : source, "Record from the pre-migration main revision");
     assert.equal(git("status", "--porcelain"), "", "Record from a clean checkout");
   }
   // Build without deployment variables. The test runner supplies a loopback
@@ -197,9 +199,8 @@ async function matchesMobileNavRounding(name, left, right) {
   const phase = /^live-build-along-(ended|pre-sale|replay-early-bird|standard|workshop-live)-375\.png$/.exec(name)?.[1];
   let label;
   if (phase) label = phase === "ended" || phase === "pre-sale" ? phase : "sold-out";
-  if (name === "guides-5-to-9-builder-returning-375.png") label = "guide-returning";
   if (!label || left.info.width !== 375 || left.info.height !== right.info.height) return false;
-  const maxChannelDelta = { ended: 3, "pre-sale": 2, "sold-out": 5, "guide-returning": 2 }[label];
+  const maxChannelDelta = { ended: 3, "pre-sale": 2, "sold-out": 5 }[label];
   const mask = await sharp(path.join(project, "tests/landing-visual/antialias", label + ".png"))
     .greyscale().raw().toBuffer();
   const headerBytes = mask.length * 4;
@@ -212,7 +213,8 @@ async function matchesMobileNavRounding(name, left, right) {
 }
 
 async function match(name, screenshot) {
-  const referencePath = path.join(baseline, name);
+  const updatedGuide = name.startsWith("guides-5-to-9-builder-") && (!record || routeFilter === guide);
+  const referencePath = path.join(updatedGuide ? guideBaseline : baseline, name);
   if (record) {
     await sharp(screenshot).png({ compressionLevel: 9 }).toFile(referencePath);
     return;
@@ -234,7 +236,7 @@ async function match(name, screenshot) {
 }
 
 await checkInput();
-await mkdir(baseline, { recursive: true });
+await mkdir(record && routeFilter === guide ? guideBaseline : baseline, { recursive: true });
 const fixture = makeConvexFixture();
 fixture.listen(0, "127.0.0.1");
 await once(fixture, "listening");
