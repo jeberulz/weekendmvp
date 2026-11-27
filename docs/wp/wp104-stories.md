@@ -22,3 +22,9 @@
 - Capture the two visual widths, section tree, JSON-LD and exact copyable prompts before switching the page from inline copy.
 - Expose Starter Kit copy, templates, scorecard, ideas and prompts through Keystatic. Preserve the instructional sequence, anchor IDs, navigation and code-owned signup and booking controls.
 - Verify the public page and round-trip the singleton through the editor. Verify the exact text handed to the clipboard component.
+
+## PR 4 · Shipable migration
+
+- Freeze published Shipable content and schema before the switch.
+- Expose offer copy and proof in Keystatic. Keep price, stack values, schedule, attendance status and legacy seat confirmation in code.
+- Verify public output, JSON-LD, static build, and a real editor save.

@@ -38,3 +38,7 @@ The two Starter images in `starter-baseline/` come from a clean production build
 ## Starter Kit reference after the SEO release
 
 The two Starter Kit images in `starter-kit-baseline/` come from a clean production build at `692b7b3f`, after PR #346 added the guide and Starter links. The route still used inline copy. Point `LANDING_VISUAL_APP` at that build and run `npm run test:visual -- --record --route=/starter-kit` to reproduce the images.
+
+## Shipable reference
+
+The two images in `shipable-baseline/` come from a clean production build of main at `692b7b3f`, with seats paused and the free Starter Kit form. Point `LANDING_VISUAL_APP` at that build and run `npm run test:visual -- --record --route=/shipable` to reproduce them.

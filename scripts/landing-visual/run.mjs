@@ -26,13 +26,15 @@ const paid = "/live/build-along";
 const guide = "/guides/5-to-9-builder";
 const starter = "/5-to-9-starter";
 const starterKit = "/starter-kit";
+const shipable = "/shipable";
 const updatedReferences = new Map([
   [guide, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "guide-baseline" }],
   [starter, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "starter-baseline" }],
   [starterKit, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "starter-kit-baseline" }],
+  [shipable, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "shipable-baseline" }],
 ]);
 const scenarios = [
-  { phase: "ended", clock: "2026-11-27T12:00:00Z", paths: ["/", starter, guide, starterKit, "/shipable", "/dare", hub, free, paid] },
+  { phase: "ended", clock: "2026-11-27T12:00:00Z", paths: ["/", starter, guide, starterKit, shipable, "/dare", hub, free, paid] },
   { phase: "pre-sale", clock: "2026-10-30T12:00:00Z", paths: [hub, free, paid] },
   { phase: "webinar-live", clock: "2026-10-31T16:30:00Z", paths: [hub, free] },
   { phase: "replay-early-bird", clock: "2026-11-02T12:00:00Z", paths: [hub, free, paid] },
