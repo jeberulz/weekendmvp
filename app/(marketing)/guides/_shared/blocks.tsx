@@ -18,7 +18,7 @@ export function GuideSection({ spec, index, children }: { spec: GuideSpec; index
   const { id, title } = spec.sections[index];
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="guide-section">
-      <Eyebrow className="guide-section-number">{id.slice(1)}</Eyebrow>
+      <Eyebrow className="guide-section-number">{String(index + 1).padStart(2, "0")}</Eyebrow>
       <h2 id={`${id}-title`}>{title}</h2>
       {children}
     </section>
@@ -93,8 +93,8 @@ export function GuideContents({ spec, ideaCount }: { spec: GuideSpec; ideaCount:
       <h2 id="builder-inside-title">{spec.contents.heading}</h2>
       <ol className="guide-toc">
         {spec.sections.map(({ id, title, summary }, index) => {
-          const description = typeof summary === "function" ? summary(ideaCount) : summary;
-          const body = <><span className="font-mono text-xs text-home-orange-ink">{id.slice(1)}</span><span><strong>{title}</strong><span className="block text-sm font-normal text-home-ink-2">{description}</span></span></>;
+          const description = typeof summary === "function" ? summary(ideaCount) : summary.replaceAll("{ideaCount}", String(ideaCount));
+          const body = <><span className="font-mono text-xs text-home-orange-ink">{String(index + 1).padStart(2, "0")}</span><span><strong>{title}</strong><span className="block text-sm font-normal text-home-ink-2">{description}</span></span></>;
           return (
             <li key={id}>
               {index > 0 && (
@@ -210,15 +210,17 @@ export function UpsellCard({
   placement,
   offers = registry,
   isEnabled = isOfferEnabled,
+  copy,
 }: {
   spec: GuideSpec;
   placement: "mid" | "close";
   offers?: readonly Offer[];
   isEnabled?: (offer: Offer) => boolean;
+  copy?: Pick<Offer, "title" | "eyebrow" | "promise" | "linkLabel">;
 }) {
   const upsell = spec.upsells.find((item) => item.placement === placement);
   if (!upsell) throw new Error(`Guide "${spec.slug}" lists no upsell for the "${placement}" placement`);
-  const offer = offerById(upsell.offer, offers);
+  const offer = { ...offerById(upsell.offer, offers), ...copy };
   if (!isEnabled(offer)) return null;
   const price = offer.price ? formatPrice(resolvePrice(offer.price.configKey)) : null;
   const [before, after = ""] = offer.promise.split(PRICE_TOKEN);

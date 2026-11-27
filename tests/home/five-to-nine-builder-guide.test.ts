@@ -4,12 +4,12 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
-import FiveToNineBuilderGuidePage, { metadata } from "@/app/(marketing)/guides/5-to-9-builder/page";
+import FiveToNineBuilderGuidePage, { generateMetadata } from "@/app/(marketing)/guides/5-to-9-builder/page";
 import { formatPrice, resolvePrice } from "@/lib/guides/offer-live";
 import { BUILD_ALONG_GUIDE_CARDS_ENABLED } from "@/lib/live/config";
-import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
+import { guideCopy } from "./fixtures/wp104-guide/legacy";
 import { guideLiveIdeaCount } from "@/app/(marketing)/guides/5-to-9-builder/ideaCount";
 import { BUILD_ALONG } from "@/lib/live/config";
 import { BeehiivSubscribeForm } from "@/components/forms/BeehiivSubscribeForm";
@@ -132,6 +132,13 @@ function activeGuide(container: HTMLElement) {
   return container.querySelector<HTMLElement>(".builder-guide")!;
 }
 
+let guidePage: Awaited<ReturnType<typeof FiveToNineBuilderGuidePage>>;
+let metadata: Awaited<ReturnType<typeof generateMetadata>>;
+
+beforeAll(async () => {
+  [guidePage, metadata] = await Promise.all([FiveToNineBuilderGuidePage(), generateMetadata()]);
+});
+
 beforeEach(() => {
   vi.useFakeTimers();
   vi.clearAllMocks();
@@ -163,7 +170,7 @@ describe("5-to-9 Builder guide", () => {
   });
 
   test("renders the deck with no visible TODO or COPY TO WRITE in server markup", () => {
-    expectGuideCopy(renderToStaticMarkup(createElement(FiveToNineBuilderGuidePage)));
+    expectGuideCopy(renderToStaticMarkup(guidePage));
   });
 
   test.runIf(process.env.CHECK_BUILT_GUIDE === "1")("renders the same copy in the production HTML", () => {
@@ -171,7 +178,7 @@ describe("5-to-9 Builder guide", () => {
   });
 
   test("renders the canonical static route and gated body in server markup", () => {
-    const html = renderToStaticMarkup(createElement(FiveToNineBuilderGuidePage));
+    const html = renderToStaticMarkup(guidePage);
     const container = document.createElement("div");
     container.innerHTML = html;
     const guide = activeGuide(container);
@@ -228,7 +235,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("opens in place at eight seconds even when the subscribe request never resolves", async () => {
     subscribeMock.mockReturnValue(new Promise(() => {}));
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     const guide = activeGuide(container);
 
     expect(guide.dataset.guide).toBe("locked");
@@ -256,7 +263,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("recognizes a returning reader without a request or address in storage", () => {
     localStorage.setItem("weekendmvp_subscribed", "true");
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     expect(activeGuide(container).dataset.guide).toBe("returning");
     expect(screen.getByText("You unlocked it on this device.")).toBeTruthy();
     expect(subscribeMock).not.toHaveBeenCalled();
@@ -265,7 +272,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("confirms an API-first success in place and clears the optimistic timer", async () => {
     const reply = deferredSubscription();
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     submitGuide();
     await reply({ ok: true, message: "Subscribed" });
 
@@ -281,7 +288,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("records API confirmation once after the timer opens the guide", async () => {
     const reply = deferredSubscription();
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     submitGuide();
     await act(() => vi.advanceTimersByTimeAsync(8000));
 
@@ -299,7 +306,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("keeps a rejected address locked even after eight seconds", async () => {
     const reply = deferredSubscription();
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     submitGuide();
     await reply({ ok: false, status: 422, message: "Invalid address" });
     await act(() => vi.advanceTimersByTimeAsync(8000));
@@ -317,7 +324,7 @@ describe("5-to-9 Builder guide", () => {
   test("late failure fires a quiet embed and one resend can confirm in place", async () => {
     const reply = deferredSubscription();
     const submitEmbed = vi.spyOn(HTMLFormElement.prototype, "submit").mockImplementation(() => {});
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     submitGuide();
     await act(() => vi.advanceTimersByTimeAsync(8000));
     await reply({ ok: false, status: 502, message: "Unavailable" });
@@ -352,7 +359,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("cancels a pending unlock on unmount", async () => {
     const reply = deferredSubscription();
-    const { unmount } = render(createElement(FiveToNineBuilderGuidePage));
+    const { unmount } = render(guidePage);
     submitGuide();
     unmount();
     await act(() => vi.advanceTimersByTimeAsync(8000));
@@ -364,7 +371,7 @@ describe("5-to-9 Builder guide", () => {
   test("an early 5xx fallback unlocks quietly and fires signup_fallback_fired", async () => {
     const reply = deferredSubscription();
     const submitEmbed = vi.spyOn(HTMLFormElement.prototype, "submit").mockImplementation(() => {});
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     submitGuide();
     await reply({ ok: false, status: 502, message: "Unavailable" });
 
