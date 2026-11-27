@@ -226,7 +226,7 @@ export default async function FreeWebinarPage() {
               <p className="font-editorial mt-5 text-[22px] leading-[1.32] text-balance sm:text-[26px]">
                 {hero.open.intro}{" "}
                 <span className="font-medium text-home-orange-ink">{PRODUCT_NAME}</span>,{" "}
-                {hero.open.product}
+                {hero.open.product}{", " + hero.open.productEnding}
               </p>
               <p className="font-editorial mt-3 text-[19px] leading-snug text-[#4A453C] italic sm:text-[21px]">
                 &ldquo;{hero.open.hook}&rdquo;

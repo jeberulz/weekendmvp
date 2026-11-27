@@ -2,7 +2,8 @@
   "hero": {
     "open": {
       "intro": "On Saturday I build",
-      "product": "a hydration coach for hikers, starting from an empty folder.",
+      "product": "a hydration coach for hikers",
+      "productEnding": "starting from an empty folder.",
       "hook": "Your bladder is full. Your plan is already wrong.",
       "body": "I work in Claude Code on YouTube Live. By about {firstScreenTime} the first screen should be running. If something breaks, you'll see me fix it.",
       "registrationNote": "Luma sends a reminder and the replay, which stays up for {replayDays} days. The stream is public, so you can also just turn up."

@@ -13,7 +13,8 @@ const question = text("Question");
 export const freeWebinarFields = {
   hero: fields.object({
     open: fields.object({
-      intro: text("Before the product name"), product: prose("After the product name"), hook: prose("Quotation"),
+      intro: text("Before the product name"), product: text("Product description"), productEnding: prose("Opening sentence ending"),
+      hook: prose("Quotation"),
       body, registrationNote: prose("Registration note"),
     }, { label: "Registration open" }),
     live: fields.object({ title, accent: text("Heading emphasis"), body }, { label: "Live" }),
