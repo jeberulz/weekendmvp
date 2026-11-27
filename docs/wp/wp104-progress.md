@@ -101,3 +101,12 @@ The local browser saved and reloaded all fields, and the test restored the origi
 Local branch `codex/wp104-free-webinar-cms` stacks on the Live hub. Keystatic supplies the four phase variants and editorial sections. Agenda timing, screen artwork, title, registration and replay destinations, proof availability and JSON-LD remain code-owned.
 
 The production HTML matched the published section tree, links and JSON-LD in all eight combinations of phase and configured URLs. All eight screenshots matched pixel for pixel after preserving the two original text runs in the open-state subtitle. A browser editor save round-tripped the singleton and restored the committed JSON. The app and Convex typechecks, lint, production builds and server traces passed. The run of the full suite passed 7,214 tests and the final text-run change passed the focused webinar and live suites.
+
+## PR 8 · Build-Along migration
+
+Local branch `codex/wp104-build-along-cms` stacks on the free webinar. The source fixtures were captured from main at `692b7b3f`. Keystatic supplies editorial copy, agenda, audience, included items and FAQ wording. Refund, cancellation, pricing, inventory, scheduling, recording and checkout remain code-owned.
+
+All six historical production HTML fixtures and their JSON-LD match, including the confirmation. The ten viewport checks passed. Three mobile navs used the existing antialias tolerance. The pre-sale price note preserves the reference's separate price text run. A local editor save and reload round-tripped the singleton.
+
+An available ticket on pristine main rendered the error boundary because its button called an auth hook outside the authenticated provider. A dedicated fix uses the existing checkout API as the authority for signed-in state. A production browser run confirmed the visible $29 ticket, a real signed-out 401 and attributed signup return, and the client handling of simulated sold-out and success responses. No Stripe request was sent. The checkout endpoint, pricing, seat and recording rules remain in place.
+The full suite passed 7,225 tests. Both typechecks, lint, the production build and server traces passed. The final price text-run change also passed the focused Build-Along and live suites.
