@@ -1,0 +1,254 @@
+{
+  "contractVersion": 1,
+  "slug": "claude-code-mastery",
+  "recordHash": "3e84d10518f20ab26db05d8137676191b30bdd7142c91a562d1546f54ee90aac",
+  "verdict": "FAIL",
+  "reviewedAt": "2026-11-27T12:00:00.000Z",
+  "reviewer": "Source Critic",
+  "items": [
+    {
+      "claimId": "tf-what",
+      "kind": "tool-fact",
+      "checks": {
+        "excerptMatchesPage": false,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": false,
+        "asOfStated": false,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "tf-claudemd",
+      "kind": "tool-fact",
+      "checks": {
+        "excerptMatchesPage": false,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": false,
+        "asOfStated": false,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "tf-plan",
+      "kind": "tool-fact",
+      "checks": {
+        "excerptMatchesPage": false,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": false,
+        "asOfStated": false,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "tf-skills",
+      "kind": "tool-fact",
+      "checks": {
+        "excerptMatchesPage": false,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": false,
+        "asOfStated": false,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "tf-hooks",
+      "kind": "tool-fact",
+      "checks": {
+        "excerptMatchesPage": false,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": false,
+        "asOfStated": false,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "tf-subagents",
+      "kind": "tool-fact",
+      "checks": {
+        "excerptMatchesPage": false,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": false,
+        "asOfStated": false,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "tf-verify",
+      "kind": "tool-fact",
+      "checks": {
+        "excerptMatchesPage": false,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": false,
+        "asOfStated": false,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "tf-clear",
+      "kind": "tool-fact",
+      "checks": {
+        "excerptMatchesPage": false,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": false,
+        "asOfStated": false,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "tf-permissions",
+      "kind": "tool-fact",
+      "checks": {
+        "excerptMatchesPage": false,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": false,
+        "asOfStated": false,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "fh-solo",
+      "kind": "first-hand",
+      "checks": {
+        "excerptMatchesPage": null,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": null,
+        "asOfStated": null,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": false
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "fh-ideas",
+      "kind": "first-hand",
+      "checks": {
+        "excerptMatchesPage": null,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": null,
+        "asOfStated": null,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": false,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "fh-articles",
+      "kind": "first-hand",
+      "checks": {
+        "excerptMatchesPage": null,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": null,
+        "asOfStated": null,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": false,
+        "ownerConfirmed": null
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "fh-rungs",
+      "kind": "first-hand",
+      "checks": {
+        "excerptMatchesPage": null,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": null,
+        "asOfStated": null,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": false
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "fh-build",
+      "kind": "first-hand",
+      "checks": {
+        "excerptMatchesPage": null,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": null,
+        "asOfStated": null,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": false
+      },
+      "notes": ""
+    },
+    {
+      "claimId": "fh-weeks",
+      "kind": "first-hand",
+      "checks": {
+        "excerptMatchesPage": null,
+        "topical": false,
+        "figureMatchesExcerpt": null,
+        "sourceCredible": null,
+        "asOfStated": null,
+        "wholeStatementInContext": null,
+        "speakerNamed": null,
+        "reproducible": null,
+        "ownerConfirmed": false
+      },
+      "notes": ""
+    }
+  ],
+  "failures": [
+    "draft: no claim has been judged yet"
+  ],
+  "seal": "98772c2781f4a73dc9527d01a06c01b17789b1222011a1d99f81c6826b4a81e4"
+}
