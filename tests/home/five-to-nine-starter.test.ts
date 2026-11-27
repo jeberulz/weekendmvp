@@ -162,7 +162,7 @@ describe("5-to-9 Starter landing page", () => {
 
     const fieldIds = forms.map((form, index) => {
       const label = form.querySelector("label");
-      const field = form.querySelector('input[name="email"]');
+      const field = form.querySelector<HTMLInputElement>('input[name="email"]');
       const status = form.querySelector('[aria-live="polite"]');
       expect(label?.textContent).toBe("Email address");
       expect(field?.id).toBe(label?.htmlFor);
