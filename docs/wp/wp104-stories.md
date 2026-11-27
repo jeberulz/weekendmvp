@@ -10,3 +10,9 @@
 - Read the guide singleton from Git-backed JSON. Preserve the existing renderers, markup, public anchor IDs, metadata, and subscription boundary.
 - Edit prose, gate copy, checklist wording and structural labels together with their associated text. The opening stays public and the protected blocks can move within the gated body.
 - Verify the effective reader inputs, JSON-LD, editorial audit, and both gate states against the pre-switch fixtures.
+
+## PR 2 · Starter migration
+
+- Capture the current Starter page from main, including both visual widths, accessible content and JSON-LD.
+- Feed the existing Starter sections from Keystatic. Preserve both subscription placements, the day sequence, cross-links, confirmation modal, live idea count and canonical metadata.
+- Keep the Build-Along price in live configuration and resolve its token at render. Verify the reader, price substitution, visual parity, and complete quality suite.

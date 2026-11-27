@@ -1,0 +1,56 @@
+{
+  "sections": [
+    {
+      "id": "guide-hero-title",
+      "text": "Free 5-day email guide · 10 minutes an eveningYour 9-to-5 pays the bills. Your 5-to-9 builds the future.One short email a day for five days, and one small action each evening. By Friday you'll have a tested idea, not a notebook full of untested ones.Email addressSend me Day 1Day 1 arrives in a few minutes. Unsubscribe anytime.From the maker of Weekend MVP: 229 researched startup ideas, each with a verdict.Day 1List five problems you've already solved. Circle one.FREE · FIVE DAYS · THE 5-TO-9 STARTER · 5–9",
+      "links": []
+    },
+    {
+      "id": "guide-days-title",
+      "text": "What's insideFive days, one tested idea.Each email is about 250 words. Read it at lunch, then do the action in 10 minutes that evening.Day 01Find it.Your idea is in problems you’ve already solved. List five. Circle the one that made someone ask, “how did you do that?”Day 02Who pays?Ask three real people how they deal with the problem today, what it costs them, and what they’d pay to fix it. If nobody cares, drop it. You just saved a weekend.Day 03Pick it.Score your shortlist in 10 minutes. The highest score wins. Includes a short lesson on positioning: making the idea look like yours, not a template.Day 04Prove it.Run a 10-minute proof test: a post, a waitlist, or one person paying £5. Don’t build anything until someone shows intent.Day 05Sell it.Write your first small paid offer for one person, with one outcome and one price. Then build the weekend version.After Day 5 you move onto the daily Weekend MVP list: one idea a day, with the honest catch and a verdict. When you're ready to build, the next step is the Build-Along sprint, two hours live with John for $29.",
+      "links": [
+        [
+          "/live/build-along",
+          "Build-Along sprint, two hours live with John for $29"
+        ]
+      ]
+    },
+    {
+      "id": "guide-founder-title",
+      "text": "A note from the founderWhy this guide existsI'm a designer. I built Weekend MVP because the gap between “I have an idea” and “here's a live URL” was too big for people with day jobs. Most of us don't lack ideas or talent. We lack a small enough place to start.Every idea on Weekend MVP is researched, sized for a weekend, and paired with copy-paste prompts for the AI tools you already use. This guide is the front half of that method: find the idea in your own week, check that someone will pay for it, and prove it in 10 minutes. Then build.You don't need to write a resignation letter.John IseghohiFounder, Weekend MVP.More about John",
+      "links": [
+        [
+          "/john-iseghohi",
+          "More about John"
+        ]
+      ]
+    },
+    {
+      "id": "guide-fit-title",
+      "text": "Is this for you?Made for people who are keeping the job.This is for you if+You have a 9-to-5 and an idea that won’t leave you alone.+Colleagues keep asking you about problems you’ve solved at work.+You can give it 10 minutes an evening for 5 days.This is not for you if–You want to quit tomorrow. This guide keeps the job and builds beside it.–You want a get-rich idea with nobody to sell it to. Day 2 rules those out on purpose.–You won’t talk to three real people. The method runs on real answers, not guesses.",
+      "links": []
+    },
+    {
+      "id": "guide-faq-title",
+      "text": "QuestionsBefore you sign up.Is it really free?+–Yes. All five emails are free. After Day 5 you join the daily Weekend MVP list, which sends one idea a day. You can unsubscribe at any time.I don’t have an idea yet.+–That’s what Day 1 is for. You don’t need to invent an idea. You find it in your own week: list five problems you’ve already solved, then circle the one that made someone ask how you did it.I only have two hours an evening.+–Ten minutes is enough. Each day is one short email and one small action, so it fits around a full-time job.Do I need to code?+–No. The guide covers finding, picking and proving an idea. There’s no building until Day 5, and even then the offer comes before the product. When you do build, Weekend MVP ideas come with copy-paste prompts for Cursor, Claude and Lovable.What happens after Day 5?+–You get the daily list: one researched idea a day, who it's for, what it costs, the honest catch, and a verdict. Day 5 ends with your first small paid offer. When you're ready to build it, the next step is the Build-Along sprint ($29): two hours live on Zoom, building your MVP while John builds his. You can revisit the method in The 5-to-9 Builder.",
+      "links": [
+        [
+          "/live/build-along",
+          "Build-Along sprint ($29)"
+        ],
+        [
+          "/guides/5-to-9-builder",
+          "The 5-to-9 Builder"
+        ]
+      ]
+    },
+    {
+      "id": "guide-final-title",
+      "text": "The 5-to-9 Starter · freeKnow by Friday.Five days from now you'll know whether your idea is worth a weekend, or whether to drop it and pick a better one. Either way, you'll know.Email addressSend me Day 1Free. Unsubscribe anytime.",
+      "links": []
+    }
+  ],
+  "jsonLd": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"Person\",\"@id\":\"https://www.weekendmvp.app/john-iseghohi\",\"name\":\"John Iseghohi\",\"jobTitle\":\"Founder, Weekend MVP\",\"url\":\"https://www.weekendmvp.app/john-iseghohi\",\"image\":\"https://www.weekendmvp.app/image/john-portrait.jpg\",\"sameAs\":[\"https://twitter.com/weekendmvp\",\"https://cal.com/switchtoux\"],\"worksFor\":{\"@id\":\"https://www.weekendmvp.app/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://www.weekendmvp.app/#organization\",\"name\":\"Weekend MVP\",\"url\":\"https://www.weekendmvp.app/\",\"logo\":\"https://www.weekendmvp.app/image/weekendmvp-logo.svg\",\"founder\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"},\"sameAs\":[\"https://twitter.com/weekendmvp\"]},{\"@type\":\"BreadcrumbList\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":{\"@id\":\"https://www.weekendmvp.app/\",\"name\":\"Home\"}},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"5-to-9 Starter\",\"item\":{\"@id\":\"https://www.weekendmvp.app/5-to-9-starter\",\"name\":\"5-to-9 Starter\"}}]},{\"@type\":\"WebPage\",\"@id\":\"https://www.weekendmvp.app/5-to-9-starter\",\"url\":\"https://www.weekendmvp.app/5-to-9-starter\",\"name\":\"The 5-to-9 Starter\",\"description\":\"A free 5-day email guide for people with day jobs. One short email and one 10-minute action each evening, ending Friday with a tested idea.\",\"datePublished\":\"2026-11-25T13:13:53Z\",\"dateModified\":\"2026-11-27\",\"isPartOf\":{\"@id\":\"https://www.weekendmvp.app/#website\"},\"about\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"},\"author\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"}}]}"
+  ]
+}
