@@ -84,3 +84,18 @@ Append-only progress log. Do not rely on chat history for project state.
 - Gotchas: `--fetch` was documented as not runnable in a cloud session. It is, with `NODE_USE_ENV_PROXY=1`. The `a11y-check` skill named in `CLAUDE.md` is not in `.claude/skills/`, so the skill names it by its `CLAUDE.md` reference.
 - Next: a placeholder pilot run of the skill on "mastering Claude Code", on a branch that is never merged (S6).
 
+## 2026-11-27 - WP103-S5 dry run: the Claude Code pilot (placeholder mode)
+
+- Why: the owner asked to test the skill with placeholders for the Claude Code evidence before real evidence exists.
+- Actions taken: ran `/publish-guide mastering Claude Code` through steps 0 to 8. Steps 0 and 1 stopped for the owner, who approved both. Step 2: eight Anthropic docs pages and nine tool facts, each with a verbatim excerpt. `verify --fetch` found all nine on the live pages. Step 3: a fresh agent judged every claim, found two claims stronger than their pages (subagents, verify), the claim wording was fixed, and the same agent judged all 14 claims again. The sealed verdict is FAIL, only on `ownerConfirmed` for three PLACEHOLDER claims. Step 5: spec, deck, sections and page, all from shared blocks. Step 6 and 7 below. Branch `claude/wp103-s6-claude-code-pilot`, never to be merged.
+- Checks run: `audit:guide` fails with 22 errors, all stand-ins (12 `placeholder-text`, 6 `evidence-placeholder`, 4 `research-review`), plus 2 warnings (social image missing, only listed offer switched off). No unbacked figure, no missing slot, no unused claim, no hero problem. `--live` on a local production server: the only live error is placeholder wording on the page. No page error, no sideways scroll at 390, locked, unlocked and returning states work. `npm run typecheck`, `eslint`, `test:home` (240 passed) and `npm run build` pass, and the page prerenders. axe-core, WCAG 2.1 A and AA, locked and unlocked, at 390 and 1280: 0 violations. Screenshots checked by eye.
+- What the dry run found about the skill and the template:
+  1. The skill said a guide with no fitting offer ships with no upsell. The audit errors on `upsell-missing` instead. Fixed in the skill, and the pilot lists the switched-off Build-Along as a stand-in.
+  2. `GuideLayout` requires `ideaCount` even when no section summary uses it. The pilot passes 0. Making it optional is a template change for a later story.
+  3. The consent banner covers the primary "Start reading" button at 390 pixels, on this guide and on the live 5-to-9 guide. The plan listed a banner check as an audit rule. The live audit does not have it. Adding it would fail the real 5-to-9 guide, so the fix is the owner's call.
+  4. `verify --fetch` works in a cloud session with `NODE_USE_ENV_PROXY=1`. S4's "fetch not run" gap is closed.
+  5. The `a11y-check` skill named in `CLAUDE.md` is not in `.claude/skills/`. axe-core was run instead. The skill file now names the gap.
+- Owner decisions open: confirm the tools claim (the repo also has Codex work, so "with Claude Code" may need "and Codex"). The gate fine print and which email automation a new guide starts. The stand-in offer, or a Claude Code waitlist offer. The social image. The voice of the founder note and the FAQ answers. John's real evidence for the five worked examples, the build story and the four weekly proofs.
+- Gotchas: the brief said 233 idea pages and 102 articles. Those counted every file in the folders. `.mdx` files are 231 and 101. The articles claim was dropped because its margin over 100 was one.
+- Next: John supplies the evidence. Then redraft the review with `--force`, have the reviewer judge again, rerun the audit, and only then ask about a PR.
+
