@@ -1,3 +1,4 @@
+import type { HomeCopy } from "@/lib/landing/read-home";
 import Link from "next/link";
 
 import type { SpotlightIdea } from "@/lib/home/types";
@@ -69,7 +70,7 @@ function PeekCard({ tool, n, title, className }: { tool: ToolKey; n: number; tit
 }
 
 /** 05 · Works with the AI you already use, plus this week's prompts. */
-export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, number>; idea: SpotlightIdea | null }) {
+export function BuildWithAI({ toolCounts, idea, copy }: { toolCounts: Record<string, number>; idea: SpotlightIdea | null; copy: HomeCopy["buildWithAi"] }) {
   const tiles: Tile[] = TILES.map((t) => ({
     key: t.key,
     href: `/build-with/${t.hub}`,
@@ -81,14 +82,14 @@ export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, n
     <section aria-labelledby="home-ai-title" data-scene="ai" className="bg-home-paper py-14 lg:py-24">
       <Container className="flex flex-col gap-7 lg:gap-12">
         <div data-m="head" className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <Eyebrow className="lg:hidden">Build with AI</Eyebrow>
+          <Eyebrow className="lg:hidden">{copy.eyebrow}</Eyebrow>
           <h2 id="home-ai-title" data-m="lines" className="max-w-[900px] font-editorial text-[48px] font-normal leading-[0.95] tracking-[-0.035em] text-home-ink lg:order-1 lg:text-[120px] lg:leading-[0.92] lg:tracking-[-0.04em]">
-            Works with the AI <Em>you already use.</Em>
+            {copy.title + " "}<Em>{copy.accent}</Em>
           </h2>
           <div className="flex flex-col gap-4 lg:order-2 lg:w-[300px] lg:gap-[18px] lg:pb-2.5">
-            <Eyebrow className="max-lg:hidden">Build with AI</Eyebrow>
+            <Eyebrow className="max-lg:hidden">{copy.eyebrow}</Eyebrow>
             <p className="text-base leading-[1.55] text-home-ink-2 lg:text-[17px]">
-              Every idea ships with three or more copy-paste prompts. Pick your tool to see the ideas that fit it best.
+              {copy.intro}
             </p>
           </div>
         </div>
@@ -103,19 +104,19 @@ export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, n
         {first && idea && (
           <div data-m="panel" className="mt-2 flex flex-col gap-5 rounded-3xl bg-home-ink px-5 pb-6 pt-8 lg:relative lg:mt-4 lg:block lg:h-[620px] lg:overflow-hidden lg:rounded-[32px] lg:p-0">
             <div data-m="copy" className="flex flex-col gap-5 lg:absolute lg:left-16 lg:top-[72px] lg:w-[400px] lg:gap-6">
-              <Eyebrow dark>This week&rsquo;s prompts</Eyebrow>
+              <Eyebrow dark>{copy.prompts.eyebrow}</Eyebrow>
               <h3 data-m="lines" className="font-editorial text-[60px] font-normal leading-[0.92] tracking-[-0.04em] text-home-d1 lg:text-[92px]">
-                Paste.
+                {copy.prompts.first}
                 <br />
-                Run.
+                {copy.prompts.second}
                 <br />
-                <Em dark>Ship.</Em>
+                <Em dark>{copy.prompts.accent}</Em>
               </h3>
               <p className="text-base leading-[1.55] text-home-d2 lg:max-w-[380px] lg:text-[17px]">
-                The three prompts that build this week&rsquo;s idea, {idea.shortTitle}. Copy one into your tool and start.
+                {copy.prompts.intro + " "}{idea.shortTitle}{". " + copy.prompts.ending}
               </p>
               <ButtonLink href={`/ideas/${idea.slug}`} tone="dark" className="hidden w-fit lg:inline-flex">
-                See every prompt
+                {copy.prompts.link}
               </ButtonLink>
             </div>
 
@@ -147,7 +148,7 @@ export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, n
               </div>
             </div>
             <ButtonLink href={`/ideas/${idea.slug}`} tone="dark" className="w-full lg:hidden">
-              See every prompt
+              {copy.prompts.link}
             </ButtonLink>
           </div>
         )}

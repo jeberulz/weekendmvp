@@ -1,4 +1,5 @@
 import { config, singleton } from "@keystatic/core";
+import { homeFields } from "@/lib/landing/home-fields";
 import { buildAlongFields } from "@/lib/landing/build-along-fields";
 import { freeWebinarFields } from "@/lib/landing/free-webinar-fields";
 import { liveHubFields } from "@/lib/landing/live-hub-fields";
@@ -22,6 +23,12 @@ export function landingEditorConfig(mode: StorageMode) {
       : { kind: "local" },
     ui: { brand: { name: "Weekend MVP" } },
     singletons: {
+      home: singleton({
+        label: "Homepage",
+        path: prefix + "home/",
+        format: "json",
+        schema: homeFields,
+      }),
       "live-build-along": singleton({
         label: "Build-Along",
         path: prefix + "live-build-along/",

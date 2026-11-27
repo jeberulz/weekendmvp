@@ -1,0 +1,209 @@
+{
+  "seoTitle": "Weekend MVP | {ideaCount} Startup Ideas You Can Build in a Weekend",
+  "seoDescription": "{ideaCount} researched startup ideas sized for one weekend — each with copy-paste prompts for Cursor, Claude, and Lovable. Keep your job. Ship by Sunday.",
+  "hero": {
+    "title": "Pick an idea. Paste the prompt.",
+    "accent": "Ship it by Sunday.",
+    "intro": "Researched startup ideas sized for one weekend, with copy-paste prompts for the AI tools you already use. Keep your job.",
+    "countLabel": "IDEAS · EVERY ONE WITH BUILD PROMPTS",
+    "signUp": "Get the free Starter Kit",
+    "ownIdea": "Have your own idea?",
+    "stamp": "RESEARCHED · WEEKEND-SIZED ·"
+  },
+  "whatIs": {
+    "title": "What is Weekend MVP?",
+    "intro": "Weekend MVP is a library of researched startup ideas sized for one person and about one weekend. Each idea includes problem, market notes, stack, and copy-paste prompts for tools like Cursor, Claude, and Lovable so you can ship a live MVP without quitting your job.",
+    "navigation": "Start here",
+    "startHere": {
+      "browse": "Browse startup ideas",
+      "dmarc": "DMARC monitor for agencies",
+      "prompts": "Prompt regression tests for AI builders",
+      "kit": "Get the free Starter Kit",
+      "starter": "The 5-to-9 Starter",
+      "builder": "The 5-to-9 Builder",
+      "audience": "Ideas for non-technical founders"
+    }
+  },
+  "ideaLibrary": {
+    "eyebrow": "The idea library · updated weekly",
+    "title": "startup ideas, each one",
+    "accent": "sized for a weekend."
+  },
+  "ideaOfTheWeek": {
+    "eyebrow": "IDEA OF THE WEEK",
+    "research": "Read the research",
+    "process": "How it works",
+    "figures": "The numbers",
+    "sources": "cited sources behind the research"
+  },
+  "weekendTest": {
+    "eyebrow": "The weekend test",
+    "title": "What makes an idea",
+    "accent": "weekend-sized.",
+    "notes": {
+      "feature": {
+        "title": "One core feature",
+        "body": "One job, done well. Everything else waits for version two."
+      },
+      "screens": {
+        "title": "Three screens",
+        "body": "A landing page, an input, and an output. That is the whole MVP."
+      },
+      "tools": {
+        "title": "Built on existing tools",
+        "body": "Stripe, Supabase, Gmail, and AI APIs do the heavy lifting."
+      },
+      "buyer": {
+        "title": "A buyer you can name",
+        "body": "Freelancers, music teachers, Shopify owners. Not everyone."
+      },
+      "prompts": {
+        "title": "Prompts included",
+        "body": "Paste them into Cursor, Claude, or Bolt and start building."
+      },
+      "estimate": {
+        "title": "About {hours} hours",
+        "body": "The average idea is estimated at {hours} hours. That is one weekend."
+      }
+    },
+    "stamp": "PASSES THE WEEKEND TEST ·",
+    "closing": "Every idea is scoped for one person, a few AI tools, and about {hours} hours."
+  },
+  "buildWithAi": {
+    "eyebrow": "Build with AI",
+    "title": "Works with the AI",
+    "accent": "you already use.",
+    "intro": "Every idea ships with three or more copy-paste prompts. Pick your tool to see the ideas that fit it best.",
+    "prompts": {
+      "eyebrow": "This week’s prompts",
+      "first": "Paste.",
+      "second": "Run.",
+      "accent": "Ship.",
+      "intro": "The three prompts that build this week’s idea,",
+      "ending": "Copy one into your tool and start.",
+      "link": "See every prompt"
+    }
+  },
+  "insideEveryIdea": {
+    "eyebrow": "Inside every idea",
+    "title": "Real research.",
+    "accent": "Not a vibe.",
+    "intro": "Every idea page follows the same seven sections, plus its sources. These excerpts come from this week’s pick:",
+    "problem": "The Problem",
+    "solution": "The Solution",
+    "market": "Market Research",
+    "competition": "Competitive Landscape",
+    "business": "Business Model",
+    "stack": "Tech Stack",
+    "prompts": "AI Prompts",
+    "sources": "Sources",
+    "sourcesNote": "cited sources, linked on the page",
+    "linkEyebrow": "THE FULL PAGE",
+    "link": "Read the full idea"
+  },
+  "yourWeekend": {
+    "eyebrow": "Keep your job",
+    "title": "Built around your",
+    "accent": "9-to-5.",
+    "intro": "No sabbatical. No co-founder. About 12 hours across one weekend is enough to ship the first version.",
+    "timeframe": "FRIDAY NIGHT TO SUNDAY",
+    "signUp": "Get the weekend plan",
+    "plan": {
+      "friday": {
+        "day": "FRIDAY NIGHT",
+        "title": "Pick and plan",
+        "body": "Pick an idea and read the research. Cut the scope to one core feature."
+      },
+      "saturday": {
+        "day": "SATURDAY",
+        "title": "Build the core",
+        "body": "Paste the setup prompt. Build the one screen that does the job."
+      },
+      "sunday": {
+        "day": "SUNDAY",
+        "title": "Launch it",
+        "body": "Add a landing page and a waitlist. Share the link with ten people."
+      },
+      "monday": {
+        "day": "MONDAY",
+        "title": "Back at work",
+        "body": "With a live product, real feedback, and your job intact."
+      }
+    },
+    "closing": "The Starter Kit has the full Friday-to-Sunday plan.",
+    "closingCta": "Get the plan free"
+  },
+  "starterKit": {
+    "eyebrow": "Free Starter Kit",
+    "title": "Your ticket to",
+    "accent": "a shipped weekend.",
+    "ticketLine": "The Weekend MVP",
+    "ticketAccent": "Starter Kit",
+    "ticketMeta": [
+      {
+        "label": "FROM",
+        "value": "An idea"
+      },
+      {
+        "label": "TO",
+        "value": "A live link"
+      },
+      {
+        "label": "DEPARTS",
+        "value": "Friday night"
+      },
+      {
+        "label": "ARRIVES",
+        "value": "Sunday"
+      },
+      {
+        "label": "INCLUDES",
+        "value": "6 tools"
+      }
+    ],
+    "stub": "YOUR COPY",
+    "signUp": "Send me the kit",
+    "finePrint": "Free. Unsubscribe anytime.",
+    "contents": {
+      "demo": "The 15-second demo test",
+      "template": "3-screen MVP template",
+      "scorecard": "MVP idea scorecard",
+      "plan": "48-hour weekend plan",
+      "checklist": "Scope-cutting checklist",
+      "prompts": "Copy-paste AI prompts"
+    }
+  },
+  "founderNote": {
+    "title": "A note from",
+    "letter": [
+      "I started Weekend MVP to close the gap between “I have an idea” and “here’s a live URL.” Most people with a day job don’t lack ideas or talent. They lack a small enough place to start.",
+      "So every idea here is researched, sized for a weekend, and paired with prompts for the AI tools you already use. Pick one. Build it on Saturday. Show someone on Sunday."
+    ],
+    "biography": "Founder, Weekend MVP · runs a community of 400+ weekend builders",
+    "link": "More about John"
+  },
+  "finalCall": {
+    "title": "Pick an idea.",
+    "accent": "Build it this weekend.",
+    "signUp": "Get the free Starter Kit",
+    "ownIdea": "Already have an idea?",
+    "faqs": [
+      {
+        "question": "Do I need to code?",
+        "answer": "No. Every Weekend MVP idea ships with copy-paste prompts for AI builders like Cursor, Claude, Bolt, and Lovable. You pick an idea, paste the prompts, and follow a three-screen MVP (landing → input → output). Coding helps, but it’s not required to get a demo live by Sunday."
+      },
+      {
+        "question": "Do I have to quit my job?",
+        "answer": "No. Most ideas are scoped to about 8–12 hours — roughly one weekend around a 9-to-5. The site is built for solo founders and side builders who want a live URL and early users, not a sabbatical or a co-founder."
+      },
+      {
+        "question": "Are the ideas free?",
+        "answer": "Yes. Browsing the idea library is free. Some full research pages ask for an email to unlock deeper prompts and sources. The Weekend MVP Starter Kit (scorecard, 48-hour plan, templates) is also free."
+      },
+      {
+        "question": "How do I build an MVP in a weekend?",
+        "answer": "Pick an idea small enough for 8–12 hours, cut it to three screens (landing, input, output), and paste the prompts into an AI builder like Cursor, Claude, Bolt, or Lovable. Build on Saturday, deploy, and put the live link in front of real users on Sunday. The free Starter Kit includes a 48-hour plan."
+      }
+    ]
+  }
+}

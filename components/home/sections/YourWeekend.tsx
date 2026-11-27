@@ -1,8 +1,9 @@
+import type { HomeCopy } from "@/lib/landing/read-home";
 import { getImageProps } from "next/image";
 
 import { SignupCta } from "@/components/marketing/SignupCta";
 import { cn } from "@/lib/utils";
-import { WEEKEND_PLAN } from "../content";
+import { WEEKEND_PLAN_SLOTS } from "../content";
 import { Icon } from "../icons";
 import { ButtonLink, Container, Em, Eyebrow, buttonClass } from "../ui";
 
@@ -28,7 +29,7 @@ function FounderPhoto() {
 }
 
 /** 07 · Built around your 9-to-5: founder photo with the four-step weekend plan. */
-export function YourWeekend({ total }: { total: number }) {
+export function YourWeekend({ total, copy }: { total: number; copy: HomeCopy["yourWeekend"] }) {
   return (
     <section aria-labelledby="home-weekend-title" data-scene="weekend" className="relative overflow-hidden bg-home-ink">
       <div data-m="photo" className="relative h-[520px] overflow-hidden lg:absolute lg:inset-x-0 lg:top-0 lg:h-[1060px]">
@@ -51,22 +52,22 @@ export function YourWeekend({ total }: { total: number }) {
           JOHN ISEGHOHI · FOUNDER, WEEKEND MVP
         </p>
         <div data-m="head" className="flex flex-col gap-5 lg:ml-auto lg:mt-3 lg:w-[540px] lg:gap-[26px]">
-          <Eyebrow dark>Keep your job</Eyebrow>
+          <Eyebrow dark>{copy.eyebrow}</Eyebrow>
           <h2 id="home-weekend-title" data-m="lines" className="font-editorial text-[56px] font-normal leading-[0.95] tracking-[-0.035em] text-home-d1 lg:text-[100px]">
-            Built around your <Em dark>9-to-5.</Em>
+            {copy.title + " "}<Em dark>{copy.accent}</Em>
           </h2>
           <p className="text-[17px] leading-[1.55] text-home-d2 lg:max-w-[500px] lg:text-xl">
-            No sabbatical. No co-founder. About 12 hours across one weekend is enough to ship the first version.
+            {copy.intro}
           </p>
           <p className="flex items-baseline gap-3 lg:gap-3.5">
             <span data-m="count" className="font-editorial text-[44px] leading-none tracking-[-0.02em] text-home-d1 lg:text-[56px]">
               12 hrs
             </span>
-            <span className="font-mono text-[11px] tracking-[0.08em] text-home-d3 lg:text-xs">FRIDAY NIGHT TO SUNDAY</span>
+            <span className="font-mono text-[11px] tracking-[0.08em] text-home-d3 lg:text-xs">{copy.timeframe}</span>
           </p>
           <div className="flex flex-col gap-2.5 lg:flex-row lg:gap-3.5">
             <SignupCta buttonLocation="home-weekend" className={buttonClass("dark")}>
-              Get the weekend plan
+              {copy.signUp}
               <Icon name="arrow" size={18} strokeWidth={1.75} />
             </SignupCta>
             <ButtonLink href="/startup-ideas" tone="ghost-dark" icon="search">
@@ -77,9 +78,9 @@ export function YourWeekend({ total }: { total: number }) {
         </div>
 
         <ol data-m="plan" className="mt-3 border-t border-home-dr lg:mx-[-28px] lg:mt-0 lg:grid lg:grid-cols-4 lg:border-t-0">
-          {WEEKEND_PLAN.map((d, i) => (
+          {WEEKEND_PLAN_SLOTS.map((d, i) => (
             <li
-              key={d.day}
+              key={d.key}
               data-m="day"
               className={cn(
                 "flex flex-col gap-3 py-[22px] lg:gap-[18px] lg:px-7 lg:py-0",
@@ -88,7 +89,7 @@ export function YourWeekend({ total }: { total: number }) {
             >
               <div className="flex items-center gap-3 lg:justify-between">
                 <Icon name={d.icon} size={28} color="var(--color-home-d1)" accent="var(--color-home-orange-light)" className="lg:size-9" />
-                <span className="font-mono text-[11px] tracking-[0.08em] text-home-d3 lg:hidden">{d.day}</span>
+                <span className="font-mono text-[11px] tracking-[0.08em] text-home-d3 lg:hidden">{copy.plan[d.key].day}</span>
                 <span className={cn("ml-auto font-mono text-xs font-medium lg:ml-0 lg:text-[13px]", d.hours ? "text-home-orange-light" : "text-home-d3")}>
                   {d.hours} hrs
                 </span>
@@ -100,9 +101,9 @@ export function YourWeekend({ total }: { total: number }) {
                   <span className="block h-2 flex-1 rounded-[2px] shadow-[inset_0_0_0_1px_#3a362f] lg:h-2.5" />
                 )}
               </div>
-              <span className="hidden font-mono text-[11px] tracking-[0.08em] text-home-d3 lg:block">{d.day}</span>
-              <h3 className="font-editorial text-[26px] font-normal leading-[1.1] text-home-d1 lg:text-[30px]">{d.title}</h3>
-              <p className="text-[15px] leading-[1.55] text-home-d2 lg:text-base">{d.body}</p>
+              <span className="hidden font-mono text-[11px] tracking-[0.08em] text-home-d3 lg:block">{copy.plan[d.key].day}</span>
+              <h3 className="font-editorial text-[26px] font-normal leading-[1.1] text-home-d1 lg:text-[30px]">{copy.plan[d.key].title}</h3>
+              <p className="text-[15px] leading-[1.55] text-home-d2 lg:text-base">{copy.plan[d.key].body}</p>
             </li>
           ))}
         </ol>
@@ -110,13 +111,13 @@ export function YourWeekend({ total }: { total: number }) {
         <div data-m="up" className="mt-2 flex flex-col gap-3 rounded-2xl border border-home-panel-rule bg-home-panel p-[18px] lg:mt-[54px] lg:flex-row lg:items-center lg:justify-between lg:px-7 lg:py-[22px]">
           <p className="flex items-start gap-2.5 text-[15px] leading-[1.45] text-home-d1 lg:items-center lg:gap-3 lg:text-base">
             <Icon name="kit" size={22} accent="var(--color-home-orange-light)" className="lg:size-6" />
-            The Starter Kit has the full Friday-to-Sunday plan.
+            {copy.closing}
           </p>
           <SignupCta
             buttonLocation="home-weekend-strip"
             className="inline-flex items-center gap-2 text-[15px] font-medium text-home-orange-light underline underline-offset-4 hover:text-home-d1"
           >
-            Get the plan free
+            {copy.closingCta}
             <Icon name="arrow" size={16} strokeWidth={1.75} />
           </SignupCta>
         </div>

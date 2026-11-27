@@ -1,11 +1,11 @@
+import type { HomeCopy } from "@/lib/landing/read-home";
 import Image from "next/image";
 
-import { FOUNDER_LETTER } from "../content";
 import { Container, Em, TextLink } from "../ui";
 
 /** 09 · A note from John. */
-export function FounderNote() {
-  const [first, ...rest] = FOUNDER_LETTER;
+export function FounderNote({ copy }: { copy: HomeCopy["founderNote"] }) {
+  const [first, ...rest] = copy.letter;
   return (
     <section aria-labelledby="home-founder-title" data-scene="founder" className="bg-home-sunk py-14 lg:pb-24 lg:pt-[104px]">
       <Container className="flex flex-col items-center gap-7 lg:gap-10">
@@ -14,7 +14,7 @@ export function FounderNote() {
           data-m="title"
           className="flex flex-col items-center gap-2.5 text-center font-editorial text-[46px] font-normal leading-none tracking-[-0.03em] text-home-ink lg:flex-row lg:gap-[22px] lg:text-[84px]"
         >
-          A note from
+          {copy.title}
           <span className="flex items-center gap-3.5 lg:gap-[22px]">
             <Image
               src="/image/john-portrait.webp"
@@ -35,19 +35,19 @@ export function FounderNote() {
             </span>
             {first.slice(1)}
           </p>
-          {rest.map((p) => (
-            <p key={p}>{p}</p>
+          {rest.map((p, index) => (
+            <p key={index}>{p}</p>
           ))}
         </div>
         <div data-m="signoff" className="flex w-full max-w-[680px] flex-col gap-2 border-t border-home-rule pt-5 lg:flex-row lg:items-end lg:justify-between lg:pt-6">
           <div className="flex flex-col gap-2 lg:gap-1.5">
             <p data-m="sign" className="font-editorial text-4xl italic leading-none lg:text-[44px]">John Iseghohi</p>
             <p data-m="rise" className="text-[13px] leading-[1.45] text-home-ink-3 lg:text-sm">
-              Founder, Weekend MVP · runs a community of 400+ weekend builders
+              {copy.biography}
             </p>
           </div>
           <TextLink href="/john-iseghohi" m="rise" className="mt-1.5 lg:mt-0">
-            More about John
+            {copy.link}
           </TextLink>
         </div>
       </Container>

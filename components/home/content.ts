@@ -1,87 +1,56 @@
-/** Static homepage copy. Live numbers come from `getHomeData()`. */
-import type { IconName } from "./icons";
+import seed from "@/content/landing-pages/home/index.json";
+import type { HomeCopy } from "@/lib/landing/read-home";
 
-export const WEEKEND_TEST: { icon: IconName; title: string; body: (avgHours: number) => string }[] = [
-  { icon: "target", title: "One core feature", body: () => "One job, done well. Everything else waits for version two." },
-  { icon: "screens", title: "Three screens", body: () => "A landing page, an input, and an output. That is the whole MVP." },
-  { icon: "plug", title: "Built on existing tools", body: () => "Stripe, Supabase, Gmail, and AI APIs do the heavy lifting." },
-  { icon: "buyer", title: "A buyer you can name", body: () => "Freelancers, music teachers, Shopify owners. Not everyone." },
-  { icon: "prompt", title: "Prompts included", body: () => "Paste them into Cursor, Claude, or Bolt and start building." },
-  { icon: "clock", title: "About {hours} hours", body: (h) => `The average idea is estimated at ${h} hours. That is one weekend.` },
-];
-
-export const WEEKEND_PLAN: { icon: IconName; day: string; hours: number; title: string; body: string }[] = [
-  { icon: "moon", day: "FRIDAY NIGHT", hours: 2, title: "Pick and plan", body: "Pick an idea and read the research. Cut the scope to one core feature." },
-  { icon: "sun", day: "SATURDAY", hours: 6, title: "Build the core", body: "Paste the setup prompt. Build the one screen that does the job." },
-  { icon: "flag", day: "SUNDAY", hours: 4, title: "Launch it", body: "Add a landing page and a waitlist. Share the link with ten people." },
-  { icon: "briefcase", day: "MONDAY", hours: 0, title: "Back at work", body: "With a live product, real feedback, and your job intact." },
-];
-
-export const KIT_CONTENTS: { icon: IconName; label: string }[] = [
-  { icon: "stopwatch", label: "The 15-second demo test" },
-  { icon: "screens", label: "3-screen MVP template" },
-  { icon: "target", label: "MVP idea scorecard" },
-  { icon: "weekend", label: "48-hour weekend plan" },
-  { icon: "kit", label: "Scope-cutting checklist" },
-  { icon: "prompt", label: "Copy-paste AI prompts" },
-];
-
-export const TICKET_META: [string, string][] = [
-  ["FROM", "An idea"],
-  ["TO", "A live link"],
-  ["DEPARTS", "Friday night"],
-  ["ARRIVES", "Sunday"],
-  ["INCLUDES", "6 tools"],
-];
-
-export const FAQS = [
-  {
-    question: "Do I need to code?",
-    answer:
-      "No. Every Weekend MVP idea ships with copy-paste prompts for AI builders like Cursor, Claude, Bolt, and Lovable. You pick an idea, paste the prompts, and follow a three-screen MVP (landing → input → output). Coding helps, but it’s not required to get a demo live by Sunday.",
-  },
-  {
-    question: "Do I have to quit my job?",
-    answer:
-      "No. Most ideas are scoped to about 8–12 hours — roughly one weekend around a 9-to-5. The site is built for solo founders and side builders who want a live URL and early users, not a sabbatical or a co-founder.",
-  },
-  {
-    question: "Are the ideas free?",
-    answer:
-      "Yes. Browsing the idea library is free. Some full research pages ask for an email to unlock deeper prompts and sources. The Weekend MVP Starter Kit (scorecard, 48-hour plan, templates) is also free.",
-  },
-  {
-    question: "How do I build an MVP in a weekend?",
-    answer:
-      "Pick an idea small enough for 8–12 hours, cut it to three screens (landing, input, output), and paste the prompts into an AI builder like Cursor, Claude, Bolt, or Lovable. Build on Saturday, deploy, and put the live link in front of real users on Sunday. The free Starter Kit includes a 48-hour plan.",
-  },
-];
-
-/** Citeable definition for AEO / speakable schema. Keep in sync with homepage UI. */
-export const WHAT_IS =
-  "Weekend MVP is a library of researched startup ideas sized for one person and about one weekend. Each idea includes problem, market notes, stack, and copy-paste prompts for tools like Cursor, Claude, and Lovable so you can ship a live MVP without quitting your job.";
-
-export const START_HERE = [
-  { href: "/startup-ideas", label: "Browse startup ideas" },
-  {
-    href: "/ideas/dmarc-monitor-agencies-small-business",
-    label: "DMARC monitor for agencies",
-  },
-  {
-    href: "/ideas/prompt-regression-tests-indie-ai-builders",
-    label: "Prompt regression tests for AI builders",
-  },
-  { href: "/starter-kit", label: "Get the free Starter Kit" },
-  { href: "/5-to-9-starter", label: "The 5-to-9 Starter" },
-  { href: "/guides/5-to-9-builder", label: "The 5-to-9 Builder" },
-  { href: "/ideas-for/non-technical", label: "Ideas for non-technical founders" },
+// The first-party destinations, icon choices and plan timing stay tied to their slots.
+const START_HERE_DESTINATIONS = [
+  { key: "browse", href: "/startup-ideas" },
+  { key: "dmarc", href: "/ideas/dmarc-monitor-agencies-small-business" },
+  { key: "prompts", href: "/ideas/prompt-regression-tests-indie-ai-builders" },
+  { key: "kit", href: "/starter-kit" },
+  { key: "starter", href: "/5-to-9-starter" },
+  { key: "builder", href: "/guides/5-to-9-builder" },
+  { key: "audience", href: "/ideas-for/non-technical" },
 ] as const;
 
-/**
- * Draft founder letter, written from John's public bio (WP42 design review).
- * John is to rewrite it in his own words before this ships.
- */
-export const FOUNDER_LETTER = [
-  "I started Weekend MVP to close the gap between “I have an idea” and “here’s a live URL.” Most people with a day job don’t lack ideas or talent. They lack a small enough place to start.",
-  "So every idea here is researched, sized for a weekend, and paired with prompts for the AI tools you already use. Pick one. Build it on Saturday. Show someone on Sunday.",
-];
+export function startHereLinks(labels: HomeCopy["whatIs"]["startHere"]) {
+  return START_HERE_DESTINATIONS.map(({ key, href }) => ({ href, label: labels[key] }));
+}
+
+export const WEEKEND_TEST = [
+  { key: "feature", icon: "target" },
+  { key: "screens", icon: "screens" },
+  { key: "tools", icon: "plug" },
+  { key: "buyer", icon: "buyer" },
+  { key: "prompts", icon: "prompt" },
+  { key: "estimate", icon: "clock" },
+] as const;
+
+export const WEEKEND_PLAN_SLOTS = [
+  { key: "friday", icon: "moon", hours: 2 },
+  { key: "saturday", icon: "sun", hours: 6 },
+  { key: "sunday", icon: "flag", hours: 4 },
+  { key: "monday", icon: "briefcase", hours: 0 },
+] as const;
+
+export const KIT_CONTENTS = [
+  { key: "demo", icon: "stopwatch" },
+  { key: "template", icon: "screens" },
+  { key: "scorecard", icon: "target" },
+  { key: "plan", icon: "weekend" },
+  { key: "checklist", icon: "kit" },
+  { key: "prompts", icon: "prompt" },
+] as const;
+
+// The project planner uses the same published default without a request-time CMS dependency.
+export const WEEKEND_PLAN = WEEKEND_PLAN_SLOTS.map(({ key, icon, hours }) => ({
+  icon,
+  day: seed.yourWeekend.plan[key].day,
+  hours,
+  title: seed.yourWeekend.plan[key].title,
+  body: seed.yourWeekend.plan[key].body,
+}));
+
+// Retain the data exports for callers that consume the published seed directly.
+export const FAQS = seed.finalCall.faqs;
+export const WHAT_IS = seed.whatIs.intro;
+export const START_HERE = startHereLinks(seed.whatIs.startHere);

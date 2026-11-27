@@ -1,7 +1,8 @@
+import type { HomeCopy } from "@/lib/landing/read-home";
 import { SignupCta } from "@/components/marketing/SignupCta";
 import { OwnIdeaCta } from "@/components/workspace/OwnIdeaCta";
 import { cn } from "@/lib/utils";
-import { FAQS } from "../content";
+import seed from "@/content/landing-pages/home/index.json";
 import { IdeaArt } from "../IdeaArt";
 import { ButtonLink, Container, Em, buttonClass } from "../ui";
 import { Icon } from "../icons";
@@ -17,10 +18,12 @@ export function FinalCall({
   total,
   strip,
   buildCta = false,
+  copy = seed.finalCall,
 }: {
   total: number;
   strip: { slug: string; art: string }[];
   buildCta?: boolean;
+  copy?: HomeCopy["finalCall"];
 }) {
   return (
     <section aria-labelledby="home-final-title" data-scene="final" className="overflow-hidden bg-home-ink pb-14 pt-9 lg:pb-[72px] lg:pt-[72px]">
@@ -43,9 +46,9 @@ export function FinalCall({
           data-m="lines"
           className="text-center font-editorial text-[60px] font-normal leading-[0.92] tracking-[-0.04em] text-home-d1 lg:text-[150px] lg:leading-[0.9] lg:tracking-[-0.045em]"
         >
-          Pick an idea.
+          {copy.title}
           <br />
-          <Em dark>Build it this weekend.</Em>
+          <Em dark>{copy.accent}</Em>
         </h2>
         <div data-m="cta" className="flex flex-col gap-2.5 lg:flex-row lg:gap-3.5">
           <ButtonLink href="/startup-ideas" tone="dark">
@@ -53,17 +56,17 @@ export function FinalCall({
           </ButtonLink>
           <SignupCta buttonLocation="home-final" className={buttonClass("ghost-dark", "px-[22px] font-medium")}>
             <Icon name="kit" size={20} accent="var(--color-home-orange-light)" />
-            Get the free Starter Kit
+            {copy.signUp}
           </SignupCta>
         </div>
         {buildCta && (
           <p className="text-[15px] leading-[1.5] text-home-d2 lg:text-center">
-            Already have an idea? <OwnIdeaCta location="home-final" dark />
+            {copy.ownIdea + " "}<OwnIdeaCta location="home-final" dark />
           </p>
         )}
         <dl data-m="up-list" className="mt-3 grid w-full grid-cols-1 border-b border-home-dr lg:mt-[88px] lg:grid-cols-3 lg:gap-12 lg:border-b-0 lg:border-t lg:pt-8">
-          {FAQS.map((f) => (
-            <div key={f.question} className="flex flex-col gap-2 border-t border-home-dr py-5 lg:border-t-0 lg:py-0">
+          {copy.faqs.map((f, index) => (
+            <div key={index} className="flex flex-col gap-2 border-t border-home-dr py-5 lg:border-t-0 lg:py-0">
               <dt className="text-base font-semibold text-home-d1 lg:text-[17px]">{f.question}</dt>
               <dd className="text-[15px] leading-[1.5] text-home-d2">{f.answer}</dd>
             </div>

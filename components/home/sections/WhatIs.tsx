@@ -1,25 +1,26 @@
+import type { HomeCopy } from "@/lib/landing/read-home";
 import Link from "next/link";
 
-import { START_HERE, WHAT_IS } from "../content";
+import { startHereLinks } from "../content";
 import { Container, Eyebrow } from "../ui";
 
 /** Citeable “What is Weekend MVP” block + Start here links (SEO/AEO P1). */
-export function WhatIs() {
+export function WhatIs({ copy }: { copy: HomeCopy["whatIs"] }) {
   return (
     <section aria-labelledby="home-what-is-label" className="border-t border-home-rule bg-home-paper">
       <Container className="flex flex-col gap-6 py-10 md:gap-7 md:py-12 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
         <div className="flex max-w-[720px] flex-col gap-3.5">
           <Eyebrow as="h2" id="home-what-is-label">
-            What is Weekend MVP?
+            {copy.title}
           </Eyebrow>
           <p id="home-what-is" className="text-[17px] leading-[1.6] text-home-ink-2 md:text-lg md:leading-[1.65]">
-            {WHAT_IS}
+            {copy.intro}
           </p>
         </div>
-        <nav aria-label="Start here" className="flex shrink-0 flex-col gap-3 lg:min-w-[240px] lg:pt-1">
-          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-orange-ink">Start here</p>
+        <nav aria-label={copy.navigation} className="flex shrink-0 flex-col gap-3 lg:min-w-[240px] lg:pt-1">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-orange-ink">{copy.navigation}</p>
           <ul className="flex flex-col gap-2.5">
-            {START_HERE.map((link) => (
+            {startHereLinks(copy.startHere).map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}

@@ -3,7 +3,7 @@ import { connection } from "next/server";
 
 export const instant = false;
 
-import { FAQS } from "@/components/home/content";
+import { readHome } from "@/lib/landing/read-home";
 import { HomeMotion } from "@/components/home/motion/HomeMotion";
 import { BuildWithAI } from "@/components/home/sections/BuildWithAI";
 import { FinalCall } from "@/components/home/sections/FinalCall";
@@ -34,19 +34,16 @@ import {
   websiteSchema,
 } from "@/lib/seo";
 
-function homeTitle(ideaCount: number) {
-  return `Weekend MVP | ${ideaCount} Startup Ideas You Can Build in a Weekend`;
-}
-
-function homeDescription(ideaCount: number) {
-  return `${ideaCount} researched startup ideas sized for one weekend — each with copy-paste prompts for Cursor, Claude, and Lovable. Keep your job. Ship by Sunday.`;
+async function getHomeCopy() {
+  "use cache";
+  return readHome();
 }
 
 export async function generateMetadata(): Promise<Metadata> {
   await connection();
-  const { totals } = await getHomeData();
-  const title = homeTitle(totals.ideas);
-  const description = homeDescription(totals.ideas);
+  const [{ totals }, copy] = await Promise.all([getHomeData(), getHomeCopy()]);
+  const title = copy.seoTitle.replaceAll("{ideaCount}", String(totals.ideas));
+  const description = copy.seoDescription.replaceAll("{ideaCount}", String(totals.ideas));
   return {
     title: { absolute: title },
     description,
@@ -82,9 +79,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   await connection();
   // WP74-S5: the flag read runs beside the home data, not after it.
-  const [data, buildCta] = await Promise.all([getHomeData(), buildCtaVisible()]);
-  const title = homeTitle(data.totals.ideas);
-  const description = homeDescription(data.totals.ideas);
+  const [data, buildCta, copy] = await Promise.all([getHomeData(), buildCtaVisible(), getHomeCopy()]);
+  const title = copy.seoTitle.replaceAll("{ideaCount}", String(data.totals.ideas));
+  const description = copy.seoDescription.replaceAll("{ideaCount}", String(data.totals.ideas));
   const pageUrl = `${SITE}/`;
 
   return (
@@ -110,24 +107,24 @@ export default async function HomePage() {
               "The checklist, templates, and prompts to build a 3-screen MVP and launch a waitlist in one weekend.",
             offers: { price: "0", priceCurrency: "USD" },
           }),
-          faqPageSchema(FAQS, { id: `${SITE}/#faq` }),
+          faqPageSchema([...copy.finalCall.faqs], { id: `${SITE}/#faq` }),
           itemListSchema(
             data.newest.map((row) => ({ slug: row.slug, title: row.title })),
             { id: `${SITE}/#idea-index`, name: "Newest startup ideas on Weekend MVP" },
           ),
         )}
       />
-      <Hero idea={data.hero} total={data.totals.ideas} buildCta={buildCta} />
-      <WhatIs />
-      <IdeaLibrary total={data.totals.ideas} categories={data.totals.categories} rows={data.newest} />
-      {data.spotlight && <IdeaOfTheWeek idea={data.spotlight} weekLabel={data.week.label} total={data.totals.ideas} buildCta={buildCta} />}
-      <WeekendTest averageHours={data.totals.averageHours} />
-      <BuildWithAI toolCounts={data.totals.tools} idea={data.spotlight} />
-      {data.inside && <InsideEveryIdea idea={data.inside} weekLabel={data.week.label} />}
-      <YourWeekend total={data.totals.ideas} />
-      <StarterKit />
-      <FounderNote />
-      <FinalCall total={data.totals.ideas} strip={data.strip} buildCta={buildCta} />
+      <Hero copy={copy.hero} idea={data.hero} total={data.totals.ideas} buildCta={buildCta} />
+      <WhatIs copy={copy.whatIs} />
+      <IdeaLibrary copy={copy.ideaLibrary} total={data.totals.ideas} categories={data.totals.categories} rows={data.newest} />
+      {data.spotlight && <IdeaOfTheWeek copy={copy.ideaOfTheWeek} idea={data.spotlight} weekLabel={data.week.label} total={data.totals.ideas} buildCta={buildCta} />}
+      <WeekendTest copy={copy.weekendTest} averageHours={data.totals.averageHours} />
+      <BuildWithAI copy={copy.buildWithAi} toolCounts={data.totals.tools} idea={data.spotlight} />
+      {data.inside && <InsideEveryIdea copy={copy.insideEveryIdea} idea={data.inside} weekLabel={data.week.label} />}
+      <YourWeekend copy={copy.yourWeekend} total={data.totals.ideas} />
+      <StarterKit copy={copy.starterKit} />
+      <FounderNote copy={copy.founderNote} />
+      <FinalCall copy={copy.finalCall} total={data.totals.ideas} strip={data.strip} buildCta={buildCta} />
       <HomeMotion />
       {/* Idea 4: floating request/vote widget, same backend as /ideas/requests. */}
       <WhenConvexReady>

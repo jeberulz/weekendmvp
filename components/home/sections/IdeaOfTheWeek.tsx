@@ -1,3 +1,5 @@
+import type { HomeCopy } from "@/lib/landing/read-home";
+import seed from "@/content/landing-pages/home/index.json";
 import { BuildIdeaCta } from "@/components/workspace/BuildIdeaCta";
 import { GOAL_LABEL } from "@/lib/home/labels";
 import type { SpotlightIdea } from "@/lib/home/types";
@@ -16,11 +18,13 @@ export function IdeaOfTheWeek({
   weekLabel,
   total,
   buildCta = false,
+  copy = seed.ideaOfTheWeek,
 }: {
   idea: SpotlightIdea;
   weekLabel: string;
   total: number;
   buildCta?: boolean;
+  copy?: HomeCopy["ideaOfTheWeek"];
 }) {
   const titleSize = idea.title.length <= 45 ? "lg:text-[72px]" : idea.title.length <= 62 ? "lg:text-[64px]" : "lg:text-[56px]";
   return (
@@ -33,7 +37,7 @@ export function IdeaOfTheWeek({
         <Container className="relative flex h-full flex-col justify-between pb-5 pt-5 lg:pt-14">
           <p data-m="rise" className="inline-flex h-[30px] w-fit items-center gap-2 rounded-full bg-home-card px-3 font-mono text-[10.5px] tracking-[0.06em] text-home-ink lg:h-9 lg:px-4 lg:text-xs">
             <span aria-hidden className="size-1.5 rounded-full bg-home-orange lg:size-[7px]" />
-            IDEA OF THE WEEK · {weekLabel.toUpperCase()}
+            {copy.eyebrow + " · "}{weekLabel.toUpperCase()}
           </p>
           <div className="flex flex-col gap-3 lg:gap-4">
             <div data-m="rise" className="flex flex-wrap items-center gap-2 lg:gap-2.5">
@@ -59,12 +63,12 @@ export function IdeaOfTheWeek({
             <>
               <BuildIdeaCta slug={idea.slug} title={idea.title} location="home-idea-of-the-week" tone="dark" className="w-full lg:w-fit" />
               <ButtonLink href={`/ideas/${idea.slug}`} tone="ghost-dark" className="w-full lg:w-fit">
-                Read the research
+                {copy.research}
               </ButtonLink>
             </>
           ) : (
             <ButtonLink href={`/ideas/${idea.slug}`} tone="dark" className="w-full lg:w-fit">
-              Read the research
+              {copy.research}
             </ButtonLink>
           )}
           <TextLink href="/startup-ideas" dark className="self-center lg:self-start">
@@ -72,11 +76,11 @@ export function IdeaOfTheWeek({
           </TextLink>
         </div>
         <div className="flex flex-col gap-3 border-t border-home-dr pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
-          <Label dark>How it works</Label>
+          <Label dark>{copy.process}</Label>
           <StepList steps={idea.how} dark />
         </div>
         <div className="flex flex-col gap-4 border-t border-home-dr pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
-          <Label dark>The numbers</Label>
+          <Label dark>{copy.figures}</Label>
           <WeekendMeter hours={idea.buildTime} dark />
           <div className="grid grid-cols-2 gap-2">
             <ScoreCell label="OPPORTUNITY" value={idea.scores.opportunity} dark />
@@ -84,7 +88,7 @@ export function IdeaOfTheWeek({
             <ScoreCell label="TIMING" value={idea.scores.timing} dark />
             <ScoreCell label="BUILDABLE" value={idea.scores.builder_confidence} dark />
           </div>
-          <p className="text-sm text-home-d2">{idea.sources} cited sources behind the research</p>
+          <p className="text-sm text-home-d2">{idea.sources}{" " + copy.sources}</p>
         </div>
       </Container>
     </section>

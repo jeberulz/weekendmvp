@@ -19,7 +19,7 @@ const appPort = 44074;
 const convexPort = 44075;
 const origin = `http://127.0.0.1:${appPort}`;
 const singleton = process.argv[3] ?? "guide-5-to-9-builder";
-assert(singleton === "guide-5-to-9-builder" || (mode === "dev-local" && ["starter-5-to-9", "starter-kit", "shipable", "dare", "live-hub", "live-48-hours", "live-build-along"].includes(singleton)),
+assert(singleton === "guide-5-to-9-builder" || (mode === "dev-local" && ["starter-5-to-9", "starter-kit", "shipable", "dare", "live-hub", "live-48-hours", "live-build-along", "home"].includes(singleton)),
   "The selected content singleton is supported in dev-local mode");
 const fixtureFile = `content/landing-pages/${singleton}/index.json`;
 const github = mode.includes("github") || mode === "build";
@@ -169,7 +169,7 @@ async function checkEditor(browser) {
   assert.equal(new URL(page.url()).pathname, `/admin/pages/singleton/${singleton}`);
   const original = await readFile(fixtureFile, "utf8");
   const baseline = JSON.parse(original);
-  const editedTitle = "Smoke check " + randomUUID();
+  const editedTitle = "Smoke check " + randomUUID() + (singleton === "home" ? " {ideaCount}" : "");
   let previousTitle = baseline.seoTitle;
   let edited = { ...baseline, seoTitle: editedTitle };
   if (singleton === "live-48-hours") {

@@ -50,6 +50,10 @@ Select **Free webinar** for the open, live, replay and ended copy. The published
 
 Select **Build-Along** to edit the session description, agenda wording, included items, audience, host copy, postscript and FAQs. The included items feed all three public placements. Keep the price, session and cutoff tokens in the ticket copy, postscript and currency FAQ. Ticket availability, amounts, sales cutoff, recording notice, refunds and cancellations come from code. The checkout endpoint verifies the visitor's session and sends signed-out visitors through signup with their return path.
 
+## Editing the homepage
+
+Select **Homepage** for the eleven sections, search copy, and the questions and answers shown on the page. Page copy and FAQ structured data use the same entries. Keep `{ideaCount}` in the search title and description, and `{hours}` in the Weekend Test estimate and closing line. The page keeps reading current idea figures, selection, library rows, signup availability and prompt text from the app. The Start here links keep their existing destinations.
+
 ## GitHub setup for the owner
 
 1. Protect `main` on GitHub. Require a pull request and passing CI. Apply the rule to the owner and GitHub App, including administrator bypass settings. Keystatic opens the repository default branch. Saving there prompts for a content branch before sending a commit. GitHub enforces branch protection independently for every client.

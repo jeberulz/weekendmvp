@@ -1,3 +1,4 @@
+import type { HomeCopy } from "@/lib/landing/read-home";
 import Link from "next/link";
 
 import type { CategoryCount, IndexRow } from "@/lib/home/types";
@@ -5,12 +6,12 @@ import { IndexList } from "../client/IndexList";
 import { ButtonLink, Container, Em, Eyebrow, TextLink } from "../ui";
 
 /** 02 · The Index: live count, categories, newest ideas. */
-export function IdeaLibrary({ total, categories, rows }: { total: number; categories: CategoryCount[]; rows: IndexRow[] }) {
+export function IdeaLibrary({ total, categories, rows, copy }: { total: number; categories: CategoryCount[]; rows: IndexRow[]; copy: HomeCopy["ideaLibrary"] }) {
   return (
     <section aria-labelledby="home-library-title" data-scene="library" className="bg-home-ink py-14 lg:py-24">
       <Container className="flex flex-col gap-7 lg:gap-10">
         <div data-m="rise" className="flex items-center justify-between">
-          <Eyebrow dark>The idea library · updated weekly</Eyebrow>
+          <Eyebrow dark>{copy.eyebrow}</Eyebrow>
           <TextLink href="/startup-ideas" dark className="hidden lg:inline-flex">
             Browse all {total}
           </TextLink>
@@ -18,7 +19,7 @@ export function IdeaLibrary({ total, categories, rows }: { total: number; catego
         <h2 id="home-library-title" className="flex flex-col gap-1.5 font-editorial font-normal text-home-d1 lg:flex-row lg:items-end lg:gap-9">
           <span data-m="count" className="text-[150px] leading-[0.8] tracking-[-0.05em] lg:text-[300px] lg:leading-[0.78]">{total}</span>
           <span data-m="lines" className="max-w-[560px] text-[32px] leading-[1.02] tracking-[-0.025em] lg:mb-3.5 lg:text-[56px] lg:tracking-[-0.02em]">
-            startup ideas, each one <Em dark>sized for a weekend.</Em>
+            {copy.title + " "}<Em dark>{copy.accent}</Em>
           </span>
         </h2>
         <nav aria-label="Idea categories" className="border-t border-home-dr pt-4 lg:pt-[22px]">
