@@ -1,0 +1,197 @@
+{
+  "hero": {
+    "eyebrow": "Weekend MVP Build-Along · Live on Zoom",
+    "title": "Build it Saturday.",
+    "accent": "Ship it Sunday.",
+    "body": "A {hours}-hour live build-along on {sessionStart}. You build your MVP while I build mine, and you can ask questions as you go."
+  },
+  "included": {
+    "title": "What's",
+    "accent": "included",
+    "items": [
+      "{hours} hours live on Zoom with John",
+      "The Ship Sheet: your 48-hour plan, as a doc you can copy",
+      "The copy-paste prompts used in the session",
+      "The replay, with no expiry",
+      "A prep email before the session, so you arrive ready to build"
+    ]
+  },
+  "agenda": {
+    "eyebrow": "What you'll do",
+    "title": "Three moves, then",
+    "accent": "two finishing steps",
+    "opening": {
+      "title": "Open",
+      "body": "What we're doing today. Everyone opens the Ship Sheet."
+    },
+    "sharpest": {
+      "title": "Move 1: Your sharpest idea",
+      "body": "Run your idea through the weekend test. Post your one-liner in the chat and I'll react to as many as time allows."
+    },
+    "weekendCut": {
+      "title": "Move 2: The weekend cut",
+      "body": "Cut it to three screens and one action. We kill features out loud."
+    },
+    "build": {
+      "title": "Move 3: Build and deploy",
+      "body": "I build an example live. You build yours at the same time and paste your link in the chat when it's up."
+    },
+    "safety": {
+      "title": "Ship it safely",
+      "body": "Three checks before you share the link: nothing private shows in view-source, your keys aren't in the repo, and the login actually protects the data."
+    },
+    "firstUsers": {
+      "title": "First users",
+      "body": "Pick one channel, write the first post, and decide which 10 people you'll show it to on Sunday."
+    },
+    "questions": {
+      "title": "Q&A",
+      "body": "Your questions, and links in the chat."
+    },
+    "closing": "There's a visible timer for each block, and I'll have a pre-built fallback ready in case something breaks on my side."
+  },
+  "forNotFor": {
+    "forYou": {
+      "title": "This is for you if",
+      "items": [
+        "You're a designer who wants to ship something real with AI, and keep your taste in it.",
+        "You're a non-technical founder with a day job and no co-founder.",
+        "You've watched enough tutorials and want to actually build one.",
+        "You'd rather have someone to ask when it breaks."
+      ]
+    },
+    "notForYou": {
+      "title": "It's not for you if",
+      "items": [
+        "You want a coding course.",
+        "You want a six-month program.",
+        "You want to sit back and watch. You'll build during the session, so this isn't a watch-only webinar. (The free webinar on {freeDay} is the watch-only one.)"
+      ]
+    }
+  },
+  "deal": {
+    "eyebrow": "The deal",
+    "fallback": "You leave with your MVP's first version built, and the steps to put it live the same day.",
+    "dryRun": "You leave with a live URL.",
+    "dryRunAccent": "Not notes.",
+    "requirement": "You need",
+    "laptop": {
+      "title": "A laptop",
+      "body": "Not a phone or tablet. You'll be building."
+    },
+    "idea": {
+      "title": "One idea",
+      "body": "Or none, and we'll pick one from the library in the first half hour."
+    },
+    "tools": {
+      "title": "A free tool account",
+      "configured": "On {tools}, set up before we start. The prep email shows you how.",
+      "unconfigured": "Set up before we start. The prep email shows you how."
+    },
+    "closing": "What you don't need: code, a co-founder or a design file."
+  },
+  "host": {
+    "eyebrow": "Why a designer is running this",
+    "body": "Every idea on the site is researched, sized for a weekend and paired with prompts. In this session we use that method on your idea."
+  },
+  "proof": {
+    "title": "From people who built along"
+  },
+  "guarantee": {
+    "eyebrow": "Refunds"
+  },
+  "personalNote": {
+    "earlyBird": "It's {priceLine}.",
+    "standard": "The session is {sessionStartWithAt}, and the replay is yours to keep if you can't make it live."
+  },
+  "faq": {
+    "title": "Questions",
+    "items": [
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "Do I need to code?",
+          "answer": "No. We build with AI tools and copy-paste prompts. If you can follow steps and paste text, you can follow along. Knowing some code helps, but you don't need it."
+        }
+      },
+      {
+        "discriminant": "tools",
+        "value": {
+          "question": "Which tools will we use, and what will they cost me?",
+          "answer": "We'll use {tools}. Free accounts are enough for the session. The prep email tells you exactly what to set up and how."
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "What if my idea isn't ready, or I don't have one?",
+          "answer": "That's fine. In Move 1 we run ideas through the weekend test. If yours doesn't fit, or you don't have one, you'll pick one from the library and build that."
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "I can't make it live. Should I still buy?",
+          "answer": "You can. Your ticket includes the replay, with no expiry, plus the Ship Sheet and prompts. You'll miss asking questions live, so if that's what you want, come live."
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "How many seats are there?",
+          "answer": "{seatsTotal}. When they're gone, tickets close and the next build-along is {nextBuildAlongLabel}."
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "What time is it for me?",
+          "answer": "{timezoneSummary}"
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "Where does it happen?",
+          "answer": "On Zoom. The join link comes by email after you buy, and again in the reminders before the session."
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "Is this the same as the free webinar?",
+          "answer": "No. The free webinar on {freeDay} is an hour of watching: the method and one idea taken to a first screen. This is {buildAlongDuration} of building your own, with me building alongside you. If you came to the free one, this is the next step. If you didn't, the build-along still starts from the beginning."
+        }
+      },
+      {
+        "discriminant": "refund",
+        "value": {
+          "question": "Can I get a refund?"
+        }
+      },
+      {
+        "discriminant": "cancellation",
+        "value": {
+          "question": "What if the session is cancelled?"
+        }
+      },
+      {
+        "discriminant": "currency",
+        "value": {
+          "question": "What currency is the price in?",
+          "answer": "US dollars: {priceLine}. Price shown in USD. Any tax is shown at checkout."
+        }
+      }
+    ]
+  },
+  "ticket": {
+    "eyebrow": "Price",
+    "title": "One ticket.",
+    "accent": "Everything included.",
+    "earlyBirdNote": "The {earlyPrice} price ends at {earlyCutoff} and I don't extend it."
+  },
+  "finalCta": {
+    "title": "Build it Saturday.",
+    "accent": "Ship it Sunday."
+  }
+}

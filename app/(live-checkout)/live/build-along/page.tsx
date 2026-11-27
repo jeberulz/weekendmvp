@@ -11,6 +11,7 @@ import { TicketCheckoutButton } from "@/components/live/TicketCheckoutButton";
 import { WhenConvexReady } from "@/components/platform/client-gates";
 import { Em } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
+import { readBuildAlong } from "@/lib/landing/read-build-along";
 import { SUPPORT_EMAIL } from "@/lib/legal/support";
 import {
   BUILD_ALONG,
@@ -38,16 +39,11 @@ import {
 } from "@/lib/seo";
 
 import {
+  AGENDA_TIMES,
   CANCELLATION_LINE,
-  DEAL_DRY_RUN,
-  DEAL_FALLBACK,
+  buildAlongText,
   GUARANTEE_PULLQUOTE,
   GUARANTEE_SHORT,
-  PAID_AGENDA,
-  PAID_FOR_YOU,
-  PAID_INCLUDED,
-  PAID_NOT_FOR_YOU,
-  PERSONAL_NOTE_PS_STANDARD,
   paidFaqItems,
 } from "./paid-data";
 
@@ -173,11 +169,13 @@ function TicketCard({
   seats,
   soldOut,
   disabled,
+  includedItems,
 }: {
   price: ReturnType<typeof livePriceAt>;
   seats: SeatsInfo;
   soldOut: boolean;
   disabled: boolean;
+  includedItems: readonly string[];
 }) {
   return (
     <div
@@ -243,8 +241,8 @@ function TicketCard({
             aria-hidden="true"
           />
           <ul className="space-y-2.5 text-sm">
-            {PAID_INCLUDED.map((line) => (
-              <li key={line} className="flex gap-2.5">
+            {includedItems.map((line, index) => (
+              <li key={index} className="flex gap-2.5">
                 <span aria-hidden="true" className="text-home-orange">
                   ✓
                 </span>
@@ -279,6 +277,11 @@ function TicketCard({
   );
 }
 
+async function getBuildAlongCopy() {
+  "use cache";
+  return readBuildAlong();
+}
+
 export default async function BuildAlongPage({
   searchParams,
 }: {
@@ -297,23 +300,12 @@ export default async function BuildAlongPage({
   const soldOut = seats.soldOut && !ended && !thanks;
   const preSale = phase === "pre_sale";
   const proof = LIVE_ASSETS.paidProofQuotes;
-  const dealLine = LIVE_ASSETS.dryRunPassed ? DEAL_DRY_RUN : DEAL_FALLBACK;
   const tools = LIVE_ASSETS.toolList;
   const signupRecorder = signupSrc ? (
     <WhenConvexReady>
       <RecordSignupSrc src={signupSrc} />
     </WhenConvexReady>
   ) : null;
-
-  const hostBody = (
-    <>
-      {LIVE_ASSETS.hostEveningsConfirmed
-        ? "I build Weekend MVP around a full-time job, on evenings and Saturdays, so this session is designed for people who have the same amount of time. "
-        : "This session is designed for people building around a day job. "}
-      Every idea on the site is researched, sized for a weekend and paired with prompts. In
-      this session we use that method on your idea.
-    </>
-  );
 
   if (thanks) {
     return (
@@ -421,6 +413,18 @@ export default async function BuildAlongPage({
     );
   }
 
+  const copy = await getBuildAlongCopy();
+  const includedItems = copy.included.items.map(buildAlongText);
+  const { hero, deal, agenda, included, forNotFor, ticket, guarantee, personalNote, faq, finalCta } = copy;
+  const hostBody = (
+    <>
+      {LIVE_ASSETS.hostEveningsConfirmed
+        ? "I build Weekend MVP around a full-time job, on evenings and Saturdays, so this session is designed for people who have the same amount of time. "
+        : "This session is designed for people building around a day job. "}
+      {copy.host.body}
+    </>
+  );
+
   return (
     <div>
       {signupRecorder}
@@ -470,14 +474,13 @@ export default async function BuildAlongPage({
       <section className="mx-auto grid max-w-[1120px] items-center gap-10 px-5 py-14 sm:px-10 sm:py-20 lg:grid-cols-[1.2fr_0.9fr] lg:gap-14">
         <div>
           <p className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
-            Weekend MVP Build-Along · Live on Zoom
+            {hero.eyebrow}
           </p>
           <h1 className="font-editorial mt-4 text-[46px] leading-[1.02] font-medium tracking-[-0.02em] sm:text-[76px]">
-            Build it Saturday. <Em>Ship it Sunday.</Em>
+            {hero.title + " "}<Em>{hero.accent}</Em>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#4A453C]">
-            A 2-hour live build-along on Sat 14 Nov, 15:00 GMT. You build your MVP while I
-            build mine, and you can ask questions as you go.
+            {buildAlongText(hero.body)}
           </p>
           <div className="mt-8">
             {soldOut ? (
@@ -518,6 +521,7 @@ export default async function BuildAlongPage({
           seats={seats}
           soldOut={soldOut}
           disabled={preSale}
+          includedItems={includedItems}
         />
       </section>
 
@@ -525,7 +529,7 @@ export default async function BuildAlongPage({
       {proof.length >= 2 ? (
         <section className="mx-auto max-w-[1120px] px-5 py-10 sm:px-10">
           <h2 className="font-editorial text-[34px] font-medium sm:text-5xl">
-            From people who built along
+            {copy.proof.title}
           </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {proof.map((q) => (
@@ -560,64 +564,64 @@ export default async function BuildAlongPage({
       {/* The deal */}
       <section className="mx-auto max-w-[1120px] px-5 py-14 sm:px-10 sm:py-20">
         <p className="font-mono text-[11px] tracking-[0.08em] text-[#6B6457] uppercase">
-          The deal
+          {deal.eyebrow}
         </p>
         <h2 className="font-editorial mt-3 text-[34px] leading-[1.06] font-medium tracking-[-0.015em] sm:text-5xl">
           {LIVE_ASSETS.dryRunPassed ? (
             <>
-              You leave with a live URL. <Em>Not notes.</Em>
+              {deal.dryRun + " "}<Em>{deal.dryRunAccent}</Em>
             </>
           ) : (
-            <>{dealLine}</>
+            deal.fallback
           )}
         </h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-home-rule bg-home-card p-5">
             <p className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
-              You need
+              {deal.requirement}
             </p>
-            <h3 className="font-editorial mt-1.5 text-[22px] font-medium">A laptop</h3>
+            <h3 className="font-editorial mt-1.5 text-[22px] font-medium">{deal.laptop.title}</h3>
             <p className="mt-1 text-sm text-[#6B6457]">
-              Not a phone or tablet. You&apos;ll be building.
+              {deal.laptop.body}
             </p>
           </div>
           <div className="rounded-2xl border border-home-rule bg-home-card p-5">
             <p className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
-              You need
+              {deal.requirement}
             </p>
-            <h3 className="font-editorial mt-1.5 text-[22px] font-medium">One idea</h3>
+            <h3 className="font-editorial mt-1.5 text-[22px] font-medium">{deal.idea.title}</h3>
             <p className="mt-1 text-sm text-[#6B6457]">
-              Or none, and we&apos;ll pick one from the library in the first half hour.
+              {deal.idea.body}
             </p>
           </div>
           {tools.length > 0 ? (
             <div className="rounded-2xl border border-home-rule bg-home-card p-5">
               <p className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
-                You need
+                {deal.requirement}
               </p>
               <h3 className="font-editorial mt-1.5 text-[22px] font-medium">
-                A free tool account
+                {deal.tools.title}
               </h3>
               <p className="mt-1 text-sm text-[#6B6457]">
-                On {tools.join(", ")}, set up before we start. The prep email shows you how.
+                {deal.tools.configured.replaceAll("{tools}", tools.join(", "))}
               </p>
             </div>
           ) : (
             <div className="rounded-2xl border border-home-rule bg-home-card p-5">
               <p className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
-                You need
+                {deal.requirement}
               </p>
               <h3 className="font-editorial mt-1.5 text-[22px] font-medium">
-                A free tool account
+                {deal.tools.title}
               </h3>
               <p className="mt-1 text-sm text-[#6B6457]">
-                Set up before we start. The prep email shows you how.
+                {deal.tools.unconfigured}
               </p>
             </div>
           )}
         </div>
         <p className="mt-4 text-[#6B6457]">
-          What you don&apos;t need: code, a co-founder or a design file.
+          {deal.closing}
         </p>
       </section>
 
@@ -627,42 +631,41 @@ export default async function BuildAlongPage({
         className="mx-auto max-w-[1120px] scroll-mt-28 px-5 py-14 sm:px-10 sm:py-20"
       >
         <p className="font-mono text-[11px] tracking-[0.08em] text-[#6B6457] uppercase">
-          What you&apos;ll do
+          {agenda.eyebrow}
         </p>
         <h2 className="font-editorial mt-3 mb-8 text-[34px] leading-[1.06] font-medium tracking-[-0.015em] sm:text-5xl">
-          Three moves, then <Em>two finishing steps</Em>
+          {agenda.title + " "}<Em>{agenda.accent}</Em>
         </h2>
         <div className="divide-y divide-home-rule border-y border-home-rule">
-          {PAID_AGENDA.map((row) => (
+          {AGENDA_TIMES.map((slot) => (
             <div
-              key={row.range}
+              key={slot.key}
               className="grid gap-3 py-5 sm:grid-cols-[110px_1fr_auto] sm:items-start sm:gap-6"
             >
               <span className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
-                {row.range}
+                {slot.range}
               </span>
               <div>
-                <div className="font-editorial text-xl font-medium">{row.title}</div>
-                <p className="mt-1 text-[15px] leading-relaxed text-[#4A453C]">{row.body}</p>
+                <div className="font-editorial text-xl font-medium">{agenda[slot.key].title}</div>
+                <p className="mt-1 text-[15px] leading-relaxed text-[#4A453C]">{agenda[slot.key].body}</p>
               </div>
-              <span className="font-mono text-xs text-[#6B6457] sm:pt-1">{row.clock}</span>
+              <span className="font-mono text-xs text-[#6B6457] sm:pt-1">{slot.clock}</span>
             </div>
           ))}
         </div>
         <p className="mt-4 text-sm text-[#6B6457]">
-          There&apos;s a visible timer for each block, and I&apos;ll have a pre-built fallback
-          ready in case something breaks on my side.
+          {agenda.closing}
         </p>
       </section>
 
       {/* What's included */}
       <section className="mx-auto max-w-[720px] px-5 py-10 sm:px-10 sm:py-14">
         <h2 className="font-editorial text-[34px] leading-[1.06] font-medium tracking-[-0.015em] sm:text-5xl">
-          What&apos;s <Em>included</Em>
+          {included.title + " "}<Em>{included.accent}</Em>
         </h2>
         <ul className="mt-6 space-y-3">
-          {PAID_INCLUDED.map((line) => (
-            <li key={line} className="flex gap-3 text-[15px] leading-relaxed">
+          {includedItems.map((line, index) => (
+            <li key={index} className="flex gap-3 text-[15px] leading-relaxed">
               <span aria-hidden="true" className="text-home-orange">
                 ✓
               </span>
@@ -676,35 +679,35 @@ export default async function BuildAlongPage({
       <section className="mx-auto grid max-w-[1120px] gap-4 px-5 py-10 sm:grid-cols-2 sm:px-10 sm:py-16">
         <div className="rounded-2xl border border-home-rule bg-home-card p-7">
           <p className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
-            This is for you if
+            {forNotFor.forYou.title}
           </p>
-          <CheckList items={PAID_FOR_YOU} />
+          <CheckList items={forNotFor.forYou.items.map(buildAlongText)} />
         </div>
         <div className="rounded-2xl border border-home-rule bg-home-sunk p-7">
           <p className="font-mono text-[11px] tracking-[0.08em] text-[#6B6457] uppercase">
-            It&apos;s not for you if
+            {forNotFor.notForYou.title}
           </p>
-          <CheckList items={PAID_NOT_FOR_YOU} variant="x" />
+          <CheckList items={forNotFor.notForYou.items.map(buildAlongText)} variant="x" />
         </div>
       </section>
 
       {/* Host */}
       <section className="py-14 sm:py-20">
-        <HostBlock eyebrow="Why a designer is running this" body={hostBody} />
+        <HostBlock eyebrow={copy.host.eyebrow} body={hostBody} />
       </section>
 
       {/* Price section (duplicate ticket for #ticket scroll from mid-page) */}
       <section className="mx-auto grid max-w-[1120px] items-center gap-10 px-5 py-14 sm:px-10 sm:py-20 lg:grid-cols-[1fr_440px] lg:gap-14">
         <div>
           <p className="font-mono text-[11px] tracking-[0.08em] text-home-orange uppercase">
-            Price
+            {ticket.eyebrow}
           </p>
           <h2 className="font-editorial mt-3 text-[34px] leading-[1.06] font-medium tracking-[-0.015em] sm:text-5xl">
-            One ticket. <Em>Everything included.</Em>
+            {ticket.title + " "}<Em>{ticket.accent}</Em>
           </h2>
           {price.earlyBird && !soldOut ? (
             <p className="mt-3.5 text-[#6B6457]">
-              The {price.amountLabel} price ends at 23:59 GMT on Sun 8 Nov and I don&apos;t extend it.
+              {buildAlongText(ticket.earlyBirdNote)}
             </p>
           ) : null}
         </div>
@@ -753,8 +756,8 @@ export default async function BuildAlongPage({
                 aria-hidden="true"
               />
               <ul className="space-y-2.5 text-sm">
-                {PAID_INCLUDED.map((line) => (
-                  <li key={line} className="flex gap-2.5">
+                {includedItems.map((line, index) => (
+                  <li key={index} className="flex gap-2.5">
                     <span aria-hidden="true" className="text-home-orange">
                       ✓
                     </span>
@@ -791,7 +794,7 @@ export default async function BuildAlongPage({
       {/* Refunds */}
       <section className="mx-auto max-w-[1120px] px-5 py-14 sm:px-10 sm:py-20">
         <p className="font-mono text-[11px] tracking-[0.08em] text-[#6B6457] uppercase">
-          Refunds
+          {guarantee.eyebrow}
         </p>
         <h2 className="font-editorial mt-3 text-[34px] leading-[1.06] font-medium tracking-[-0.015em] sm:text-5xl">
           30 days to <Em>change your mind.</Em>
@@ -857,20 +860,20 @@ export default async function BuildAlongPage({
         ) : null}
         <p className="mt-4 text-[15px] leading-relaxed text-[#4A453C]">
           <strong>P.S.</strong>{" "}
-          {price.earlyBird ? `It's ${price.priceLine}. ` : null}
-          {PERSONAL_NOTE_PS_STANDARD}
+          {price.earlyBird ? personalNote.earlyBird.replaceAll("{priceLine}", price.priceLine) + " " : null}
+          {buildAlongText(personalNote.standard)}
         </p>
       </section>
 
       <div id="faq" className="scroll-mt-28">
-        <LiveFaq items={paidFaqItems(price.priceLine)} />
+        <LiveFaq heading={faq.title} items={paidFaqItems(faq, price.priceLine)} />
       </div>
 
       {/* Final CTA */}
       <section className="mx-auto max-w-[1120px] px-5 pb-24 sm:px-10">
         <div className="rounded-[22px] bg-[#24211C] px-8 py-14 text-center sm:px-16">
           <h2 className="font-editorial text-[34px] leading-[1.06] font-medium tracking-[-0.015em] text-white sm:text-5xl">
-            Build it Saturday. <Em dark>Ship it Sunday.</Em>
+            {finalCta.title + " "}<Em dark>{finalCta.accent}</Em>
           </h2>
           <p className="mt-2.5 font-mono text-[11px] tracking-[0.08em] text-[#c9bfae] uppercase">
             {BUILD_ALONG.title} · 20 seats

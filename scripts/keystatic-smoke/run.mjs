@@ -19,7 +19,7 @@ const appPort = 44074;
 const convexPort = 44075;
 const origin = `http://127.0.0.1:${appPort}`;
 const singleton = process.argv[3] ?? "guide-5-to-9-builder";
-assert(singleton === "guide-5-to-9-builder" || (mode === "dev-local" && ["starter-5-to-9", "starter-kit", "shipable", "dare", "live-hub", "live-48-hours"].includes(singleton)),
+assert(singleton === "guide-5-to-9-builder" || (mode === "dev-local" && ["starter-5-to-9", "starter-kit", "shipable", "dare", "live-hub", "live-48-hours", "live-build-along"].includes(singleton)),
   "The selected content singleton is supported in dev-local mode");
 const fixtureFile = `content/landing-pages/${singleton}/index.json`;
 const github = mode.includes("github") || mode === "build";
@@ -169,12 +169,18 @@ async function checkEditor(browser) {
   assert.equal(new URL(page.url()).pathname, `/admin/pages/singleton/${singleton}`);
   const original = await readFile(fixtureFile, "utf8");
   const baseline = JSON.parse(original);
-  const webinar = singleton === "live-48-hours";
-  assert.equal(await field.evaluate((input) => input.value), webinar ? baseline.hero.open.intro : baseline.seoTitle);
   const editedTitle = "Smoke check " + randomUUID();
-  const edited = webinar
-    ? { ...baseline, hero: { ...baseline.hero, open: { ...baseline.hero.open, intro: editedTitle } } }
-    : { ...baseline, seoTitle: editedTitle };
+  let previousTitle = baseline.seoTitle;
+  let edited = { ...baseline, seoTitle: editedTitle };
+  if (singleton === "live-48-hours") {
+    previousTitle = baseline.hero.open.intro;
+    edited = { ...baseline, hero: { ...baseline.hero, open: { ...baseline.hero.open, intro: editedTitle } } };
+  }
+  if (singleton === "live-build-along") {
+    previousTitle = baseline.hero.eyebrow;
+    edited = { ...baseline, hero: { ...baseline.hero, eyebrow: editedTitle } };
+  }
+  assert.equal(await field.evaluate((input) => input.value), previousTitle);
   try {
     await field.focus();
     await field.evaluate((input) => input.select());
