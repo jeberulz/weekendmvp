@@ -168,12 +168,13 @@ export function verifyEvidence(record: ResearchRecord, runners: EvidenceRunners)
 }
 
 /**
- * Figures in prose that read as claims: money, percentages, K/M/B amounts and counts of three digits or more.
- * Years and small structural numbers like "5 steps" are not picked up.
+ * Figures in prose that read as claims: money, percentages, K/M/B amounts (with or without a currency symbol, like
+ * "$220K" or "50K users") and counts of three digits or more. The suffix stays part of the figure, so 200K is never
+ * read as 200. Years and small structural numbers like "5 steps" are not picked up.
  */
 export function figuresIn(text: string): string[] {
   const out: string[] = [];
-  const pattern = /[$£€]\s?\d[\d,]*(?:\.\d+)?\s?[KMB]?\b|\d[\d,]*(?:\.\d+)?\s?%|\b\d{1,3}(?:,\d{3})+\+?|\b\d{3,}\+?/g;
+  const pattern = /[$£€]\s?\d[\d,]*(?:\.\d+)?\s?[KMB]?\b|\b\d[\d,]*(?:\.\d+)?[KMBkmb]\b|\d[\d,]*(?:\.\d+)?\s?%|\b\d{1,3}(?:,\d{3})+\+?|\b\d{3,}\+?/g;
   for (const match of text.matchAll(pattern)) {
     const raw = match[0].trim();
     if (/^(?:19|20)\d{2}$/.test(raw)) continue;
