@@ -69,9 +69,25 @@ Definition of done: `npm run typecheck` green, `npm run lint` with 0 errors, `np
   - Verification: `npm run typecheck`, `npx eslint` on changed files, `npm run test:home` (run with the switch off and again with it temporarily on), `npm run test:security`, `npm run build`, a screenshot of the closing section at 1280 and 390 wide, `npm run audit:guide -- --slug=5-to-9-builder`.
   - Not in scope: the `/5-to-9-starter` page, which has its own Build-Along links.
 
-- [ ] `WP103-S4` - Extend Source Critic claim kinds for guides
+- [x] `WP103-S4` - Source Critic for guides: claim kinds, a sealed review gate and mechanical verification
+  - Branch: `claude/wp103-s4-guide-source-critic` (stacked on `claude/wp103-guide-cards-switch`, which touches the same audit file).
+  - Design: a guide-specific record and review that mirror the Idea Engine's contract (`lib/engine/source-review.ts`), instead of changing the engine's `ResearchRecordV2`, so the engine's records and tests are untouched. It reuses the engine's strict excerpt matcher.
+  - Scope: `lib/guides/{research-record,guide-review,verify-claims}.ts` (new), `lib/guides/audit.ts`, `scripts/guide-source-review.mjs` (new), `scripts/audit-guide.mjs`, `package.json` (`guide:source-review`), `tests/security/ai-imports.test.mjs` (allowlist entry), tests, docs.
+  - Acceptance criteria:
+    - A research record has sources, first-hand evidence and claims. Claim kinds: `stat`, `pay`, `tool-fact`, `date`, `quote` (outside sources, each with a verbatim excerpt) and `first-hand` (backed by evidence).
+    - First-hand evidence is checked against this repo (`file-count`, `git-count`) or stated by the owner (`owner-statement`, which a reviewer confirms). It is never taken from the web.
+    - A review is bound to a hash of the record, sealed against edits, covers every claim with the checks for its kind, and fails closed. `finalizeReview` cannot seal a PASS over a false check. A source last checked more than 120 days ago fails the review, more than 60 warns.
+    - Mechanical checks: the record is consistent, each cited page is re-fetched and must contain the excerpt (a page that cannot be read leaves its claims unverified), first-hand evidence reproduces, and every figure in the guide copy traces to a claim or is listed as structure.
+    - `guide:source-review` has `draft`, `verify`, `seal` and `check`. `check` exits 0 only for a sealed PASS on exactly this record. This is the gate the S5 skill calls before drafting.
+    - `audit:guide` runs the research rules when `guides/records/{slug}.json` exists, and says plainly when it does not.
+    - Each rule has a failing test, and the core behaviours were mutation-checked.
+  - Verification: `npm run typecheck`, `npx eslint` on changed files, `npm run test:home`, `npm run test:security`, a dry run of `verify` on the real repo's evidence.
+  - Not in S4: fetching pages through a proxy (`--fetch` uses Node's own fetch), a record for the 5-to-9 guide (it has none, so its claims are not checked), the skill that calls the gate (S5).
 - [ ] `WP103-S5` - `.claude/skills/publish-guide/SKILL.md`
 - [ ] `WP103-S6` - Pilot guide two (mastering Claude Code), needs the owner's evidence file
+  - Owner-provided evidence (2026-11-27): weekendmvp.app itself, built solo with Claude Code. The design, the research of over 200 startup ideas, and more features coming. This is first-hand evidence and goes in the research record as `first-hand` claims.
+  - What the repo can already prove (checked 2026-11-27 with `guide:source-review verify`): 231 idea pages in `content/ideas`, 101 articles in `content/articles`. "Built solo" is an `owner-statement` that a reviewer must confirm. The pull-request and commit counts need full git history, which a shallow clone (this cloud session, and CI's default checkout) does not have, so they stay unverifiable until history is fetched in full.
+  - Still needed from the owner: which specific things built with Claude Code to feature (screens, features, the Idea Engine, the audit tooling), with the real numbers behind each, and which screenshots.
 - [ ] `WP103-S7` - Re-check command and cadence
 
 S2 to S7 are defined in the plan. Do not start them without an owner go-ahead.

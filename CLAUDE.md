@@ -158,7 +158,11 @@ read the response as text before parsing JSON.
   a guide whose offer is closed. An offer can sit behind an on/off switch in `lib/live/config.ts`; the Build-Along
   cards, and the sprint line in the 5-to-9 founder note, follow `BUILD_ALONG_GUIDE_CARDS_ENABLED` (off while the sprint
   is not on sale). Check a flip first with `npm run audit:guide -- --slug=5-to-9-builder --offers-on`.
-  Plan: `docs/plans/publish-guide/PLAN.md`
+  Claims are backed by a research record in `guides/records/{slug}.json` (`lib/guides/research-record.ts`) and a sealed
+  Source Critic review next to it. `npm run guide:source-review -- draft|verify|seal|check --record=...` drives it:
+  `verify` re-fetches cited pages with `--fetch` and reproduces first-hand evidence from this repo, and `check` is the
+  gate before a guide is drafted. When a record exists, `audit:guide` requires a sealed PASS and that every figure in
+  the copy traces to a claim. Plan: `docs/plans/publish-guide/PLAN.md`
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

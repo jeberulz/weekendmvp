@@ -136,6 +136,7 @@ const LOADER_ALLOWLIST = new Map([
   ["scripts/editorial-submit-engine.mjs", { forms: ["import(non-literal)"], reason: "editorial CLI: imports its own transpiled engine-validation.mjs" }],
   ["scripts/editorial-import-legacy.mjs", { forms: ["import(non-literal)"], reason: "editorial CLI: imports its own transpiled legacy-core.mjs" }],
   ["scripts/check-prompt-versions.mjs", { forms: ["import(non-literal)"], reason: "WP71-S3: loads each registered prompt module to verify entry.module" }],
+  ["scripts/guide-source-review.mjs", { forms: ["import(non-literal)"], reason: "WP103-S4 guide Source Critic CLI: imports only lib/guides/*.ts by fixed repo paths. No provider SDK, and the only network call is an optional fetch of the pages a record cites." }],
   ["scripts/audit-guide.mjs", { forms: ["node:module", "import(non-literal)", "createRequire"], reason: "WP103 guide audit CLI: imports lib/guides/*.ts and one guide's spec and copy by repo paths built from a validated slug, and loads Playwright through createRequire only for --live. No provider SDK." }],
 ]);
 
