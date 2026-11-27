@@ -202,6 +202,14 @@ export function assertReviewPass(record: ResearchRecord, reviewRaw: unknown, now
  * verdict from the checks, list what failed, and seal. A reviewer cannot seal a PASS over a false check.
  */
 export function finalizeReview(record: ResearchRecord, filled: GuideReview, reviewedAt: string): GuideReview {
+  // The draft carries the hash of the record it was drafted from. If the record moved on, the reviewer's
+  // judgments are about different claims, so rebinding them would seal a PASS nobody reviewed.
+  const stale: string[] = [];
+  if (filled.slug !== record.slug) stale.push(`slug: the review is for "${filled.slug}", the record is "${record.slug}"`);
+  if (filled.recordHash !== recordHash(record)) stale.push("recordHash: the record changed since this review was drafted, so its judgments do not cover it");
+  if (stale.length > 0) {
+    throw new GuideReviewError("the review cannot be sealed, draft it again with --force and judge every claim afresh", stale);
+  }
   const failures: string[] = [];
   const byClaim = new Map(filled.items.map((item) => [item.claimId, item]));
   for (const claim of record.claims) {

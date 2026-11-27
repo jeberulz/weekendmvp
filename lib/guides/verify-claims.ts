@@ -167,25 +167,39 @@ export function figuresIn(text: string): string[] {
   return out;
 }
 
+/** A figure as a whole token: spaces, commas and a trailing plus dropped, so "$1,200" and "$1200" are one figure. */
+const wholeFigure = (value: string) => figureKey(value).replace(/\+$/, "");
+
+/** Every complete figure a piece of text states, normalised. "1200" is one figure here, never "200" inside it. */
+const figureSet = (...texts: string[]): Set<string> => new Set(texts.flatMap((text) => figuresIn(text).map(wholeFigure)));
+
 /**
  * Every figure in the guide copy must trace to a claim or be listed as structure, and every claim's sentence
  * should be in the copy. Run only when the guide has a research record.
+ *
+ * A figure matches only as a whole token. A claim that says 1200 does not back a 200 in the copy.
  */
 export function checkCopyAgainstRecord(record: ResearchRecord, copy: readonly string[]): Finding[] {
   const findings: Finding[] = [];
-  const claimText = record.claims.map((claim) => ({ id: claim.id, key: figureKey(claim.text), displayKey: claim.kind !== "first-hand" && claim.display ? figureKey(claim.display) : "" }));
-  const allowed = record.allowedNumbers.map(figureKey);
+  const backed = new Set<string>();
+  for (const claim of record.claims) {
+    for (const value of figureSet(claim.text)) backed.add(value);
+    if (claim.kind !== "first-hand" && claim.display) {
+      backed.add(wholeFigure(claim.display));
+      for (const value of figureSet(claim.display)) backed.add(value);
+    }
+  }
+  // "allowedNumbers" is free text like "5 steps" or "$300K", so read the figures out of each entry too.
+  const allowed = new Set<string>(record.allowedNumbers.map(wholeFigure));
+  for (const value of figureSet(...record.allowedNumbers)) allowed.add(value);
 
   const seen = new Set<string>();
   for (const text of copy) {
     for (const figure of figuresIn(text)) {
-      const key = figureKey(figure);
+      const key = wholeFigure(figure);
       if (seen.has(key)) continue;
       seen.add(key);
-      const mapped =
-        claimText.some((claim) => claim.key.includes(key) || (claim.displayKey && claim.displayKey.includes(key))) ||
-        allowed.some((value) => value.includes(key));
-      if (!mapped) {
+      if (!backed.has(key) && !allowed.has(key)) {
         findings.push({
           rule: "copy-number-unmapped",
           severity: "error",

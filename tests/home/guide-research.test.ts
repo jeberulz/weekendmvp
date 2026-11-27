@@ -218,6 +218,28 @@ describe("figures in copy", () => {
     expect(rules(checkCopyAgainstRecord(listed, ["Builders earn $300K.", ...rec.claims.map((c) => c.text)]))).toEqual([]);
   });
 
+  test("a figure matches as a whole token, so a claim saying 1200 does not back a 200", () => {
+    const base = mutate((r) => {
+      r.claims = [{ id: "n1", kind: "first-hand", text: "We have 1200 articles.", evidenceId: "solo" }];
+      r.evidence = r.evidence.filter((e) => e.id === "solo");
+      r.sources = [];
+    });
+    const rec = researchRecordSchema.parse(base);
+    const copy = ["We have 1200 articles.", "We have 200 builders."];
+    const unmapped = (r: ResearchRecord, text: string[]) => checkCopyAgainstRecord(r, text).filter((f) => f.rule === "copy-number-unmapped");
+    expect(unmapped(rec, copy)).toEqual([expect.objectContaining({ rule: "copy-number-unmapped", message: expect.stringContaining('"200"') })]);
+    // The same figure written with a comma, or with a plus, is still the same figure.
+    expect(unmapped(rec, ["We have 1,200 articles.", "Over 1200+ articles."])).toEqual([]);
+    // An allowed number of 1200 does not allow 200 either.
+    const listed = researchRecordSchema.parse({ ...base, allowedNumbers: ["1200"] });
+    expect(unmapped(listed, ["We have 200 builders."])).toHaveLength(1);
+    expect(unmapped(listed, ["Chapter 1200 is long."])).toEqual([]);
+    // A percentage is not backed by a longer one.
+    const pct = researchRecordSchema.parse(mutate((r) => { (r.claims[0] as { text: string }).text = "Pay rose 120% in a year."; (r.claims[0] as { display?: string }).display = "120%"; (r.claims[0] as { excerpt: string }).excerpt = "Pay rose 120% in a year."; }));
+    expect(unmapped(pct, ["Pay rose 20% in a year."])).toHaveLength(1);
+    expect(unmapped(pct, ["Pay rose 120% in a year."])).toEqual([]);
+  });
+
   test("a claim whose sentence is not in the copy is a warning", () => {
     const findings = checkCopyAgainstRecord(record(), ["Nothing from the record is here."]);
     expect(findings.filter((f) => f.rule === "claim-unused")).toHaveLength(5);
@@ -287,6 +309,20 @@ describe("sealed review", () => {
     expect(sealed.verdict).toBe("FAIL");
     expect(sealed.failures.length).toBeGreaterThan(0);
     expect(() => assertReviewPass(rec, sealed, NOW)).toThrow(/does not pass/);
+  });
+
+  test("finalizeReview refuses a review drafted from an older record, so judgments are never rebound", () => {
+    const rec = record();
+    const draft = buildDraftReview(rec, "Source Critic", "2026-11-27T12:00:00.000Z");
+    for (const item of draft.items) for (const key of Object.keys(item.checks) as (keyof typeof item.checks)[]) if (item.checks[key] === false) item.checks[key] = true;
+    // The reviewer judged this record. Then a claim changes while its id stays.
+    const changed = researchRecordSchema.parse(mutate((r) => { (r.claims[0] as { text: string }).text = "The top posted base pay is $220K a year."; }));
+    expect(() => finalizeReview(changed, draft, "2026-11-27T12:00:00.000Z")).toThrow(/cannot be sealed/);
+    expect(() => finalizeReview(changed, draft, "2026-11-27T12:00:00.000Z")).toThrow(/recordHash:/);
+    // The same record still seals to a PASS.
+    expect(finalizeReview(rec, draft, "2026-11-27T12:00:00.000Z").verdict).toBe("PASS");
+    // A review for another guide is refused too.
+    expect(() => finalizeReview(rec, { ...draft, slug: "another-guide" }, "2026-11-27T12:00:00.000Z")).toThrow(/slug:/);
   });
 
   test("a missing or malformed review is refused with a clear reason", () => {
@@ -414,6 +450,16 @@ describe("guide:source-review CLI", () => {
     expect(sealed.status).toBe(0);
     expect(sealed.stdout).toContain("verdict PASS");
     expect(run("check", `--record=${rel}`, "--now=2026-11-27").status).toBe(0);
+
+    // Sealing again after the record changed is refused, even though every check is true.
+    const edited = rawRecord();
+    edited.claims[0].text = "The top posted base pay is $230K a year.";
+    fs.writeFileSync(path.join(process.cwd(), rel), JSON.stringify(edited));
+    const resealed = run("seal", `--record=${rel}`, "--now=2026-11-27");
+    expect(resealed.status).toBe(1);
+    expect(resealed.stdout).toContain("recordHash");
+    expect(resealed.stdout).toContain("draft with --force");
+    fs.writeFileSync(path.join(process.cwd(), rel), JSON.stringify(rawRecord()));
 
     // Editing the record afterwards makes the review stale.
     const raw = rawRecord();

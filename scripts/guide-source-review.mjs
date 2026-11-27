@@ -159,7 +159,15 @@ if (command === "seal") {
     for (const issue of parsedReview.error.issues) add("review-invalid", "error", `${issue.path.join(".") || "review"}: ${issue.message}`);
     finish(`seal ${record.slug}`);
   }
-  const sealed = review.finalizeReview(record, parsedReview.data, new Date(now).toISOString());
+  let sealed;
+  try {
+    sealed = review.finalizeReview(record, parsedReview.data, new Date(now).toISOString());
+  } catch (error) {
+    if (!(error instanceof review.GuideReviewError)) throw error;
+    for (const issue of error.issues) add("review-stale", "error", issue);
+    add("review-stale", "error", "run draft with --force, judge every claim afresh, then seal");
+    finish(`seal ${record.slug}`);
+  }
   fs.writeFileSync(reviewPath, `${JSON.stringify(sealed, null, 2)}\n`);
   for (const failure of sealed.failures) add("review-failure", "error", failure);
   console.log(`sealed ${path.relative(ROOT, reviewPath)} with verdict ${sealed.verdict} on ${today}`);
