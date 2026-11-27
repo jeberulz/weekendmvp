@@ -17,8 +17,6 @@ const app = path.resolve(process.env.LANDING_VISUAL_APP || project);
 const baseline = path.join(project, "tests/landing-visual/baseline");
 const actual = path.join(project, "tmp/landing-visual");
 const source = "43721c0fb8a7bfd827a1a4ca80cf12ae82537ba0";
-const guideSource = "692b7b3f5dd1109dd32c4902a6a658f82daee272";
-const guideBaseline = path.join(project, "tests/landing-visual/guide-baseline");
 const record = process.argv.includes("--record");
 const git = (...args) => execFileSync("git", ["-C", app, ...args], { encoding: "utf8" }).trim();
 
@@ -26,8 +24,13 @@ const hub = "/live";
 const free = "/live/48-hours";
 const paid = "/live/build-along";
 const guide = "/guides/5-to-9-builder";
+const starter = "/5-to-9-starter";
+const updatedReferences = new Map([
+  [guide, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "guide-baseline" }],
+  [starter, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "starter-baseline" }],
+]);
 const scenarios = [
-  { phase: "ended", clock: "2026-11-27T12:00:00Z", paths: ["/", "/5-to-9-starter", guide, "/starter-kit", "/shipable", "/dare", hub, free, paid] },
+  { phase: "ended", clock: "2026-11-27T12:00:00Z", paths: ["/", starter, guide, "/starter-kit", "/shipable", "/dare", hub, free, paid] },
   { phase: "pre-sale", clock: "2026-10-30T12:00:00Z", paths: [hub, free, paid] },
   { phase: "webinar-live", clock: "2026-10-31T16:30:00Z", paths: [hub, free] },
   { phase: "replay-early-bird", clock: "2026-11-02T12:00:00Z", paths: [hub, free, paid] },
@@ -43,7 +46,7 @@ async function checkInput() {
   await access(path.join(app, ".next/server/preview-props.json"));
   assert.equal(git("hash-object", "ideas/manifest.json"), "53a8348cdccfa223cb64cc2338445a76bd388170", "Unexpected idea manifest");
   if (record) {
-    assert.equal(git("rev-parse", "HEAD"), routeFilter === guide ? guideSource : source, "Record from the pre-migration main revision");
+    assert.equal(git("rev-parse", "HEAD"), updatedReferences.get(routeFilter)?.commit ?? source, "Record from the pre-migration main revision");
     assert.equal(git("status", "--porcelain"), "", "Record from a clean checkout");
   }
   // Build without deployment variables. The test runner supplies a loopback
@@ -212,9 +215,13 @@ async function matchesMobileNavRounding(name, left, right) {
   return true;
 }
 
-async function match(name, screenshot) {
-  const updatedGuide = name.startsWith("guides-5-to-9-builder-") && (!record || routeFilter === guide);
-  const referencePath = path.join(updatedGuide ? guideBaseline : baseline, name);
+function referenceDirectory(route) {
+  const updated = !record || routeFilter === route ? updatedReferences.get(route) : undefined;
+  return updated ? path.join(project, "tests/landing-visual", updated.directory) : baseline;
+}
+
+async function match(route, name, screenshot) {
+  const referencePath = path.join(referenceDirectory(route), name);
   if (record) {
     await sharp(screenshot).png({ compressionLevel: 9 }).toFile(referencePath);
     return;
@@ -236,7 +243,7 @@ async function match(name, screenshot) {
 }
 
 await checkInput();
-await mkdir(record && routeFilter === guide ? guideBaseline : baseline, { recursive: true });
+if (record) await mkdir(referenceDirectory(routeFilter), { recursive: true });
 const fixture = makeConvexFixture();
 fixture.listen(0, "127.0.0.1");
 await once(fixture, "listening");
@@ -262,7 +269,7 @@ try {
             const name = [slug, route.startsWith("/live") ? phase : gate, width].filter(Boolean).join("-") + ".png";
             const screenshot = await capture(browser, { ...server, route, width, clock, gate, phase });
             try {
-              await match(name, screenshot);
+              await match(route, name, screenshot);
             } catch (error) {
               if (record) throw error;
               failed.push(name);
