@@ -9,6 +9,7 @@ const NUDGE = ["", "lg:translate-y-7", "", "", "lg:translate-y-5", ""];
 
 /** 04 · What makes an idea weekend-sized, as a wall of sticky notes. */
 export function WeekendTest({ averageHours, copy }: { averageHours: number; copy: HomeCopy["weekendTest"] }) {
+  const [closingLead, closingEnd] = copy.closing.split("{hours}");
   return (
     <section aria-labelledby="home-test-title" data-scene="test" className="relative overflow-hidden bg-home-paper">
       <div aria-hidden className="home-dots absolute inset-0" />
@@ -49,7 +50,7 @@ export function WeekendTest({ averageHours, copy }: { averageHours: number; copy
           <div data-m="seal" className="flex items-center gap-[18px] lg:flex-col lg:gap-[22px] lg:text-center">
             <Stamp id="home-test-stamp" text={copy.stamp + " "} icon="target" rotate={-8} className="size-[104px] lg:size-[150px]" />
             <p className="text-[15px] leading-[1.45] text-home-ink-2 lg:text-sm">
-              {copy.closing.replaceAll("{hours}", String(averageHours))}
+              {closingLead}{averageHours}{closingEnd}
             </p>
           </div>
         </div>
