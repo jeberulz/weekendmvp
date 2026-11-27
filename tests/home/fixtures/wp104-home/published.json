@@ -1,0 +1,279 @@
+{
+  "sections": [
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "229 IDEAS · EVERY ONE WITH BUILD PROMPTSPick an idea. Paste the prompt. Ship it by Sunday.Researched startup ideas sized for one weekend, with copy-paste prompts for the AI tools you already use. Keep your job.Browse 229 ideasGet the free Starter KitCursorClaude CodeClaudeLovablev0ReplitWindsurfHealth & WellnessN°149 OF 229Multi-Doctor Medication Interaction Checker10 hrsSaturday + Sunday morningSATSUNPROMPTS IN THIS IDEA1Project SetupSHOWN2Core Feature3Landing PagePASTE INTO CURSOR · PROMPT 1Copy1Work in this Cursor project. Plan first, create the files, run the app, fix errors.2Build the weekend MVP of \"CabinetSafe\": a person lists every prescription, supplement and over-the-counter medicine once, and the app re-checks the whole list against documented interaction records every time something changes. It reports what the records say. It gives no medical advice.34Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the RxNorm API from the US National Library of Medicine to identify drug names. The interaction records are a table you load from published sources, each with a source name and a link. No model writes any medical text. Deploy on Vercel.56Tables (Row Level Security on, a user reads only their own profiles; interaction_records is read-only to signed-in users):7- profiles(id, owner_user_id, display_name, birth_year)8- medications(id, profile_id, rxcui, display_name, raw_input, dose, kind, prescriber, added_at, stopped_at) kind is prescription, otc or supplement9- interaction_records(id, rxcui_a, rxcui_b, severity, source_name, source_url, record_text) severity is major, moderate or minor10- screens(id, profile_id, run_at, medication_ids uuid[], flag_count)11- flags(id, screen_id, rxcui_a, rxcui_b, severity, source_name, source_url, record_text)1213Screens: /login, /cabinet/[profileId] (the list and the flags), /summary/[screenId] (one printable page).Prompt 1 is free. A free account unlocks the other prompts and the full research.Unlock the full research for Multi-Doctor Medication Interaction CheckerRESEARCHED · WEEKEND-SIZED ·",
+      "links": [
+        [
+          "/startup-ideas",
+          "Browse 229 ideas"
+        ],
+        [
+          "/ideas/medication-interaction-checker",
+          "Unlock the full research for Multi-Doctor Medication Interaction Checker"
+        ]
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "What is Weekend MVP?Weekend MVP is a library of researched startup ideas sized for one person and about one weekend. Each idea includes problem, market notes, stack, and copy-paste prompts for tools like Cursor, Claude, and Lovable so you can ship a live MVP without quitting your job.Start hereBrowse startup ideasDMARC monitor for agenciesPrompt regression tests for AI buildersGet the free Starter KitThe 5-to-9 StarterThe 5-to-9 BuilderIdeas for non-technical founders",
+      "links": [
+        [
+          "/startup-ideas",
+          "Browse startup ideas"
+        ],
+        [
+          "/ideas/dmarc-monitor-agencies-small-business",
+          "DMARC monitor for agencies"
+        ],
+        [
+          "/ideas/prompt-regression-tests-indie-ai-builders",
+          "Prompt regression tests for AI builders"
+        ],
+        [
+          "/starter-kit",
+          "Get the free Starter Kit"
+        ],
+        [
+          "/5-to-9-starter",
+          "The 5-to-9 Starter"
+        ],
+        [
+          "/guides/5-to-9-builder",
+          "The 5-to-9 Builder"
+        ],
+        [
+          "/ideas-for/non-technical",
+          "Ideas for non-technical founders"
+        ]
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "The idea library · updated weeklyBrowse all 229229startup ideas, each one sized for a weekend.ALL 229SaaS 48Creator Tools 18Developer Tools 17Education 17Fintech 17Marketplace 17AI Tools 16Automation 16E-commerce 16Health & Wellness 16Productivity 16B2B 15NO.IDEACATEGORYBUILD TIMEGOALN°229 · DEVELOPER TOOLS12 HRS · $1K/moWebhook Gap Reconciliation for Indie SaaSDeveloper ToolsSATSUN12 HRS$1K/moN°228 · FINTECH12 HRS · $1K/moUsage-Credit Ledger for Indie AI AppsFintechSATSUN12 HRS$1K/moN°227 · AI TOOLS12 HRS · $1K/moPDF Redaction Preflight for Small FirmsAI ToolsSATSUN12 HRS$1K/moN°226 · AUTOMATION12 HRS · $1K/moEmail Parser Exception Inbox for Operations TeamsAutomationSATSUN12 HRS$1K/moN°225 · AUTOMATION20 HRS · $5K/moPlain-English DMARC Monitoring for Agencies and Small BusinessesAutomationSATSUN20 HRS$5K/moN°224 · DEVELOPER TOOLS10 HRS · $5K/moPrompt Regression Tests for Indie AI BuildersDeveloper ToolsSATSUN10 HRS$5K/moN°223 · DEVELOPER TOOLS10 HRS · $5K/moTimed tool access that clocks out when the contract doesDeveloper ToolsSATSUN10 HRS$5K/moN°222 · HEALTH & WELLNESS8 HRS · $1K/moGamified posture tracking app for phone-addicted Gen ZHealth & WellnessSATSUN8 HRS$1K/moSHOWING 68 OF 229 · NEWEST FIRSTBrowse all 229 ideas",
+      "links": [
+        [
+          "/startup-ideas",
+          "Browse all 229"
+        ],
+        [
+          "/startup-ideas",
+          "ALL 229"
+        ],
+        [
+          "/ideas/saas",
+          "SaaS 48"
+        ],
+        [
+          "/ideas/creator-tools",
+          "Creator Tools 18"
+        ],
+        [
+          "/ideas/developer-tools",
+          "Developer Tools 17"
+        ],
+        [
+          "/ideas/education",
+          "Education 17"
+        ],
+        [
+          "/ideas/fintech",
+          "Fintech 17"
+        ],
+        [
+          "/ideas/marketplace",
+          "Marketplace 17"
+        ],
+        [
+          "/ideas/ai-tools",
+          "AI Tools 16"
+        ],
+        [
+          "/ideas/automation",
+          "Automation 16"
+        ],
+        [
+          "/ideas/ecommerce",
+          "E-commerce 16"
+        ],
+        [
+          "/ideas/health",
+          "Health & Wellness 16"
+        ],
+        [
+          "/ideas/productivity",
+          "Productivity 16"
+        ],
+        [
+          "/ideas/b2b",
+          "B2B 15"
+        ],
+        [
+          "/ideas/webhook-gap-reconciliation-indie-saas",
+          "N°229 · DEVELOPER TOOLS12 HRS · $1K/moWebhook Gap Reconciliation for Indie SaaSDeveloper ToolsSATSUN12 HRS$1K/mo"
+        ],
+        [
+          "/ideas/usage-credit-ledger-indie-ai-apps",
+          "N°228 · FINTECH12 HRS · $1K/moUsage-Credit Ledger for Indie AI AppsFintechSATSUN12 HRS$1K/mo"
+        ],
+        [
+          "/ideas/pdf-redaction-preflight-small-firms",
+          "N°227 · AI TOOLS12 HRS · $1K/moPDF Redaction Preflight for Small FirmsAI ToolsSATSUN12 HRS$1K/mo"
+        ],
+        [
+          "/ideas/email-parser-exception-inbox-operations",
+          "N°226 · AUTOMATION12 HRS · $1K/moEmail Parser Exception Inbox for Operations TeamsAutomationSATSUN12 HRS$1K/mo"
+        ],
+        [
+          "/ideas/dmarc-monitor-agencies-small-business",
+          "N°225 · AUTOMATION20 HRS · $5K/moPlain-English DMARC Monitoring for Agencies and Small BusinessesAutomationSATSUN20 HRS$5K/mo"
+        ],
+        [
+          "/ideas/prompt-regression-tests-indie-ai-builders",
+          "N°224 · DEVELOPER TOOLS10 HRS · $5K/moPrompt Regression Tests for Indie AI BuildersDeveloper ToolsSATSUN10 HRS$5K/mo"
+        ],
+        [
+          "/ideas/timed-tool-access-contractors",
+          "N°223 · DEVELOPER TOOLS10 HRS · $5K/moTimed tool access that clocks out when the contract doesDeveloper ToolsSATSUN10 HRS$5K/mo"
+        ],
+        [
+          "/ideas/phone-neck-score-app",
+          "N°222 · HEALTH & WELLNESS8 HRS · $1K/moGamified posture tracking app for phone-addicted Gen ZHealth & WellnessSATSUN8 HRS$1K/mo"
+        ],
+        [
+          "/startup-ideas",
+          "Browse all 229 ideas"
+        ]
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "IDEA OF THE WEEK · NOV 23–29Fintech10 HRS · $5K/MO GOALFreelancer Tax Filing Bot1099 tax software that keeps the books and e-files Schedule C from Stripe and Plaid — year-round ledger, licensed transmit, not just an estimate.Read the researchBrowse all 229 ideasHow it works1Connect income2Books run in the background3Review the assembled return4E-file, then stay currentThe numbers10 hrsSaturday + Sunday morningSATSUNOPPORTUNITY9/10PAIN9/10TIMING9/10BUILDABLE8/109 cited sources behind the research",
+      "links": [
+        [
+          "/ideas/freelancer-tax-filing-bot",
+          "Read the research"
+        ],
+        [
+          "/startup-ideas",
+          "Browse all 229 ideas"
+        ]
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "The weekend testWhat makes an idea weekend-sized.01One core featureOne job, done well. Everything else waits for version two.02Three screensA landing page, an input, and an output. That is the whole MVP.03Built on existing toolsStripe, Supabase, Gmail, and AI APIs do the heavy lifting.04A buyer you can nameFreelancers, music teachers, Shopify owners. Not everyone.05Prompts includedPaste them into Cursor, Claude, or Bolt and start building.06About 10 hoursThe average idea is estimated at 10 hours. That is one weekend.PASSES THE WEEKEND TEST · Every idea is scoped for one person, a few AI tools, and about 10 hours.",
+      "links": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "Build with AIWorks with the AI you already use.Build with AIEvery idea ships with three or more copy-paste prompts. Pick your tool to see the ideas that fit it best.Cursor229 IDEASClaude222 IDEASClaude CodeBUILD GUIDELovable60 IDEASv070 IDEASReplit64 IDEASWindsurf61 IDEASNo-code tools52 IDEASThis week’s promptsPaste.Run.Ship.The three prompts that build this week’s idea, Freelancer Tax Filing Bot. Copy one into your tool and start.See every promptPROMPT 3 · LANDING PAGEPROMPT 2 · CORE FEATUREPROMPT 1 · PROJECT SETUPCopy1Build the weekend MVP of \"MyTaxGuy\": a freelancer imports bank and payout exports, the app keeps a categorized ledger, and a Schedule C worksheet is assembled from it for the person to review. It is bookkeeping and a draft, not tax advice and not a filed return.23Stack: Next.js (App Router), TypeScript, Tailwind, Supabase (Postgres, Row Level Security, Auth with email magic link), the Anthropic API to suggest a category for a vendor. All form math is plain code. Deploy on Vercel.45Tables (Row Level Security on, each user reads only their own rows):6- imports(id, user_id, filename, row_count, created_at)7- transactions(id, user_id, import_id, posted_at, description, amount_cents, category, category_source, review_state) category_source is rule, model or user; review_state is posted or needs_user8- category_rules(id, user_id, pattern, category)9- schedule_c_drafts(id, user_id, tax_year, lines jsonb, reviewed_at, created_at)1011Screens: /login, /import, /books (the transaction queue), /review/[taxYear] (each line with its source transactions).12Env vars (names only): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (server only), ANTHROPIC_API_KEY.1314Do not build: billing, e-filing or any transmit to a tax authority, Plaid, Stripe or PayPal connections, a Social Security number or other identity fields, estimated tax payments, K-1s, employees or rentals.See every prompt",
+      "links": [
+        [
+          "/build-with/cursor",
+          "Cursor229 IDEAS"
+        ],
+        [
+          "/build-with/claude",
+          "Claude222 IDEAS"
+        ],
+        [
+          "/build-with/claude-code",
+          "Claude CodeBUILD GUIDE"
+        ],
+        [
+          "/build-with/lovable",
+          "Lovable60 IDEAS"
+        ],
+        [
+          "/build-with/v0",
+          "v070 IDEAS"
+        ],
+        [
+          "/build-with/replit",
+          "Replit64 IDEAS"
+        ],
+        [
+          "/build-with/windsurf",
+          "Windsurf61 IDEAS"
+        ],
+        [
+          "/build-with/no-code",
+          "No-code tools52 IDEAS"
+        ],
+        [
+          "/ideas/freelancer-tax-filing-bot",
+          "See every prompt"
+        ],
+        [
+          "/ideas/freelancer-tax-filing-bot",
+          "See every prompt"
+        ]
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "Inside every idea · Nov 23–29Real research. Not a vibe.Every idea page follows the same seven sections, plus its sources. These excerpts come from this week’s pick: First International Hire Assistant.01 · The Problem“You found the engineer. She lives in Porto.”02 · The Solution1Intake the hire2Pick the path3Generate the country pack4Stay DIY or hand off5Run the first 90 days03 · Market ResearchThe global EOR market hit $5.97 billion in 2026, projected to about $10.45 billion by 2035 at roughly 6.8 percent CAGR…$5.97BTypical EOR pricing sits at $199 to $599 per employee per month (SoftwareSuggest, Feb 2026).$199Adjacent: AI in HR around $7.0 to $8.2 billion in 2024–2025, long-range $14 to $30.8 billion by 2029–2034 (Precedence…$7.004 · Competitive LandscapeDeel$22Remote$699Rippling$499–$599Oyster$699/moRemoFirst$19905 · Business ModelFree country playbook$0Country pack$199Hire Desk$99/moGOAL $5K/MO06 · Tech StackNext.jsVercelConvexClerkStripe CheckoutBillingClaude for draftsnever for law07 · AI Prompts1Project Setup2Core Feature3Landing Page4Branding Package08 · Sources31cited sources, linked on the pageTHE FULL PAGERead the full ideaFirst International Hire Assistant",
+      "links": [
+        [
+          "/ideas/first-international-hire-assistant",
+          "THE FULL PAGERead the full ideaFirst International Hire Assistant"
+        ]
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "JOHN ISEGHOHI · FOUNDER, WEEKEND MVPJOHN ISEGHOHI · FOUNDER, WEEKEND MVPKeep your jobBuilt around your 9-to-5.No sabbatical. No co-founder. About 12 hours across one weekend is enough to ship the first version.12 hrsFRIDAY NIGHT TO SUNDAYGet the weekend planBrowse 229 ideasFRIDAY NIGHT2 hrsFRIDAY NIGHTPick and planPick an idea and read the research. Cut the scope to one core feature.SATURDAY6 hrsSATURDAYBuild the corePaste the setup prompt. Build the one screen that does the job.SUNDAY4 hrsSUNDAYLaunch itAdd a landing page and a waitlist. Share the link with ten people.MONDAY0 hrsMONDAYBack at workWith a live product, real feedback, and your job intact.The Starter Kit has the full Friday-to-Sunday plan.Get the plan free",
+      "links": [
+        [
+          "/startup-ideas",
+          "Browse 229 ideas"
+        ]
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "starter-kit",
+      "text": "Free Starter KitYour ticket to a shipped weekend.ADMIT ONE · FREEWEEKEND MVPThe Weekend MVPStarter KitAn ideaFROMA live linkTOFriday nightDEPARTSSundayARRIVES6 toolsINCLUDESYOUR COPYEmail addressSend me the kitFree. Unsubscribe anytime.The 15-second demo test3-screen MVP templateMVP idea scorecard48-hour weekend planScope-cutting checklistCopy-paste AI prompts",
+      "links": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "A note fromJohnI started Weekend MVP to close the gap between “I have an idea” and “here’s a live URL.” Most people with a day job don’t lack ideas or talent. They lack a small enough place to start.So every idea here is researched, sized for a weekend, and paired with prompts for the AI tools you already use. Pick one. Build it on Saturday. Show someone on Sunday.John IseghohiFounder, Weekend MVP · runs a community of 400+ weekend buildersMore about John",
+      "links": [
+        [
+          "/john-iseghohi",
+          "More about John"
+        ]
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "Pick an idea.Build it this weekend.Browse 229 ideasGet the free Starter KitDo I need to code?No. Every Weekend MVP idea ships with copy-paste prompts for AI builders like Cursor, Claude, Bolt, and Lovable. You pick an idea, paste the prompts, and follow a three-screen MVP (landing → input → output). Coding helps, but it’s not required to get a demo live by Sunday.Do I have to quit my job?No. Most ideas are scoped to about 8–12 hours — roughly one weekend around a 9-to-5. The site is built for solo founders and side builders who want a live URL and early users, not a sabbatical or a co-founder.Are the ideas free?Yes. Browsing the idea library is free. Some full research pages ask for an email to unlock deeper prompts and sources. The Weekend MVP Starter Kit (scorecard, 48-hour plan, templates) is also free.How do I build an MVP in a weekend?Pick an idea small enough for 8–12 hours, cut it to three screens (landing, input, output), and paste the prompts into an AI builder like Cursor, Claude, Bolt, or Lovable. Build on Saturday, deploy, and put the live link in front of real users on Sunday. The free Starter Kit includes a 48-hour plan.",
+      "links": [
+        [
+          "/startup-ideas",
+          "Browse 229 ideas"
+        ]
+      ]
+    }
+  ],
+  "jsonLd": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"Person\",\"@id\":\"https://www.weekendmvp.app/john-iseghohi\",\"name\":\"John Iseghohi\",\"jobTitle\":\"Founder, Weekend MVP\",\"url\":\"https://www.weekendmvp.app/john-iseghohi\",\"image\":\"https://www.weekendmvp.app/image/john-portrait.jpg\",\"sameAs\":[\"https://twitter.com/weekendmvp\",\"https://cal.com/switchtoux\"],\"worksFor\":{\"@id\":\"https://www.weekendmvp.app/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://www.weekendmvp.app/#organization\",\"name\":\"Weekend MVP\",\"url\":\"https://www.weekendmvp.app/\",\"logo\":\"https://www.weekendmvp.app/image/weekendmvp-logo.svg\",\"founder\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"},\"sameAs\":[\"https://twitter.com/weekendmvp\"]},{\"@type\":\"WebSite\",\"@id\":\"https://www.weekendmvp.app/#website\",\"url\":\"https://www.weekendmvp.app/\",\"name\":\"Weekend MVP\",\"publisher\":{\"@id\":\"https://www.weekendmvp.app/#organization\"}},{\"@type\":\"WebPage\",\"@id\":\"https://www.weekendmvp.app/\",\"name\":\"Weekend MVP | 229 Startup Ideas You Can Build in a Weekend\",\"description\":\"229 researched startup ideas sized for one weekend — each with copy-paste prompts for Cursor, Claude, and Lovable. Keep your job. Ship by Sunday.\",\"url\":\"https://www.weekendmvp.app/\",\"isPartOf\":{\"@id\":\"https://www.weekendmvp.app/#website\"},\"about\":{\"@id\":\"https://www.weekendmvp.app/#organization\"},\"author\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"},\"speakable\":{\"@type\":\"SpeakableSpecification\",\"cssSelector\":[\"#home-hero-title\",\"#home-what-is\"]}},{\"@type\":\"SoftwareApplication\",\"name\":\"Weekend MVP Starter Kit\",\"description\":\"The checklist, templates, and prompts to build a 3-screen MVP and launch a waitlist in one weekend.\",\"applicationCategory\":\"DeveloperApplication\",\"operatingSystem\":\"Web\",\"@id\":\"https://www.weekendmvp.app/#starter-kit\",\"url\":\"https://www.weekendmvp.app/starter-kit\",\"offers\":{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"USD\"}},{\"@type\":\"FAQPage\",\"@id\":\"https://www.weekendmvp.app/#faq\",\"mainEntity\":[{\"@type\":\"Question\",\"name\":\"Do I need to code?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"No. Every Weekend MVP idea ships with copy-paste prompts for AI builders like Cursor, Claude, Bolt, and Lovable. You pick an idea, paste the prompts, and follow a three-screen MVP (landing → input → output). Coding helps, but it’s not required to get a demo live by Sunday.\"}},{\"@type\":\"Question\",\"name\":\"Do I have to quit my job?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"No. Most ideas are scoped to about 8–12 hours — roughly one weekend around a 9-to-5. The site is built for solo founders and side builders who want a live URL and early users, not a sabbatical or a co-founder.\"}},{\"@type\":\"Question\",\"name\":\"Are the ideas free?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"Yes. Browsing the idea library is free. Some full research pages ask for an email to unlock deeper prompts and sources. The Weekend MVP Starter Kit (scorecard, 48-hour plan, templates) is also free.\"}},{\"@type\":\"Question\",\"name\":\"How do I build an MVP in a weekend?\",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":\"Pick an idea small enough for 8–12 hours, cut it to three screens (landing, input, output), and paste the prompts into an AI builder like Cursor, Claude, Bolt, or Lovable. Build on Saturday, deploy, and put the live link in front of real users on Sunday. The free Starter Kit includes a 48-hour plan.\"}}]},{\"@type\":\"ItemList\",\"@id\":\"https://www.weekendmvp.app/#idea-index\",\"name\":\"Newest startup ideas on Weekend MVP\",\"numberOfItems\":8,\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"url\":\"https://www.weekendmvp.app/ideas/webhook-gap-reconciliation-indie-saas\",\"name\":\"Webhook Gap Reconciliation for Indie SaaS\"},{\"@type\":\"ListItem\",\"position\":2,\"url\":\"https://www.weekendmvp.app/ideas/usage-credit-ledger-indie-ai-apps\",\"name\":\"Usage-Credit Ledger for Indie AI Apps\"},{\"@type\":\"ListItem\",\"position\":3,\"url\":\"https://www.weekendmvp.app/ideas/pdf-redaction-preflight-small-firms\",\"name\":\"PDF Redaction Preflight for Small Firms\"},{\"@type\":\"ListItem\",\"position\":4,\"url\":\"https://www.weekendmvp.app/ideas/email-parser-exception-inbox-operations\",\"name\":\"Email Parser Exception Inbox for Operations Teams\"},{\"@type\":\"ListItem\",\"position\":5,\"url\":\"https://www.weekendmvp.app/ideas/dmarc-monitor-agencies-small-business\",\"name\":\"Plain-English DMARC Monitoring for Agencies and Small Businesses\"},{\"@type\":\"ListItem\",\"position\":6,\"url\":\"https://www.weekendmvp.app/ideas/prompt-regression-tests-indie-ai-builders\",\"name\":\"Prompt Regression Tests for Indie AI Builders\"},{\"@type\":\"ListItem\",\"position\":7,\"url\":\"https://www.weekendmvp.app/ideas/timed-tool-access-contractors\",\"name\":\"Timed tool access that clocks out when the contract does\"},{\"@type\":\"ListItem\",\"position\":8,\"url\":\"https://www.weekendmvp.app/ideas/phone-neck-score-app\",\"name\":\"Gamified posture tracking app for phone-addicted Gen Z\"}]}]}"
+  ],
+  "metadata": [
+    "<title>Weekend MVP | 229 Startup Ideas You Can Build in a Weekend</title>",
+    "<meta name=\"description\" content=\"229 researched startup ideas sized for one weekend — each with copy-paste prompts for Cursor, Claude, and Lovable. Keep your job. Ship by Sunday.\">",
+    "<link rel=\"canonical\" href=\"https://www.weekendmvp.app\">"
+  ]
+}

@@ -58,3 +58,7 @@ The eight images in `free-webinar-baseline/` come from a clean production build 
 ## Build-Along reference
 
 The ten images in `build-along-baseline/` come from clean main at `692b7b3f`. They cover ended, pre-sale and the three sold-out clocks. The HTML fixtures also include the historical confirmation view. On pristine main an available standard-price ticket crashes during hydration because the button calls the Convex auth hook without an auth provider. Capture the safe states from that revision and exercise the repaired available-ticket flow independently.
+
+## Homepage reference
+
+The two images in `home-baseline/` come from clean main at `692b7b3f` with the frozen 27 November clock and the existing loopback editorial fixture. The rendered fixture records all eleven sections, metadata and JSON-LD from the same loaded page. Point `LANDING_VISUAL_APP` at the reference build and run `npm run test:visual -- --record --route=/` to reproduce the screenshots.

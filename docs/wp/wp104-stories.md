@@ -52,3 +52,9 @@
 - Move editorial sections and FAQ wording into the Build-Along singleton. Keep prices, seat and session rules, Stripe checkout, the recording notice and legal promises in code.
 - Baseline the available historical render states from main before switching the copy. Pristine main's open checkout throws because it expects a provider absent from the route. Repair that separately and verify the signed-out redirect, checkout request and error behaviour against loopback fixtures.
 - Keep the checkout API and attribution flow in place. Verify the fixed ticket anchor, sold-out and ended layouts, charge and inventory rules, and confirmation copy.
+
+## PR 9 · Homepage
+
+- Capture the published homepage, original FAQ graph and metadata before the reader switch. Preserve all eleven sections, dynamic idea selection, count, audience and library rows, the gated signup action and section anchors.
+- Move the editorial copy into the home singleton. Preserve the idea-count and estimate tokens, and use the same CMS FAQ in the public page and FAQPage schema.
+- Verify both visual widths and the frozen HTML and graph. Keep the live editorial visibility overlay per request. Validate a browser editor save and the full test suite.

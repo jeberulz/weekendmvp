@@ -29,6 +29,7 @@ const starterKit = "/starter-kit";
 const shipable = "/shipable";
 const dare = "/dare";
 const updatedReferences = new Map([
+  ["/", { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "home-baseline" }],
   [paid, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "build-along-baseline" }],
   [guide, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "guide-baseline" }],
   [starter, { commit: "692b7b3f5dd1109dd32c4902a6a658f82daee272", directory: "starter-baseline" }],
