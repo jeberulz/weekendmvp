@@ -78,11 +78,12 @@ Add a second archetype only after guide two ships.
 0. Brief. Skill drafts audience, outcome, archetype, gate mode and offer shortlist. Gate: John approves.
 1. Thesis and outline. One-line thesis and the outline strip. Gate: John approves.
 2. Research. Claude gathers sources into the record. Every claim has id, text, sourceId, kind, dateChecked, excerpt.
-3. Source Critic (built in WP103-S4: `npm run guide:source-review`, with `verify`, `seal` and `check`). Re-fetch each
+3. Evidence intake, before the Source Critic. Any change to the record after a review is sealed makes the review stale, so
+   the evidence goes in first. John supplies his own builds, numbers, screenshots and prompts. Claude never invents these.
+   If the file is empty the guide is flagged `noFirstHandProof` and cannot publish without John's explicit override.
+4. Source Critic (built in WP103-S4: `npm run guide:source-review`, with `verify`, `seal` and `check`). Re-fetch each
    excerpt and check topicality and context. Seals a PASS bound to the record hash.
    No PASS, no draft. Same fail-closed rule as `lib/engine/source-review.ts`.
-4. Evidence intake. John supplies his own builds, numbers, screenshots and prompts. Claude never invents these.
-   If the file is empty the guide is flagged `noFirstHandProof` and cannot publish without John's explicit override.
 5. Draft. Claude fills the spec and copy deck from the sealed record and the evidence file only.
 6. Audit (fails the run). See rules below.
 7. Build and preview. Typecheck, tests, `a11y-check`, screenshots at phone (390px) and desktop width, taken with the

@@ -22,7 +22,7 @@ A guide is data plus a copy deck plus a thin composition of shared blocks. The s
 | **Layout, gate, checklist, prompt box, FAQ, SEO metadata, JSON-LD** | `app/(marketing)/guides/_shared/*` | No. If a guide needs a block that does not exist, stop and ask |
 | **Upsell cards** | `lib/guides/offers.ts` registry, `UpsellCard` | No. The skill suggests, the owner approves |
 | **Research record and sealed review** | `guides/records/{slug}.json`, `guides/records/{slug}.source-review.json` | Yes, with the rules in Step 2 and Step 3 |
-| **Sitemap** | `app/sitemap.ts` | No. A route under `app/` is picked up when it deploys |
+| **Sitemap** | `rootPages` in `app/sitemap.ts` lists each guide by hand, like `/guides/5-to-9-builder`. Guides are not auto-discovered | Not in the draft. An entry exposes the URL, so it is part of publication and needs the owner's explicit go |
 
 Facts about the template:
 - Slugs match `^[a-z0-9]+(?:-[a-z0-9]+)*$`. Section ids run `s01`, `s02`, in order, at least two.
@@ -48,7 +48,7 @@ Examples:
 | Situation | Path |
 |---|---|
 | The owner gives a topic | Run Step 0 and stop at the gate |
-| The owner says "use placeholders" for their own evidence | Placeholder mode (Step 4). The run continues, and the candidate can never publish |
+| The owner says "use placeholders" for their own evidence | Placeholder mode (Step 3). The run continues, and the candidate can never publish |
 | A guide with this slug already exists | Ask. Never overwrite a guide folder or a record without an explicit go |
 | A step fails | **STOP.** Report the failure. Do not paper over it, loosen a rule or patch a record to pass |
 
@@ -58,11 +58,11 @@ Examples:
 
 ## Hard rules
 
-- **Never invent first-hand evidence.** No builds, numbers, screenshots, prompts, quotes or "I did X" lines the owner did not supply. A gap stays a gap, and the claim is dropped or the evidence is marked as a stand-in (Step 4).
+- **Never invent first-hand evidence.** No builds, numbers, screenshots, prompts, quotes or "I did X" lines the owner did not supply. A gap stays a gap, and the claim is dropped or the evidence is marked as a stand-in (Step 3).
 - **Never invent an outside fact.** Every statistic, pay figure, tool fact, date and quote is a claim in the research record with a verbatim excerpt from a page you read.
 - **Never copy another site's words, headings, visual identity or data.** Borrow structure only (an outline above the gate, a deliverable every week, a test at the end of each skill). Review the draft for phrasing that echoes a source page.
 - **Never deploy, push to `main`, seed Convex or ask for publication.** Site publishing is paused. A noindex tag or a draft flag is not access control. Review the candidate from a local build (Step 8).
-- **Never skip a gate.** Steps 0, 1, 4 and 9 stop for the owner.
+- **Never skip a gate.** Steps 0, 1, 3 and 9 stop for the owner.
 - **Never hand-edit a sealed review, and never patch a record to make a bad source pass.** Re-research instead.
 - **Never type a price, seat count or deadline into copy.** Urgency needs a data source in the offers registry.
 
@@ -96,7 +96,7 @@ Write `guides/records/{slug}.json` (`lib/guides/research-record.ts`, `RECORD_CON
   - `quote`: needs `speaker`.
   - all five outside kinds need `sourceId` and a verbatim `excerpt`.
   - `first-hand`: needs `evidenceId`, no source.
-- `evidence[]`: the owner's own proof, each with `verify` of one kind:
+- `evidence[]`: the owner's own proof, filled in at Step 3 before the review. Each has `verify` of one kind:
   - `file-count`: counts files in a repo folder (for example idea pages in `content/ideas`). Reproduced by the CLI.
   - `git-count`: commits or merged pull requests. Reproduced only with full git history. A shallow clone reports "unverifiable".
   - `owner-statement`: something only the owner can say, such as "built solo". A reviewer confirms it. Nothing checks it by machine.
@@ -112,9 +112,25 @@ NODE_USE_ENV_PROXY=1 npm run guide:source-review -- verify --record=guides/recor
 
 `verify` fails on an inconsistent record, a mismatched count, an excerpt that is not on the page, a page that could not be read, and placeholder evidence. Fix the record or drop the claim. Do not weaken the excerpt to make it match.
 
-## Step 3 — Source Critic (no PASS, no draft)
+## Step 3 — Evidence intake (GATE: owner supplies or chooses placeholders)
 
-The review must be independent of the writer. Spawn a fresh agent (the `general-purpose` agent type) and give it only: the record, the instruction to open every cited page itself, and the checklist below. Do not give it the outline, the thesis or your opinion. A reviewer shown your conclusion tends to confirm it.
+Do this before the Source Critic. Any change to the record after the review is sealed makes the review stale, so the owner's evidence goes into the record first. If evidence changes later, run `draft --force` and have the reviewer judge every claim again.
+
+The owner supplies first-hand evidence: what they built, the real numbers, the prompts they used, the screenshots. Ask for it. Record each item as `evidence[]` and tie each `first-hand` claim to it. If the evidence is a count the repo can reproduce, use `file-count` or `git-count`.
+
+**Placeholder mode.** When the owner says to use placeholders (for testing the skill, or because the evidence is not ready):
+
+1. Write each missing item as an evidence entry whose `statement` or `label` says `PLACEHOLDER:` and what is needed, for example `PLACEHOLDER: John describes the first project he built with Claude Code and what it shipped`.
+2. Write the `first-hand` claim that will use it with a clear stand-in sentence, also marked `PLACEHOLDER:`.
+3. Continue to the draft, so the owner can see the shape of the guide.
+
+Placeholder mode is a test run, not a draft of a publishable guide. Placeholder evidence fails `verify` (`evidence-placeholder`), and a reviewer cannot confirm it, so the sealed review is a FAIL. Placeholder text in copy fails `audit:guide` (`placeholder-text`). So a placeholder guide **cannot pass the audit and cannot publish**. That is the point. Say this in the report. Real evidence replaces every placeholder, the review is drafted again with `--force`, and the audit is run again before anything is considered ready.
+
+Never make up a plausible-sounding evidence entry. A placeholder says it is one.
+
+## Step 4 — Source Critic (no PASS, no draft)
+
+Run `verify --fetch` again now that the evidence is in the record, then get the review. The review must be independent of the writer. Spawn a fresh agent (the `general-purpose` agent type) and give it only: the record, the instruction to open every cited page itself, and the checklist below. Do not give it the outline, the thesis or your opinion. A reviewer shown your conclusion tends to confirm it.
 
 ```bash
 npm run guide:source-review -- draft --record=guides/records/{slug}.json --reviewer="Source Critic"
@@ -141,21 +157,7 @@ npm run guide:source-review -- check --record=guides/records/{slug}.json
 
 `seal` sets the verdict from the checks, so a false check cannot be sealed as a PASS. It refuses a review drafted from an older record: if the record changed, run `draft --force` and judge every claim again. `check` exits 0 only for a sealed PASS on exactly this record. A source last checked more than 120 days ago fails, more than 60 warns.
 
-**If `check` does not exit 0, stop. Do not draft.** In placeholder mode a FAIL is the expected result (Step 4).
-
-## Step 4 — Evidence intake (GATE: owner supplies or chooses placeholders)
-
-The owner supplies first-hand evidence: what they built, the real numbers, the prompts they used, the screenshots. Ask for it. Record each item as `evidence[]` and tie each `first-hand` claim to it. If the evidence is a count the repo can reproduce, use `file-count` or `git-count`.
-
-**Placeholder mode.** When the owner says to use placeholders (for testing the skill, or because the evidence is not ready):
-
-1. Write each missing item as an evidence entry whose `statement` or `label` says `PLACEHOLDER:` and what is needed, for example `PLACEHOLDER: John describes the first project he built with Claude Code and what it shipped`.
-2. Write the `first-hand` claim that will use it with a clear stand-in sentence, also marked `PLACEHOLDER:`.
-3. Continue to the draft, so the owner can see the shape of the guide.
-
-Placeholder mode is a test run, not a draft of a publishable guide. Placeholder evidence fails `verify` (`evidence-placeholder`), and a reviewer cannot confirm it, so the sealed review is a FAIL. Placeholder text in copy fails `audit:guide` (`placeholder-text`). So a placeholder guide **cannot pass the audit and cannot publish**. That is the point. Say this in the report. Real evidence replaces every placeholder, the review is drafted again with `--force`, and the audit is run again before anything is considered ready.
-
-Never make up a plausible-sounding evidence entry. A placeholder says it is one.
+**If `check` does not exit 0, stop. Do not draft.** In placeholder mode a FAIL is the expected result (Step 3).
 
 ## Step 5 — Draft
 
@@ -207,7 +209,7 @@ If the candidate is a placeholder run, the branch must never be merged. Say so i
 
 ## Step 9 — Owner sign-off (GATE)
 
-Report, then stop. The owner reviews facts (the record and the sealed review), evidence (every owner statement and screenshot), voice (the copy), and the hero image. Only after sign-off does anyone ask to publish, and publishing is its own decision.
+Report, then stop. The owner reviews facts (the record and the sealed review), evidence (every owner statement and screenshot), voice (the copy), and the hero image. Only after sign-off does anyone ask to publish, and publishing is its own decision. Publishing includes adding the guide to `rootPages` in `app/sitemap.ts` by hand, like the 5-to-9 entry. The skill does not add it unless the owner asks.
 
 ## Step 10 — Live acceptance (only after a deploy the owner asked for)
 
@@ -269,9 +271,9 @@ Not run: {anything that did not run, and why}
 ## Checklist
 
 - [ ] Brief approved (Step 0). Thesis and outline approved (Step 1).
-- [ ] Research record written. `verify --fetch` clean.
-- [ ] Independent reviewer judged every claim. `seal` then `check` exits 0 (or placeholder mode is stated).
-- [ ] First-hand evidence supplied by the owner, or marked `PLACEHOLDER:`. Nothing invented.
+- [ ] Research record written.
+- [ ] First-hand evidence supplied by the owner, or marked `PLACEHOLDER:`, before the review. Nothing invented.
+- [ ] `verify --fetch` clean. Independent reviewer judged every claim. `seal` then `check` exits 0 (or placeholder mode is stated).
 - [ ] Spec, deck, sections and page written with shared blocks only. Nothing under `_shared/` changed.
 - [ ] `audit:guide` clean, or its failures listed.
 - [ ] Typecheck, lint, tests and build run. `a11y-check` run. Screenshots at 390 and 1280 checked, banner open and closed.
