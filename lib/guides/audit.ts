@@ -38,6 +38,8 @@ export type AuditInput = {
   effectiveStatus?: (offer: Offer, now: number) => EffectiveStatus;
   /** True when an internal URL path hits a page. Without it internal links are not checked. */
   routeExists?: (urlPath: string) => boolean;
+  /** Is the offer's switch on in config? Without it every offer counts as on. */
+  isOfferEnabled?: (offer: Offer) => boolean;
 };
 
 /** An offer link must be an internal path or an https URL, and must not be a stand-in. */
@@ -268,17 +270,40 @@ function auditUpsells(spec: GuideSpec, input: AuditInput, offerList: OfferList, 
     add("upsell-cap", "error", `the "${placement}" placement is used more than once`, "upsells");
   }
 
+  const enabledOf = (offer: Offer) => (input.isOfferEnabled ? input.isOfferEnabled(offer) : true);
+
   const checked = new Set<string>();
+  let shown = 0;
   spec.upsells.forEach((upsell, index) => {
     const offer = known.get(upsell.offer);
     if (!offer) {
       add("offer-unknown", "error", `upsell "${upsell.offer}" is not in the offers registry`, `upsells.${index}.offer`);
       return;
     }
+    const enabled = enabledOf(offer);
+    if (enabled) shown += 1;
     if (checked.has(offer.id)) return;
     checked.add(offer.id);
-    auditOffer(offer, input, add);
+    if (!enabled) {
+      add("offer-switched-off", "info", `offer "${offer.id}" is switched off (${offer.switchKey}), so its cards are hidden and its sale status was not checked`, `offer:${offer.id}`);
+    }
+    auditOffer(offer, input, add, enabled);
   });
+
+  // A guide whose every upsell is switched off still builds, but it has no upsell showing. That is the owner's call, so it warns.
+  if (checked.size > 0 && shown === 0) {
+    add("upsell-none-shown", "warn", "every upsell this guide lists is switched off, so no upsell card is showing", "upsells");
+  }
+
+  // Copy must not link to an offer that is switched off, or a reader lands on a page that does not sell it.
+  for (const offer of known.values()) {
+    if (enabledOf(offer)) continue;
+    for (const [slot, value] of Object.entries(input.deck)) {
+      if (value.includes(offer.url)) {
+        add("offer-link-in-copy", "error", `copy still links to ${offer.url} while offer "${offer.id}" is switched off`, slot);
+      }
+    }
+  }
 }
 
 function isHttpsUrlWithHost(value: string): boolean {
@@ -290,7 +315,7 @@ function isHttpsUrlWithHost(value: string): boolean {
   }
 }
 
-function auditOffer(offer: Offer, input: AuditInput, add: AddFinding) {
+function auditOffer(offer: Offer, input: AuditInput, add: AddFinding, enabled: boolean) {
   const at = `offer:${offer.id}`;
 
   // The link must be real: an internal page that exists, or an https URL.
@@ -322,6 +347,9 @@ function auditOffer(offer: Offer, input: AuditInput, add: AddFinding) {
       }
     }
   }
+
+  // A switched-off offer shows nowhere, so its sale status and thin copy do not matter yet. They are checked once it is switched on.
+  if (!enabled) return;
 
   // The status must allow a sale. A closed offer, or a paid card for an offer that is not open, fails.
   if (!input.effectiveStatus || input.now === undefined) {

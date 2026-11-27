@@ -10,10 +10,10 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { UpsellCard } from "@/app/(marketing)/guides/_shared/blocks";
 import { guideSpec } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
-import { BUILD_ALONG, NEXT_BUILD_ALONG, SALES_OPEN_AT } from "@/lib/live/config";
+import { BUILD_ALONG, BUILD_ALONG_GUIDE_CARDS_ENABLED, NEXT_BUILD_ALONG, SALES_OPEN_AT } from "@/lib/live/config";
 import { buildAlongPhase } from "@/lib/live/schedule";
-import { effectiveStatus, formatPrice, resolvablePriceKeys, resolvePrice } from "@/lib/guides/offer-live";
-import { PRICE_CONFIG_KEYS, STATUS_RESOLVER_KEYS, offerById, offerSchema, offers, rankOffers, type Offer } from "@/lib/guides/offers";
+import { effectiveStatus, formatPrice, isOfferEnabled, readableSwitchKeys, resolvablePriceKeys, resolvePrice } from "@/lib/guides/offer-live";
+import { PRICE_CONFIG_KEYS, STATUS_RESOLVER_KEYS, SWITCH_KEYS, offerById, offerSchema, offers, rankOffers, type Offer } from "@/lib/guides/offers";
 import { appRouteExists } from "@/lib/guides/routes";
 import { trackEvent } from "@/lib/track";
 
@@ -74,6 +74,23 @@ describe("offers registry", () => {
     expect(twice.success).toBe(false);
     expect(JSON.stringify(twice.error?.issues)).toContain("exactly once, found 2");
     expect(offerSchema.safeParse({ ...real, urgency: { text: "Seats are going", source: "" } }).success).toBe(false);
+  });
+});
+
+describe("offer switch", () => {
+  test("the Build-Along offer sits behind its switch, and the switch reads the value in config", () => {
+    expect(real.switchKey).toBe("BUILD_ALONG_GUIDE_CARDS");
+    expect(isOfferEnabled(real)).toBe(BUILD_ALONG_GUIDE_CARDS_ENABLED);
+  });
+
+  test("an offer with no switch is always on", () => {
+    expect(isOfferEnabled(waitlist)).toBe(true);
+  });
+
+  test("every switch key has a reader, and the schema refuses an unknown key", () => {
+    expect([...readableSwitchKeys].sort()).toEqual([...SWITCH_KEYS].sort());
+    expect(offerSchema.safeParse({ ...real, switchKey: "NOT_A_SWITCH" }).success).toBe(false);
+    expect(offerSchema.safeParse({ ...real, switchKey: undefined }).success).toBe(true);
   });
 });
 
@@ -172,7 +189,7 @@ describe("app route check", () => {
 
 describe("UpsellCard", () => {
   const html = (placement: "mid" | "close", list?: readonly Offer[], spec = guideSpec) =>
-    renderToStaticMarkup(createElement(UpsellCard, { spec, placement, offers: list }));
+    renderToStaticMarkup(createElement(UpsellCard, { spec, placement, offers: list, isEnabled: () => true }));
 
   test("renders the Build-Along card as before: price from config, strong only in the mid card", () => {
     const mid = html("mid");
@@ -205,13 +222,31 @@ describe("UpsellCard", () => {
     expect(html("mid")).not.toContain("guide-offer-bullets");
   });
 
+  test("a switched-off offer renders nothing, in both placements", () => {
+    for (const placement of ["mid", "close"] as const) {
+      const off = renderToStaticMarkup(createElement(UpsellCard, { spec: guideSpec, placement, isEnabled: () => false }));
+      expect(off).toBe("");
+    }
+  });
+
+  test("with the real config the card shows exactly when the Build-Along switch is on", () => {
+    const real = renderToStaticMarkup(createElement(UpsellCard, { spec: guideSpec, placement: "mid" }));
+    expect(real.includes("Build-Along sprint")).toBe(BUILD_ALONG_GUIDE_CARDS_ENABLED);
+  });
+
+  test("a switched-off offer still throws on a missing placement, so a bad spec fails the build either way", () => {
+    expect(() =>
+      renderToStaticMarkup(createElement(UpsellCard, { spec: { ...guideSpec, upsells: [] }, placement: "mid", isEnabled: () => false })),
+    ).toThrow(/no upsell for the "mid" placement/);
+  });
+
   test("a missing placement or an unknown offer throws, so the build fails", () => {
     expect(() => html("mid", undefined, { ...guideSpec, upsells: [{ offer: "build-along", placement: "close" }] })).toThrow(/no upsell for the "mid" placement/);
     expect(() => html("mid", [waitlist])).toThrow(/Unknown offer "build-along"/);
   });
 
   test("clicking the link tracks the original event name with placement, guide and offer id", () => {
-    render(createElement(UpsellCard, { spec: guideSpec, placement: "close" }));
+    render(createElement(UpsellCard, { spec: guideSpec, placement: "close", isEnabled: () => true }));
     const link = screen.getByRole("link", { name: "See the Build-Along" });
     link.addEventListener("click", (event) => event.preventDefault()); // jsdom cannot navigate
     fireEvent.click(link);

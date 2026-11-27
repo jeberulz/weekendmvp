@@ -15,6 +15,13 @@ export type PriceConfigKey = (typeof PRICE_CONFIG_KEYS)[number];
 export const STATUS_RESOLVER_KEYS = ["build-along"] as const;
 export type StatusResolverKey = (typeof STATUS_RESOLVER_KEYS)[number];
 
+/**
+ * Names of the on/off switches in `lib/live/config.ts` that an offer can sit behind. An offer with no
+ * switch always shows. `offer-live.ts` reads each one.
+ */
+export const SWITCH_KEYS = ["BUILD_ALONG_GUIDE_CARDS"] as const;
+export type SwitchKey = (typeof SWITCH_KEYS)[number];
+
 export const PRICE_TOKEN = "{price}";
 
 const text = z.string().trim().min(1);
@@ -26,6 +33,8 @@ export const offerSchema = z
     /** "derived" means the status is worked out from config by `statusResolver`. */
     status: z.enum(["open", "waitlist", "closed", "derived"]),
     statusResolver: z.enum(STATUS_RESOLVER_KEYS).optional(),
+    /** An on/off switch in config. Off hides the offer everywhere a guide shows it. */
+    switchKey: z.enum(SWITCH_KEYS).optional(),
     title: text,
     eyebrow: text,
     ariaLabel: text,
@@ -77,6 +86,7 @@ export const offers: readonly Offer[] = registrySchema.parse([
     kind: "paid",
     status: "derived",
     statusResolver: "build-along",
+    switchKey: "BUILD_ALONG_GUIDE_CARDS",
     title: "Do this live with John",
     eyebrow: "Paid · Live",
     ariaLabel: "Build-Along sprint",

@@ -155,7 +155,10 @@ read the response as text before parsing JSON.
   submits a subscription unless `--email` is passed, and `--email` really subscribes that address.
   Upsell cards come from the offers registry `lib/guides/offers.ts`: a guide lists offers by id and placement, a paid
   offer's price and an offer's open or closed status are read from `lib/live/config.ts`, never typed. The audit fails
-  a guide whose offer is closed. Plan: `docs/plans/publish-guide/PLAN.md`
+  a guide whose offer is closed. An offer can sit behind an on/off switch in `lib/live/config.ts`; the Build-Along
+  cards, and the sprint line in the 5-to-9 founder note, follow `BUILD_ALONG_GUIDE_CARDS_ENABLED` (off while the sprint
+  is not on sale). Check a flip first with `npm run audit:guide -- --slug=5-to-9-builder --offers-on`.
+  Plan: `docs/plans/publish-guide/PLAN.md`
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

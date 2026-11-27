@@ -6,7 +6,8 @@ import { guideSpec } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
 import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
 import { auditGuide, currencySymbols, offerReaderStrings, publicSpecStrings, receiptAmounts, receiptSources, type AuditInput } from "@/lib/guides/audit";
 import { evaluateLive, type LiveSnapshot, type PageState } from "@/lib/guides/audit-live";
-import { effectiveStatus, resolvePrice } from "@/lib/guides/offer-live";
+import { effectiveStatus, isOfferEnabled, resolvePrice } from "@/lib/guides/offer-live";
+import { BUILD_ALONG_GUIDE_CARDS_ENABLED } from "@/lib/live/config";
 import { offers, type Offer } from "@/lib/guides/offers";
 import { appRouteExists } from "@/lib/guides/routes";
 import { requiredSlots } from "@/lib/guides/slots";
@@ -35,6 +36,8 @@ function audit(overrides: Partial<AuditInput> & { spec?: unknown } = {}) {
     resolvePrice,
     effectiveStatus,
     routeExists: (urlPath) => appRouteExists(path.join(process.cwd(), "app"), urlPath),
+    // Tests judge the offer as if its switch were on, so they do not depend on the value in config. The switch has its own tests.
+    isOfferEnabled: () => true,
     ...overrides,
   });
 }
@@ -298,22 +301,30 @@ describe("audit:guide CLI", () => {
     spawnSync(process.execPath, ["--experimental-strip-types", "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", "scripts/audit-guide.mjs", ...args], { encoding: "utf8" });
 
   test("passes on the real guide with exit 0", () => {
-    const result = run("--slug=5-to-9-builder", "--now=2026-11-10");
+    const result = run("--slug=5-to-9-builder", "--offers-on", "--now=2026-11-10");
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("PASS 5-to-9-builder (static): 0 errors, 1 warnings");
   });
 
   test("fails with exit 1 and names the closed offer once the session has ended", () => {
-    const result = run("--slug=5-to-9-builder", "--now=2026-11-26");
+    const result = run("--slug=5-to-9-builder", "--offers-on", "--now=2026-11-26");
     expect(result.status).toBe(1);
     expect(result.stdout).toContain("offer-status");
     expect(result.stdout).toContain("FAIL 5-to-9-builder: 1 errors");
   });
 
   test("fails with exit 1 before ticket sales open", () => {
-    const result = run("--slug=5-to-9-builder", "--now=2026-10-31");
+    const result = run("--slug=5-to-9-builder", "--offers-on", "--now=2026-10-31");
     expect(result.status).toBe(1);
     expect(result.stdout).toContain("SALES_OPEN_AT");
+  });
+
+  test.runIf(!BUILD_ALONG_GUIDE_CARDS_ENABLED)("with the switch off in config the guide passes on any date and says its upsells are hidden", () => {
+    for (const date of ["2026-10-31", "2026-11-10", "2026-11-26"]) {
+      const result = run("--slug=5-to-9-builder", `--now=${date}`);
+      expect(result.status, date).toBe(0);
+      expect(result.stdout, date).toContain("offer-switched-off");
+    }
   });
 
   test("a bad --now date is a usage error", () => {
@@ -321,7 +332,7 @@ describe("audit:guide CLI", () => {
   });
 
   test("--json prints a machine-readable result", () => {
-    const parsed = JSON.parse(run("--slug=5-to-9-builder", "--json", "--now=2026-11-10").stdout);
+    const parsed = JSON.parse(run("--slug=5-to-9-builder", "--json", "--offers-on", "--now=2026-11-10").stdout);
     expect(parsed).toMatchObject({ slug: "5-to-9-builder", live: false, ok: true, findings: [expect.objectContaining({ rule: "offer-thin" })] });
   });
 
@@ -453,5 +464,51 @@ describe("upsell and offer audit", () => {
     const rules = result.findings.map((f) => f.rule);
     expect(rules).toEqual(expect.arrayContaining(["offer-price-unchecked", "offer-status-unchecked"]));
     expect(result.findings.filter((f) => f.severity === "info")).toHaveLength(2);
+  });
+});
+
+describe("offer switch", () => {
+  const off = () => false;
+  // The real founder note links to the sprint only while the switch is on in config. These tests force the offer off
+  // whatever config says, so they use a note with no sprint link and never depend on that value.
+  const noSprintLinkDeck = { ...guideCopy, "Founder note · Body": "I run WeekendMVP. I'd like to hear what you test." };
+
+  test("a switched-off offer is not judged on its sale status or its thin copy, and the audit says so", () => {
+    const result = audit({ deck: noSprintLinkDeck, isOfferEnabled: off, now: AFTER_EVENT_ENDS });
+    expect(errorsOf(result)).toEqual([]);
+    expect(result.findings).toContainEqual(expect.objectContaining({ rule: "offer-switched-off", severity: "info" }));
+    expect(result.findings.some((f) => f.rule === "offer-status")).toBe(false);
+    expect(result.findings.some((f) => f.rule === "offer-thin")).toBe(false);
+  });
+
+  test("a guide with every upsell switched off passes, with a warning that no upsell is showing", () => {
+    const result = audit({ deck: noSprintLinkDeck, isOfferEnabled: off });
+    expect(result.ok).toBe(true);
+    expect(result.findings).toContainEqual(expect.objectContaining({ rule: "upsell-none-shown", severity: "warn" }));
+  });
+
+  test("switching the same closed offer on makes it an error again", () => {
+    expect(errorsOf(audit({ isOfferEnabled: () => true, now: AFTER_EVENT_ENDS }))).toContain("offer-status");
+    expect(audit({ isOfferEnabled: () => true, now: AFTER_EVENT_ENDS }).findings.some((f) => f.rule === "upsell-none-shown")).toBe(false);
+  });
+
+  test("copy that links to a switched-off offer fails, and the same copy is fine once it is on", () => {
+    const deck = { ...guideCopy, "Founder note · Body": "Join us live, the sprint is [here](/live/build-along)." };
+    const result = audit({ deck, isOfferEnabled: off });
+    expect(result.findings).toContainEqual(
+      expect.objectContaining({ rule: "offer-link-in-copy", severity: "error", path: "Founder note · Body" }),
+    );
+    expect(errorsOf(audit({ deck, isOfferEnabled: () => true }))).not.toContain("offer-link-in-copy");
+  });
+
+  test("the real founder note follows the switch in config", () => {
+    const founder = guideCopy["Founder note · Body"];
+    expect(founder.includes("/live/build-along")).toBe(BUILD_ALONG_GUIDE_CARDS_ENABLED);
+    expect(founder.includes("Build-Along")).toBe(BUILD_ALONG_GUIDE_CARDS_ENABLED);
+  });
+
+  test("with the real switch, the real guide never links to a sprint that is switched off", () => {
+    const result = audit({ isOfferEnabled, now: AFTER_EVENT_ENDS });
+    expect(result.findings.filter((f) => f.rule === "offer-link-in-copy")).toEqual([]);
   });
 });

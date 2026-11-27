@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Lock } from "lucide-react";
 
 import { Em, Eyebrow } from "@/components/home/ui";
-import { formatPrice, resolvePrice } from "@/lib/guides/offer-live";
+import { formatPrice, isOfferEnabled, resolvePrice } from "@/lib/guides/offer-live";
 import { PRICE_TOKEN, offerById, offers as registry, type Offer } from "@/lib/guides/offers";
 import { slotName } from "@/lib/guides/slots";
 import { cn } from "@/lib/utils";
@@ -203,20 +203,23 @@ export function FounderNote({ spec, deck }: { spec: GuideSpec; deck: GuideDeck }
 /**
  * The upsell card for one placement. The offer comes from the registry by the id the spec lists, and a
  * paid offer's price comes from config. A missing placement or unknown offer throws, so it fails the build.
- * `offers` is only passed by tests.
+ * An offer that is switched off in config renders nothing. `offers` and `isEnabled` are only passed by tests.
  */
 export function UpsellCard({
   spec,
   placement,
   offers = registry,
+  isEnabled = isOfferEnabled,
 }: {
   spec: GuideSpec;
   placement: "mid" | "close";
   offers?: readonly Offer[];
+  isEnabled?: (offer: Offer) => boolean;
 }) {
   const upsell = spec.upsells.find((item) => item.placement === placement);
   if (!upsell) throw new Error(`Guide "${spec.slug}" lists no upsell for the "${placement}" placement`);
   const offer = offerById(upsell.offer, offers);
+  if (!isEnabled(offer)) return null;
   const price = offer.price ? formatPrice(resolvePrice(offer.price.configKey)) : null;
   const [before, after = ""] = offer.promise.split(PRICE_TOKEN);
 

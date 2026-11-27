@@ -12,6 +12,7 @@
  *   npm run audit:guide -- --slug=5-to-9-builder
  *   npm run audit:guide -- --slug=5-to-9-builder --json
  *   npm run audit:guide -- --slug=5-to-9-builder --now=2026-11-10   (judge offer status as of that date)
+ *   npm run audit:guide -- --slug=5-to-9-builder --offers-on         (judge it as if every offer switch were on)
  *   npm run audit:guide -- --slug=5-to-9-builder --live --url=http://localhost:3000/guides/5-to-9-builder
  *   npm run audit:guide -- --slug=... --live --url=... --email=you@example.com   (submits that address)
  *   npm run audit:guide -- --slug=... --live --url=... --proxy=http://host:port  (browser goes through a proxy)
@@ -50,6 +51,7 @@ function parseArgs(argv) {
     else if (flag === "--url") args.url = value();
     else if (flag === "--email") args.email = value();
     else if (flag === "--now") args.now = value();
+    else if (flag === "--offers-on") args.offersOn = true;
     else if (flag === "--proxy") args.proxy = value();
     else if (flag === "--help" || flag === "-h") usage();
     else usage(`unknown argument: ${argv[i]}`);
@@ -76,7 +78,7 @@ register(pathToFileURL(path.join(ROOT, "scripts", "lib", "alias-hooks.mjs")), { 
 
 const load = (file) => import(pathToFileURL(file).href);
 const { auditGuide } = await load(path.join(ROOT, "lib", "guides", "audit.ts"));
-const { resolvePrice, effectiveStatus } = await load(path.join(ROOT, "lib", "guides", "offer-live.ts"));
+const { resolvePrice, effectiveStatus, isOfferEnabled } = await load(path.join(ROOT, "lib", "guides", "offer-live.ts"));
 const { appRouteExists } = await load(path.join(ROOT, "lib", "guides", "routes.ts"));
 const { evaluateLive } = await load(path.join(ROOT, "lib", "guides", "audit-live.ts"));
 const { guideSpec } = await load(path.join(guideDir, "guide.spec.ts"));
@@ -96,6 +98,8 @@ const result = auditGuide({
   resolvePrice,
   effectiveStatus,
   routeExists: (urlPath) => appRouteExists(path.join(ROOT, "app"), urlPath),
+  // --offers-on judges the guide as if every offer switch were on, to check before flipping one in lib/live/config.ts.
+  isOfferEnabled: args.offersOn ? () => true : isOfferEnabled,
 });
 const findings = [...result.findings];
 

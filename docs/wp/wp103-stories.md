@@ -57,6 +57,18 @@ Definition of done: `npm run typecheck` green, `npm run lint` with 0 errors, `np
     - `npm run audit:guide -- --slug=5-to-9-builder`
     - `CHECK_BUILT_GUIDE=1 npm run test:home` after `next build`
   - Not in S3: writing offer copy the owner has not approved (bullets and "not for" lines stay empty for the Build-Along), a waitlist offer for a real product (none exists), the footer soft link, renaming the click event.
+- [x] `WP103-S3.1` - Switch for the Build-Along cards (owner request, 2026-11-27)
+  - Branch: `claude/wp103-guide-cards-switch`.
+  - Why: the audit showed the guide sells a sprint that cannot be bought, because the 14 Nov session ended and checkout for 5 Dec is off. The owner asked to remove the cards now and have a switch to turn them back on when seats open.
+  - Acceptance criteria:
+    - `BUILD_ALONG_GUIDE_CARDS_ENABLED` in `lib/live/config.ts` is the one switch. It ships `false`.
+    - Off: both Build-Along cards and the sprint line and link in the founder note are gone. The served page has no mention of the Build-Along and no link to `/live/build-along`. On: the page is as before.
+    - The offers registry ties the Build-Along to the switch (`switchKey`). Any offer can sit behind a named switch.
+    - The audit does not judge a switched-off offer's sale status. It reports it as info, warns when no upsell is showing, and fails if copy links to a switched-off offer.
+    - `audit:guide --offers-on` judges the guide as if the switch were on, so the owner can check before flipping it.
+  - Verification: `npm run typecheck`, `npx eslint` on changed files, `npm run test:home` (run with the switch off and again with it temporarily on), `npm run test:security`, `npm run build`, a screenshot of the closing section at 1280 and 390 wide, `npm run audit:guide -- --slug=5-to-9-builder`.
+  - Not in scope: the `/5-to-9-starter` page, which has its own Build-Along links.
+
 - [ ] `WP103-S4` - Extend Source Critic claim kinds for guides
 - [ ] `WP103-S5` - `.claude/skills/publish-guide/SKILL.md`
 - [ ] `WP103-S6` - Pilot guide two (mastering Claude Code), needs the owner's evidence file

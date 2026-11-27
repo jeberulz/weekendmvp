@@ -102,6 +102,17 @@ export const NEXT_BUILD_ALONG = {
 export const NEXT_SESSION_CHECKOUT_ENABLED = false;
 
 /**
+ * Guide switch for the Build-Along sprint (WP103). Off: guides hide the Build-Along upsell cards and the
+ * sprint line in the founder note. On: they show again.
+ *
+ * To turn it back on when seats are on sale: set this to true, then run
+ * `npm run audit:guide -- --slug=5-to-9-builder`. The audit fails if the sprint cannot be bought
+ * (it reads the dates and NEXT_SESSION_CHECKOUT_ENABLED above). To check before flipping, run it
+ * with `--offers-on`, which judges the guide as if this were already true.
+ */
+export const BUILD_ALONG_GUIDE_CARDS_ENABLED = false;
+
+/**
  * Public URLs — placeholders until John fills them.
  * Luma: `NEXT_PUBLIC_LIVE_LUMA_URL`
  * YouTube live (public during the hour): `NEXT_PUBLIC_LIVE_YOUTUBE_URL`

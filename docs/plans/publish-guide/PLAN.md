@@ -136,6 +136,9 @@ Placement and rules:
 - mid card after the plan, close card after the self-check and asset, optional soft link in the footer.
 - Each card links to the guide's own outcome, for example "You finished week 2. Do week 3 live."
 - Urgency lines (seats, price rises) need a backing data source, or the audit fails.
+- An offer can sit behind a named on/off switch in `lib/live/config.ts` (WP103-S3.1). Off hides the offer's cards and
+  any copy that links to it. The audit then skips its sale status and warns that no upsell is showing. `--offers-on`
+  judges a guide as if the switch were on, to check before flipping it. A switched-off offer must not be linked from copy.
 - Click tracking keeps the event name `guide_sprint_click` and carries `placement`, `guide` and `offerId`
   (WP103-S3). Rename the event when a second offer exists.
 - An offer's status can be derived from config instead of typed (WP103-S3). The Build-Along reads
