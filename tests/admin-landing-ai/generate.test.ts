@@ -88,3 +88,17 @@ test("model output validation returns a safe error without reflecting the output
   expect(response.status).toBe(422);
   expect(await response.text()).not.toContain("UNTRUSTED MODEL STRING");
 });
+
+test("the public Host matches browser origin when Next uses an internal listener address", async () => {
+  const { dependencies } = await setup();
+  const headers = { host: "editor.example", origin: "https://editor.example", "sec-fetch-site": "same-origin" };
+  const body = JSON.stringify({ page: "home", blockId: "hero", action: "rewrite" });
+  const accepted = await handleGenerate(new Request("https://localhost/api/admin/page-ai/generate", {
+    method: "POST", headers, body,
+  }), dependencies);
+  expect(accepted.status).toBe(200);
+  const crossSite = await handleGenerate(new Request("https://localhost/api/admin/page-ai/generate", {
+    method: "POST", headers: { ...headers, "sec-fetch-site": "cross-site" }, body,
+  }), dependencies);
+  expect(crossSite.status).toBe(403);
+});

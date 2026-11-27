@@ -13,5 +13,13 @@ export function privateNotFound() {
 }
 
 export function isSameOrigin(request: Request) {
-  return request.headers.get("origin") === new URL(request.url).origin;
+  const origin = request.headers.get("origin");
+  const site = request.headers.get("sec-fetch-site");
+  if (!origin || (site && site !== "same-origin")) return false;
+
+  const url = new URL(request.url);
+  // Next can build request.url with its listener hostname behind a proxy.
+  // The browser sends Host for the address it actually fetched.
+  const host = request.headers.get("host") ?? url.host;
+  return origin === `${url.protocol}//${host}`;
 }
