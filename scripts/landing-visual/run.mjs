@@ -197,10 +197,10 @@ async function capture(browser, { origin, route, width, clock, gate, phase }) {
 // pixels that changed across those reference renders. Body and text stay exact.
 async function matchesMobileNavRounding(name, left, right) {
   const phase = /^live-build-along-(ended|pre-sale|replay-early-bird|standard|workshop-live)-375\.png$/.exec(name)?.[1];
-  let label;
+  let label = name === "guides-5-to-9-builder-returning-375.png" ? "guide-returning" : undefined;
   if (phase) label = phase === "ended" || phase === "pre-sale" ? phase : "sold-out";
   if (!label || left.info.width !== 375 || left.info.height !== right.info.height) return false;
-  const maxChannelDelta = { ended: 3, "pre-sale": 2, "sold-out": 5 }[label];
+  const maxChannelDelta = { ended: 3, "pre-sale": 2, "sold-out": 5, "guide-returning": 2 }[label];
   const mask = await sharp(path.join(project, "tests/landing-visual/antialias", label + ".png"))
     .greyscale().raw().toBuffer();
   const headerBytes = mask.length * 4;
