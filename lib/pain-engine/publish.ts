@@ -65,24 +65,25 @@
  *   verification status "unverified" with the reason stated, never
  *   "verified": nobody opened each source page.
  *
- * ## What still needs the server (NOT built here)
+ * ## The server side (built on branch marley/pain-engine-server-acceptance)
  *
- * The current ingest cannot accept this envelope. The minimal server-side
- * change is: (1) add "pain-engine" to `SUBMISSION_PRODUCERS`;
- * (2) a new validator `lib/editorial/engine/validated-pain-engine-
- * artifact.ts` that parses a Pain Engine review record, asserts this
- * source review, validates the MDX shape and manifest identity
- * (`source === "pain-engine:{slug}"`, `researchMode === "pain-engine"`),
- * and builds the envelope with the functions in this module; (3) a new
- * internal action `validateAndImportPainEngine` in
- * `convex/editorial/ingest.ts` plus a matching internal mutation that
- * mirrors `importValidatedEngine` with pain-engine checks
+ * The ingest accepts this envelope since the server change landed in the
+ * branch: (1) "pain-engine" is in `SUBMISSION_PRODUCERS`; (2) the validator
+ * `lib/editorial/engine/validated-pain-engine-artifact.ts` parses a Pain
+ * Engine review record, asserts this source review, validates the MDX shape
+ * and manifest identity (`source === "pain-engine:{slug}"`,
+ * `researchMode === "pain-engine"`), and builds the envelope with the
+ * functions in this module; (3) the internal action
+ * `validateAndImportPainEngine` in `convex/editorial/ingest.ts` plus the
+ * matching internal mutation `importValidatedPainEngine` mirror
+ * `importValidatedEngine` with pain-engine checks
  * (`record.draft.slug`, `status === "approved"`, envelope
  * `producer === "pain-engine"`, `submissionId === "pe_"+hash`,
- * `engineRunId === null`) and its own records table. Until that lands, the
- * bridge's `--apply` refuses locally with this exact message — it never
- * calls the old ingest action, which would fail with a confusing
- * record-parse error.
+ * `engineRunId === null`) and its own records table
+ * (`editorial_pain_engine_records`). The import lands with authority "none"
+ * and origin "manual" — no engine receipt is claimed. The bridge's
+ * `--apply` calls that action; if the target deployment has not deployed
+ * the server change yet, --apply refuses clearly instead.
  *
  * ## What this module never does
  *
@@ -95,6 +96,7 @@
  */
 import { createHash } from "node:crypto";
 
+import { EDITORIAL_CONTRACT_VERSION } from "../editorial/contracts/limits.ts";
 import { SECTION_DEFINITIONS, type SectionKey } from "../editorial/contracts/sections.ts";
 import {
   AUDIENCE_SLUGS,
@@ -161,6 +163,71 @@ export function canonicalJson(value: unknown): string {
 
 export function sha256Hex(text: string): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
+}
+
+/**
+ * The artifact hash, exactly as the editorial receiver computes it
+ * (`submissionArtifactHash` in lib/editorial/domain/artifact.ts). The
+ * receiver re-derives it from the envelope content on import and refuses
+ * the submission with ARTIFACT_HASH_MISMATCH when it disagrees, so the
+ * bridge must use the receiver's formula — a plain hash of the envelope
+ * fields is refused.
+ *
+ * This is the synchronous twin of the receiver's `computeRevisionHashes`:
+ * the same steps (markdown content hash, metadata hash, evidence hash from
+ * the archived source/claim fields only, then the combined hash), the same
+ * canonical JSON, and node:crypto sha256 instead of WebCrypto (identical
+ * digests). It is written inline rather than importing the domain module
+ * because this file is loaded by the bridge CLI under Node type-stripping,
+ * where the domain module's extensionless imports do not resolve; the
+ * parity test in tests/editorial/pain-engine-submission.test.ts compares
+ * this hash against the receiver's async function and fails loudly if the
+ * two ever drift.
+ */
+export function submissionArtifactHashSync(input: {
+  title: string;
+  markdown: string;
+  metadata: Record<string, unknown>;
+  sources: readonly Record<string, unknown>[];
+  claims: readonly Record<string, unknown>[];
+}): string {
+  const normalizeNewlines = (text: string): string => text.replace(/\r\n?/g, "\n");
+  const content = sha256Hex(`markdown\n${normalizeNewlines(input.markdown)}`);
+  const metadata = sha256Hex(canonicalJson({ title: input.title, metadata: input.metadata }));
+  const evidence = sha256Hex(
+    canonicalJson({
+      sources: input.sources.map((source) => ({
+        id: source.id,
+        url: source.url,
+        publisher: source.publisher,
+        title: source.title,
+        sourceType: source.sourceType,
+        publishedAt: source.publishedAt,
+        retrievedAt: source.retrievedAt,
+        excerpt: source.excerpt,
+        context: source.context,
+      })),
+      claims: input.claims.map((claim) => ({
+        id: claim.id,
+        text: claim.text,
+        anchorText: claim.anchorText,
+        section: claim.section,
+        kind: claim.kind,
+        topic: claim.topic,
+        material: claim.material,
+        sourceIds: [...(claim.sourceIds as readonly unknown[])],
+        contradictingSourceIds: [...(claim.contradictingSourceIds as readonly unknown[])],
+      })),
+    }),
+  );
+  return sha256Hex(
+    canonicalJson({
+      contractVersion: EDITORIAL_CONTRACT_VERSION,
+      content,
+      metadata,
+      evidence,
+    }),
+  );
 }
 
 function wordsOf(text: string): string[] {
@@ -443,27 +510,49 @@ export function mapEvidenceToEditorial(
   const claims: Record<string, unknown>[] = [];
   const pricedUrls = new Set(record.draft.prices.map((p) => p.url));
   for (const finding of findings) {
+    // The editorial envelope requires a public http(s) URL per source. A
+    // finding whose URL is not one (the App Store listener used to store
+    // the bare numeric review id here) must refuse at build time with a
+    // clear message — not produce an envelope the server then refuses with
+    // a schema error. Repair the finding URL in the review record (the
+    // evidence text is unchanged) or re-run the engine.
+    let findingUrl: URL | null = null;
+    try {
+      findingUrl = new URL(finding.url);
+    } catch {
+      findingUrl = null;
+    }
+    if (!findingUrl || (findingUrl.protocol !== "http:" && findingUrl.protocol !== "https:")) {
+      throw new Error(
+        `Cannot submit ${record.slug}: evidence "${finding.title}" (${finding.source}) has no usable URL (${JSON.stringify(finding.url)}) — the editorial envelope requires a public http(s) URL.`,
+      );
+    }
     if (seenUrls.has(finding.url)) continue;
     const index = sources.length + 1;
     seenUrls.set(finding.url, index);
     const sourceId = `src_${index}`;
     const retrievedAt = isoTimestamp(finding.date, record.createdAt);
+    // The envelope schema trims every text field on parse, and the
+    // receiver hashes the parsed values — so a value the schema would
+    // trim (a quote sliced mid-phrase ending in a space) would make the
+    // submitted artifact hash disagree with the receiver's. Trim here, so
+    // the envelope the bridge builds is already schema-canonical.
     sources.push({
       id: sourceId,
       url: finding.url,
       publisher: null,
-      title: finding.title,
+      title: finding.title.trim(),
       sourceType: sourceTypeFor(finding),
       publishedAt: /^\d{4}-\d{2}-\d{2}$/.test(finding.date.trim()) ? finding.date.trim() : null,
       retrievedAt,
-      excerpt: finding.quote || finding.text.slice(0, 500),
-      context: finding.context,
+      excerpt: (finding.quote || finding.text.slice(0, 500)).trim(),
+      context: finding.context.trim(),
       verification: { status: "unverified", reason: UNVERIFIED_REASON, checkedAt: null },
     });
-    const anchor = finding.quote || finding.text.slice(0, 120);
+    const anchor = (finding.quote || finding.text.slice(0, 120)).trim();
     claims.push({
       id: `claim_${index}`,
-      text: finding.quote || finding.title,
+      text: (finding.quote || finding.title).trim(),
       anchorText: anchor,
       section: sectionForAnchor(mdx, anchor),
       kind: "observed",
@@ -719,16 +808,24 @@ export function buildSubmission(
   }
 
   const buyer = "People doing this task by hand today";
-  const job = `The manual step in these reports: ${record.cluster.label}`.slice(0, LIMITS.jobChars);
+  // Slices can land on a space; the envelope schema trims these fields on
+  // parse, so trim here as well — otherwise the submitted artifact hash
+  // (computed from the raw values) disagrees with the receiver's (computed
+  // from the parsed values). See the same note in mapEvidenceToEditorial.
+  const job = `The manual step in these reports: ${record.cluster.label}`.slice(0, LIMITS.jobChars).trim();
   const wedge =
     `${effectiveProductName}: a focused tool that removes the manual step behind ${record.draft.evidence.length} reports.`.slice(
       0,
       LIMITS.wedgeChars,
-    );
+    ).trim();
   const recommendation = RECOMMENDATION_FOR_VERDICT[record.draft.scorecard.verdict] ?? "unknown";
-  const artifactHash = sha256Hex(
-    canonicalJson({ title: effectiveTitle, markdown, metadata, sources, claims }),
-  );
+  const artifactHash = submissionArtifactHashSync({
+    title: effectiveTitle,
+    markdown,
+    metadata,
+    sources,
+    claims,
+  });
   const envelope: Record<string, unknown> = {
     contractVersion: PAIN_ENGINE_SUBMISSION_CONTRACT_VERSION,
     submissionId: `pe_${recordHash.slice(0, 32)}`,
@@ -744,7 +841,7 @@ export function buildSubmission(
     wedge,
     recommendation,
     recommendationReasons: [
-      record.draft.scorecard.rationale.slice(0, LIMITS.recommendationReasonChars),
+      record.draft.scorecard.rationale.slice(0, LIMITS.recommendationReasonChars).trim(),
     ],
     markdown,
     metadata,
