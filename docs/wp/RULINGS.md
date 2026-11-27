@@ -177,3 +177,4 @@ Append-only owner/orchestrator decisions for questions not settled by project do
 
 | 2026-11-27 | WP104 Keystatic mount | May the operator enter through an alias and then edit at the native URL? | Keep the editor under `/admin/pages` throughout. | Owner |
 | 2026-11-27 | WP104 guide and Dare migration | Which structures and draft pages should the editor cover? | Make the guide structure editable, including steps, skills, roles and order. Retain the coded gate boundary. Include the noindex Dare draft. | Owner |
+| 2026-11-27 | WP104 delivery gate | May subsequent migrations start against local PR 0 checks? | Wait for the owner's hosted PR 0 check before migrating pages. | Owner |
