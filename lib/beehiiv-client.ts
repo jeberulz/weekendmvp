@@ -20,10 +20,15 @@ export const SHIPABLE_WAITLIST_AUTOMATION_ID =
 export const GUIDE_AUTOMATION_ID =
   "aut_ccd70ec4-dff3-4a10-8d26-290cb7fa9bc2" as const;
 
+/** The Proof of Work download automation. */
+export const PROOF_OF_WORK_AUTOMATION_ID =
+  "aut_de485adc-9924-4b55-a1b3-fa1b8599d6c0" as const;
+
 export type AllowedAutomationId =
   | typeof DEFAULT_AUTOMATION_ID
   | typeof SHIPABLE_WAITLIST_AUTOMATION_ID
-  | typeof GUIDE_AUTOMATION_ID;
+  | typeof GUIDE_AUTOMATION_ID
+  | typeof PROOF_OF_WORK_AUTOMATION_ID;
 
 export type SubscribeParams = {
   email: string;

@@ -34,6 +34,7 @@ const ALLOWED_UTM_CAMPAIGNS = new Set([
   "404-page",
   "5-to-9-starter",
   "5-to-9-builder",
+  "proof-of-work",
 ]);
 
 function corsHeaders(origin: string | null): Record<string, string> {
@@ -111,6 +112,7 @@ export async function POST(request: Request) {
       DEFAULT_AUTOMATION_ID,
       process.env.BEEHIIV_SHIPABLE_AUTOMATION_ID ?? "", // Ship.able Workshop (waitlist)
       process.env.BEEHIIV_GUIDE_AUTOMATION_ID ?? "", // 5-to-9 Starter 5-day guide
+      process.env.BEEHIIV_PROOF_AUTOMATION_ID ?? "", // Proof of Work download
     ].filter(Boolean),
   );
 

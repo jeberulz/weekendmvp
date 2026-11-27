@@ -1,0 +1,268 @@
+/* Proof of Work — page-scoped styles.
+ *
+ * PALETTE DEPARTURE (user-directed, 27 Nov 2026): this page follows
+ * begun.com's visual system, not the WeekendMVP home theme. Begun's
+ * dark-teal / lime-yellow / pale-mint palette is implemented ONLY here, as
+ * page-scoped variables (--pow-*). The global theme in app/globals.css is
+ * untouched. Pale mint reuses the existing home-sage token; dark teal and
+ * lime are new and scoped to this page.
+ */
+.page {
+  --pow-teal: #0c3b37;
+  --pow-teal-deep: #082825;
+  --pow-lime: #d9e021;
+  --pow-mint: #dce6d5;
+  --pow-ink-on-teal: #f7f3ec;
+}
+
+.page :is(a, button, summary):focus-visible {
+  outline: 2px solid var(--color-home-orange-ink);
+  outline-offset: 2px;
+}
+
+.page .dots {
+  background-image: radial-gradient(
+    var(--color-home-d2) 0.7px,
+    transparent 0.8px
+  );
+  background-size: 10px 10px;
+}
+
+.wrap {
+  padding-inline: clamp(20px, 5vw, 40px);
+}
+
+.section {
+  padding-block: clamp(56px, 8vw, 96px);
+}
+
+.tight {
+  padding-top: 0;
+}
+
+/* Announcement strip — thin dark-teal bar, scrolls away. */
+.strip {
+  background: var(--pow-teal-deep);
+  color: var(--pow-ink-on-teal);
+}
+
+.strip a {
+  color: var(--pow-ink-on-teal);
+}
+
+/* Hero — full-bleed video with dark overlay and bottom-left type. */
+.hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: min(82vh, 860px);
+  overflow: hidden;
+  color: var(--pow-ink-on-teal);
+  /* Gradient fallback: shows while the video loads, and if the video file
+     is missing (see TODO-HERO-VIDEO in HeroVideo.tsx). */
+  background: linear-gradient(
+    165deg,
+    var(--pow-teal) 0%,
+    var(--pow-teal-deep) 78%
+  );
+}
+
+.heroMedia {
+  position: absolute;
+  inset: 0;
+}
+
+.heroVideo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgb(8 40 37 / 0.22) 0%,
+    rgb(8 40 37 / 0.5) 55%,
+    rgb(8 40 37 / 0.82) 100%
+  );
+}
+
+.heroContent {
+  padding-top: clamp(88px, 14vh, 160px);
+  padding-bottom: clamp(56px, 8vw, 96px);
+}
+
+.heroKicker {
+  margin-bottom: 18px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d8e6d5;
+}
+
+.soundToggle {
+  position: absolute;
+  right: clamp(20px, 4vw, 48px);
+  bottom: clamp(20px, 4vw, 40px);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgb(247 243 236 / 0.45);
+  border-radius: 999px;
+  background: rgb(8 40 37 / 0.45);
+  color: var(--pow-ink-on-teal);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.soundToggle:hover {
+  background: rgb(8 40 37 / 0.7);
+  border-color: rgb(247 243 236 / 0.8);
+}
+
+/* Gateway band — three equal flush colour blocks, full-bleed. */
+.gateway {
+  width: 100%;
+}
+
+.gatewayGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 860px) {
+  .gatewayGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.gate {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+  min-height: 300px;
+  padding: 28px;
+  text-decoration: none;
+  transition: filter 0.18s ease;
+}
+
+.gate:hover {
+  filter: brightness(1.03);
+}
+
+.gateTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.gateLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gateArrow {
+  flex-shrink: 0;
+  transform: rotate(-45deg);
+  transition: transform 0.18s ease;
+}
+
+.gate:hover .gateArrow {
+  transform: rotate(-45deg) translate(4px, -4px);
+}
+
+.gateTitle {
+  display: block;
+  font-family: var(--font-editorial);
+  font-size: clamp(34px, 3.4vw, 46px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.gateText {
+  display: block;
+  margin-top: 10px;
+  max-width: 34ch;
+  font-size: 15px;
+  line-height: 1.55;
+  opacity: 0.85;
+}
+
+.gateLime {
+  background: var(--pow-lime);
+  color: var(--color-home-ink);
+}
+
+.gateMint {
+  background: var(--pow-mint);
+  color: var(--color-home-ink);
+}
+
+.gateTeal {
+  background: var(--pow-teal);
+  color: var(--pow-ink-on-teal);
+}
+
+/* Numbers — dark teal, centred, huge serif numerals. */
+.numbers {
+  background: var(--pow-teal);
+}
+
+/* Tactics — pale mint (home-sage). */
+.tactics {
+  background: var(--pow-mint);
+}
+
+/* FAQ — pale mint (home-sage). */
+.faq {
+  background: var(--pow-mint);
+}
+
+/* Tactics second row: offset like begun's double-row card layout. */
+@media (min-width: 860px) {
+  .tacticRowOffset {
+    margin-left: calc(25% / 2);
+  }
+}
+
+/* Cards — same surface as the Starter page. */
+.card {
+  border: 1px solid var(--color-home-rule);
+  border-radius: 20px;
+  background: var(--color-home-card);
+  box-shadow:
+    0 1px 2px rgb(26 24 20 / 0.05),
+    0 12px 28px rgb(26 24 20 / 0.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gateArrow {
+    transition: none;
+  }
+}
+
+.page + :global(footer) a:hover {
+  color: var(--color-home-orange);
+}
+
+.page + :global(footer) a:focus-visible {
+  outline: 2px solid var(--color-home-orange-ink);
+  outline-offset: 2px;
+}
