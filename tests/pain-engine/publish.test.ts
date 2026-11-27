@@ -269,6 +269,17 @@ describe("buildSubmission — happy path", () => {
     );
     expect(pass.envelope.recommendation).toBe("reject");
   });
+
+  it("refuses evidence whose URL is not a public http(s) URL", () => {
+    // The App Store listener used to store the bare numeric review id as
+    // the finding URL; the editorial envelope schema refuses that, so the
+    // bridge must refuse at build time with a clear message instead.
+    const record = approvedRecord((r) => {
+      r.draft.evidence[0].url = "14822888478";
+      r.cluster.findings[0].url = "14822888478";
+    });
+    expect(() => buildSubmission(record)).toThrow(/has no usable URL/);
+  });
 });
 
 describe("Pain Engine source review", () => {

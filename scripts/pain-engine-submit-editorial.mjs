@@ -24,21 +24,25 @@
  *   the repo or under tmp/ only);
  * - dry run (default) prints exactly what would be submitted and stops.
  *
- * What --apply does today: the full confirmation discipline, then a
- * clear refusal. The current ingest (`convex/editorial/ingest.ts`
- * validateAndImport) only accepts old-engine contract-v2 records with a
- * sealed Source Critic PASS, and the submission schema has no
- * "pain-engine" producer — so no Pain Engine submission can be accepted
- * by the server yet. The minimal server change (new validator +
- * validateAndImportPainEngine action + matching mutation + schema enum)
- * is documented in lib/pain-engine/publish.ts. Until it lands, --apply
- * refuses locally and nothing is submitted. It never pushes, merges,
- * deploys, seeds Convex, or touches Vercel.
+ * What --apply does: after the full confirmation discipline (--confirm-submission
+ * hash match, --backup, EDITORIAL_ENGINE_CONVEX_URL / EDITORIAL_ENGINE_ADMIN_KEY /
+ * --target hostname match), it calls the Pain Engine ingest action
+ * (`convex/editorial/ingest.ts` validateAndImportPainEngine) on the target
+ * deployment, which validates the record, source review, MDX, and envelope
+ * in Node and then imports it as a PRIVATE submission with authority "none".
+ * If the target deployment does not have the new action yet (it has not
+ * deployed the server change), --apply refuses clearly and nothing is
+ * submitted. A successful import only creates a private candidate in the
+ * admin panel — it never publishes, never pushes, merges, deploys, seeds
+ * Convex, or touches Vercel.
  */
 import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { ConvexHttpClient } from "convex/browser";
+
+import { internal } from "../convex/_generated/api.js";
 import { buildSubmission } from "../lib/pain-engine/publish.ts";
 import {
   loadReviewRecord,
@@ -160,11 +164,51 @@ if (
   throw new Error("Submit refused: set the exact EDITORIAL_ENGINE_CONVEX_URL, EDITORIAL_ENGINE_ADMIN_KEY and --target deployment name.");
 }
 
-throw new Error(
-  "Submit refused: no Pain Engine ingest action exists on the target yet. " +
-    "The current ingest (convex/editorial/ingest.ts validateAndImport) only accepts old-engine " +
-    "contract-v2 records with a sealed Source Critic PASS, and the submission schema has no " +
-    '"pain-engine" producer — see lib/pain-engine/publish.ts for the minimal server change ' +
-    "(new validator + validateAndImportPainEngine action + matching mutation + schema enum). " +
-    "Nothing was submitted; the dry-run artifacts above are ready for that action once it lands.",
+const client = new ConvexHttpClient(deploymentUrl);
+client.setAdminAuth(adminKey);
+let result;
+try {
+  result = await client.action(internal.editorial.ingest.validateAndImportPainEngine, {
+    recordJson: submission.recordJson,
+    mdx: submission.mdx,
+    manifestJson: JSON.stringify(submission.manifestRow),
+    sourceReviewJson: submission.sourceReviewJson,
+  });
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/could not find function|no such function|function not found/i.test(message)) {
+    throw new Error(
+      "Submit refused: the target deployment does not have the Pain Engine ingest action yet " +
+        "(convex/editorial/ingest.ts validateAndImportPainEngine) — deploy the server change first. " +
+        "Nothing was submitted; the dry-run artifacts above are ready for that action once it lands.",
+    );
+  }
+  throw error;
+}
+if (!result.ok || result.value.slugConflict) {
+  throw new Error(`Import stopped: ${result.ok ? "slug conflict" : result.error.code}. No public page was changed.`);
+}
+updateReviewRecordBookkeeping(root, {
+  ...updatedRecord,
+  submission: {
+    ...updatedRecord.submission,
+    status: "submitted",
+    submittedAt: new Date().toISOString(),
+    ideaId: result.value.ideaId,
+  },
+});
+console.log(
+  JSON.stringify(
+    {
+      deployment: target,
+      slug,
+      ideaId: result.value.ideaId,
+      revisionId: result.value.revisionId,
+      duplicate: result.value.duplicate,
+      publicPageChanged: false,
+      ideaState: "private submission — accepted by the server, awaiting human review in the admin panel",
+    },
+    null,
+    2,
+  ),
 );
