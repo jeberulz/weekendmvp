@@ -110,8 +110,9 @@ const HOST_ALLOWLIST = new Map([
   ],
 ]);
 
-/** Pre-existing SDK imports outside `convex/ai/providers/`: tests of the adapters only. */
+/** Dedicated SDK imports outside the Convex crew provider adapters. */
 const SDK_ALLOWLIST = new Map([
+  ["lib/landing-ai/provider.ts", { sdks: ["@anthropic-ai/sdk"], reason: "WP104: the operator-only landing page editor uses the owner's key and its own validation and rate limit, independently of the Convex crew gateway." }],
   ["tests/platform/ai-gateway.test.ts", { sdks: ["@anthropic-ai/sdk"], reason: "WP71-S2 gateway tests build SDK error objects for the adapter" }],
   ["tests/platform/ai-providers.test.ts", { sdks: ["@anthropic-ai/sdk"], reason: "WP71-S1 adapter tests build SDK replies and errors" }],
 ]);

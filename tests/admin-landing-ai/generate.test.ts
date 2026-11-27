@@ -29,7 +29,7 @@ async function setup() {
     authorised: vi.fn(async () => true),
     limit: vi.fn(() => 0),
     model: vi.fn<() => Model | null>(() => model),
-    read: vi.fn(async (_id: LandingPageId) => document),
+    read: vi.fn<(id: LandingPageId) => Promise<unknown>>(async () => document),
   };
   return { path, original, before, after, model, dependencies };
 }
