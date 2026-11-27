@@ -1,7 +1,9 @@
+// @vitest-environment jsdom
+
 import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 
 vi.mock("next/image", async () => {
   const React = await import("react");
@@ -22,15 +24,41 @@ vi.mock("@/lib/fonts", () => ({
 
 import manifestJson from "../../ideas/manifest.json";
 import { BUILD_ALONG_PRICE } from "../../app/(marketing)/5-to-9-starter/_sections";
-import FiveToNineStarterPage, { metadata } from "../../app/(marketing)/5-to-9-starter/page";
+import FiveToNineStarterPage, { generateMetadata } from "../../app/(marketing)/5-to-9-starter/page";
 import StarterKitPage from "../../app/(marketing)/starter-kit/page";
 import { START_HERE } from "../../components/home/content";
 import { GUIDE_AUTOMATION_ID, subscribeViaApi } from "../../lib/beehiiv-client";
 import { liveIdeas } from "../../lib/home/library";
+import { readStarter, validateStarter } from "../../lib/landing/read-starter";
+import published from "./fixtures/wp104-starter/published-page.json";
 import type { ManifestIdea } from "../../lib/home/types";
 
+let html: string;
+let metadata: Awaited<ReturnType<typeof generateMetadata>>;
+
+beforeAll(async () => {
+  const [page, pageMetadata] = await Promise.all([FiveToNineStarterPage(), generateMetadata()]);
+  html = renderToStaticMarkup(page);
+  metadata = pageMetadata;
+});
+
 function renderPage() {
-  return renderToStaticMarkup(createElement(FiveToNineStarterPage));
+  return html;
+}
+
+function snapshot(source: string) {
+  const document = new DOMParser().parseFromString(source, "text/html");
+  const text = (node: Element) => node.textContent.replace(/\s+/g, " ").trim();
+  const main = document.querySelector("main#starter-content");
+  if (!main) throw new Error("Starter main element missing");
+  return {
+    sections: Array.from(main.querySelectorAll(":scope > section"), (section) => ({
+      id: section.getAttribute("aria-labelledby"),
+      text: text(section),
+      links: Array.from(section.querySelectorAll("a"), (link) => [link.getAttribute("href"), text(link)]),
+    })),
+    jsonLd: Array.from(main.querySelectorAll('script[type="application/ld+json"]'), (script) => script.textContent),
+  };
 }
 
 afterEach(() => {
@@ -38,6 +66,30 @@ afterEach(() => {
 });
 
 describe("5-to-9 Starter landing page", () => {
+  test("maps the Keystatic singleton to the published section tree and JSON-LD", () => {
+    expect(snapshot(html)).toEqual(published);
+  });
+
+  test.runIf(process.env.CHECK_BUILT_GUIDE === "1")("preserves the published tree and JSON-LD in the production build", () => {
+    expect(snapshot(readFileSync(".next/server/app/5-to-9-starter.html", "utf8"))).toEqual(published);
+  });
+
+  test("validates the section structure and resolves Build-Along pricing from code", async () => {
+    const entry = await readStarter();
+    const [intro, ...otherSections] = entry.sections;
+    expect(entry.hero).not.toHaveProperty("ideaCount");
+    expect(entry.hero.form).not.toHaveProperty("automationId");
+    expect(entry.finalCapture.form).not.toHaveProperty("successHref");
+    if (intro.discriminant !== "fiveDays") throw new Error("Expected the day sequence first");
+    expect(intro.value.buildAlongLabel).toContain("{buildAlongPrice}");
+    expect(validateStarter({ ...entry, sections: [...otherSections, intro] }).sections.at(-1)).toBe(intro);
+    expect(() => validateStarter({ ...entry, sections: [intro, intro, ...otherSections.slice(1)] })).toThrow("one of each page section");
+    expect(() => validateStarter({
+      ...entry,
+      sections: [{ ...intro, value: { ...intro.value, buildAlongLabel: "Build-Along sprint ($29)" } }, ...otherSections],
+    })).toThrow("require exactly one {buildAlongPrice}");
+  });
+
   test("has its canonical route, exact title and social metadata", () => {
     expect(metadata.alternates?.canonical).toBe("/5-to-9-starter");
     const title = "The 5-to-9 Starter: a free 5-day email guide | Weekend MVP";

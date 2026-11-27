@@ -16,6 +16,10 @@ Keep `{ideaCount}` in the library summaries and a FAQ answer, `{price}` in each 
 
 Run `npm run audit:guide -- --slug=5-to-9-builder` to validate the same content used by the site.
 
+## Editing the 5-to-9 Starter
+
+Open **5-to-9 Starter** to edit the opening, four middle sections and final signup copy. The opening and final signup have fixed placements. Keep one of each middle section and keep the Day 1–5 copy aligned with the existing email sequence. Use the `{buildAlongPrice}` token in the Build-Along link labels. The live price, idea count, checkout link and both Beehiiv form destinations come from code.
+
 ## GitHub setup for the owner
 
 1. Protect `main` on GitHub. Require a pull request and passing CI. Apply the rule to the owner and GitHub App, including administrator bypass settings. Keystatic opens the repository default branch. Saving there prompts for a content branch before sending a commit. GitHub enforces branch protection independently for every client.
