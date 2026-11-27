@@ -89,7 +89,17 @@ const sources = fs
   .filter((file) => /\.(?:ts|tsx)$/.test(file))
   .map((file) => ({ file: path.relative(ROOT, path.join(guideDir, file)), text: fs.readFileSync(path.join(guideDir, file), "utf8") }));
 
+// A guide's research record and its sealed Source Critic review live in guides/records/. With a record the audit
+// requires a sealed PASS and checks the copy against the claims. Without one, claims are not checked.
+const recordFile = path.join(ROOT, "guides", "records", `${args.slug}.json`);
+const reviewFile = path.join(ROOT, "guides", "records", `${args.slug}.source-review.json`);
+const readJson = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
+const research = fs.existsSync(recordFile)
+  ? { record: readJson(recordFile), review: fs.existsSync(reviewFile) ? readJson(reviewFile) : null, now }
+  : undefined;
+
 const result = auditGuide({
+  research,
   spec: guideSpec,
   deck: guideCopy,
   fileExists: (publicPath) => fs.existsSync(path.join(ROOT, "public", publicPath)),
@@ -102,6 +112,13 @@ const result = auditGuide({
   isOfferEnabled: args.offersOn ? () => true : isOfferEnabled,
 });
 const findings = [...result.findings];
+if (!research) {
+  findings.push({
+    rule: "research-none",
+    severity: "info",
+    message: `no research record at guides/records/${args.slug}.json, so this guide's claims are not checked against sources`,
+  });
+}
 
 async function collectSnapshot(chromium, spec, { url, email, proxy }) {
   const viaProxy = Boolean(proxy);

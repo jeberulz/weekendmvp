@@ -333,7 +333,9 @@ describe("audit:guide CLI", () => {
 
   test("--json prints a machine-readable result", () => {
     const parsed = JSON.parse(run("--slug=5-to-9-builder", "--json", "--offers-on", "--now=2026-11-10").stdout);
-    expect(parsed).toMatchObject({ slug: "5-to-9-builder", live: false, ok: true, findings: [expect.objectContaining({ rule: "offer-thin" })] });
+    expect(parsed).toMatchObject({ slug: "5-to-9-builder", live: false, ok: true });
+    // The thin-offer warning, then a note that the guide has no research record so its claims are not checked.
+    expect(parsed.findings.map((finding: { rule: string }) => finding.rule)).toEqual(["offer-thin", "research-none"]);
   });
 
   test("usage errors exit 2: no slug, unknown guide, --live without --url, --email without --live", () => {
