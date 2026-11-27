@@ -1,0 +1,229 @@
+{
+  "seoTitle": "DARE | Choose your AI product direction in {duration} minutes · Live workshop for designers",
+  "seoDescription": "DARE Live: a {duration}-minute live working session for experienced designers. Choose one concrete AI/agentic product or AI-powered service and leave with a 4-week plan to move it into the real world. {price}. Live on Zoom. Replay included.",
+  "socialTitle": "DARE | Choose your AI product direction in {duration} minutes",
+  "socialDescription": "A {duration}-minute live working session for experienced designers. Choose one concrete AI product or AI-powered service and leave with a 4-week plan. {price}. Replay included.",
+  "hero": {
+    "eyebrow": "Live Workshop · For Designers",
+    "tagline": "Discover · Architect · Run · Earn",
+    "intro": "A {duration}-minute live working session for experienced designers. You'll choose",
+    "accent": "one concrete AI product or AI-powered service,",
+    "ending": "and leave with a 4-week plan to move it into the real world.",
+    "note": "Live on Zoom · Replay included · No engineering background required."
+  },
+  "countdownCard": {
+    "eyebrow": "DARE Live starts in",
+    "meta": "{duration} minutes live · working session, not a lecture · Q&A after",
+    "footnote": "One direction chosen. Four weeks mapped. In one sitting."
+  },
+  "sections": [
+    {
+      "discriminant": "deliverableTeaser",
+      "value": {
+        "eyebrow": "Your 4-Week DARE Plan",
+        "title": "You leave with a decision, on paper.",
+        "body": "During the session you'll fill in the DARE worksheets live. By the end, they become your 4-Week DARE Plan: one product or one service, one clear path — your chosen direction broken into one concrete move per week."
+      }
+    },
+    {
+      "discriminant": "stats",
+      "value": {
+        "eyebrow": "Why listen to me",
+        "years": "Designing products professionally",
+        "shipped": "AI-native products & agentic workflows, built solo",
+        "ideas": "AI & SaaS ideas analyzed at weekendmvp.app",
+        "framework": "DARE, taught live · more coming"
+      }
+    },
+    {
+      "discriminant": "problem",
+      "value": {
+        "title": "You're a strong designer with vague AI ideas…",
+        "accent": "and vague doesn't ship.",
+        "intro": "You've been paying attention. You've used the tools. You can see, more clearly than most engineers, where AI actually fits a real person's workflow.",
+        "setup": "And yet nothing's moving. Three traps, usually:",
+        "traps": [
+          {
+            "lead": "The engineer myth.",
+            "body": "\"I need to get technical first.\" So you collect tutorials instead of making a decision."
+          },
+          {
+            "lead": "The big-idea trap.",
+            "body": "Every idea you take seriously feels like it needs a team and a roadmap. So you take none of them seriously."
+          },
+          {
+            "lead": "The model maze.",
+            "body": "SaaS? Service? Agency? You're trying to pick the perfect vehicle before you've picked the problem."
+          }
+        ],
+        "pitch": "The hard part of AI products is design judgment — which you already have. What you're missing isn't knowledge. It's a path.",
+        "ending": "DARE is that path, walked in {duration} minutes."
+      }
+    },
+    {
+      "discriminant": "tldr",
+      "value": {
+        "title": "Everything you need to know,",
+        "accent": "in ten seconds.",
+        "points": [
+          {
+            "lead": "It's {price}, one-time.",
+            "body": "A working session, not a course."
+          },
+          {
+            "lead": "It's {duration} minutes live",
+            "body": "on [[DATE]], [[TIME]] [[TZ]], on Zoom — with Q&A after."
+          },
+          {
+            "lead": "It's for experienced designers,",
+            "body": "design-leaning PMs, and semi-technical builders. No engineering required."
+          },
+          {
+            "lead": "You leave with one direction and a 4-week plan",
+            "body": "— a tiny agentic SaaS or an AI-powered productized service, chosen and mapped."
+          },
+          {
+            "lead": "Can't make it live? Replay included,",
+            "body": "same day, yours forever."
+          },
+          {
+            "lead": "It's the front door, not the whole house.",
+            "body": "DARE Live stands alone — and live attendees get first access when the deeper DARE program opens."
+          }
+        ]
+      }
+    },
+    {
+      "discriminant": "moves",
+      "value": {
+        "title": "Three moves.",
+        "accent": "One direction by the end.",
+        "discover": {
+          "title": "Discover.",
+          "accent": "One buyer, one painful workflow.",
+          "body": "You already know how to find the real problem under a vague brief — you've done it in every discovery call of your career. We aim that skill at the AI landscape and cut your idea cloud down to one specific person, one workflow, one why-now. Written down."
+        },
+        "architect": {
+          "title": "Architect.",
+          "accent": "This is where designers win.",
+          "body": "Anyone can call an API. Almost nobody can design where the agent acts, where the human stays in control, and why anyone would trust it — that's interaction design, and it's the scarcest skill in AI products right now. You'll map your workflow into an Agent Blueprint: a simple agentic flow a real person would love to use."
+        },
+        "runEarn": {
+          "title": "Run + Earn.",
+          "accent": "The scrappy v1, and the honest ask.",
+          "body": "We scope the smallest real version — live prototype, tiny SaaS, or repeatable service workflow — then turn it into a concrete offer with a price and the exact words to ask for money without cringing. Both land in your 4-week plan: run in weeks 1–3, earn in week 4."
+        }
+      }
+    },
+    {
+      "discriminant": "valueStack",
+      "value": {
+        "eyebrow": "What's included",
+        "title": "Six things in your seat.",
+        "accent": "{approxValue} of value.",
+        "preamble": "Everything above exists for one outcome: you choose one direction and leave with a 4-week plan to move it into the real world.",
+        "workshop": {
+          "title": "DARE Live Workshop",
+          "body": "{duration}-minute working session with John on Zoom. Bring one idea — or none. Discover handles that.",
+          "ticketLabel": "DARE Live Workshop"
+        },
+        "canvas": {
+          "title": "DARE",
+          "accent": "Opportunity Canvas",
+          "body": "The Discover worksheet: buyer, workflow, pain, why-now. You fill it in live.",
+          "ticketLabel": "DARE Opportunity Canvas"
+        },
+        "blueprint": {
+          "title": "Agent",
+          "accent": "Blueprint Worksheet",
+          "body": "The Architect tool: map the flow, place the agent, design the human-in-the-loop guardrails.",
+          "ticketLabel": "Agent Blueprint Worksheet"
+        },
+        "plan": {
+          "title": "4-Week DARE Plan template",
+          "body": "Your direction, sequenced one concrete move per week — from blueprint to first revenue or real market signal.",
+          "ticketLabel": "4-Week DARE Plan template"
+        },
+        "replay": {
+          "title": "Lifetime replay",
+          "body": "Full recording, yours forever. Rewatch the move you're on.",
+          "ticketLabel": "Lifetime replay"
+        },
+        "prompts": {
+          "title": "Agentic Founder",
+          "accent": "Prompt Pack",
+          "body": "The prompts that take your Agent Blueprint to a working v1 with today's tools — no engineering detour.",
+          "ticketLabel": "Bonus · Agentic Founder Prompt Pack"
+        },
+        "invite": {
+          "title": "Founding Member",
+          "accent": "Invite",
+          "body": "First access and founding pricing when the full DARE program opens.",
+          "ticketLabel": "Bonus · Founding Member Invite"
+        }
+      }
+    },
+    {
+      "discriminant": "proof",
+      "value": {
+        "title": "What changes",
+        "accent": "in {duration} minutes.",
+        "featured": {
+          "eyebrow": "Before → After · A DARE outcome",
+          "before": "\"I should do something with AI… maybe an assistant for freelancers?\"",
+          "after": "\"A done-for-you client-onboarding agent for B2B design studios —",
+          "emphasis": "sold as a productized service, first three conversations booked in week 4.",
+          "takeaway": "That's the shape of the shift: from a category to a buyer, from a vibe to an offer, from someday to a dated plan."
+        },
+        "saas": {
+          "eyebrow": "Before → After · Tiny SaaS",
+          "before": "\"Something with agents for research?\"",
+          "after": "\"A competitor-watch agent for boutique brand strategists — $19/mo, waitlist live in week 1.\""
+        },
+        "service": {
+          "eyebrow": "Before → After · Productized service",
+          "before": "\"AI audits, maybe? For startups?\"",
+          "after": "\"A fixed-scope 'agent-ready UX audit' for seed-stage SaaS teams — $1.5k flat, pitched to five founders in week 2.\""
+        }
+      }
+    }
+  ],
+  "ticket": {
+    "eyebrow": "Here's your ticket",
+    "title": "{duration} minutes.",
+    "accent": "{price}.",
+    "ending": "Walk out with a direction.",
+    "intro": "A working session with John Iseghohi.",
+    "introAccent": "Choose your direction. Map your four weeks.",
+    "dateLabel": "Date",
+    "startLabel": "Start",
+    "lengthLabel": "Length",
+    "formatLabel": "Format",
+    "note": "One direction chosen live. A 4-week path to shipping and earning from it."
+  },
+  "timezones": {
+    "title": "Here's when it lands",
+    "accent": "where you are.",
+    "intro": "DARE Live runs",
+    "remainder": "on [[DATE]]. Find your local time below. Can't make it live? The replay hits your inbox the same day."
+  },
+  "teacher": {
+    "name": "John Iseghohi.",
+    "role": "Product Designer · Founder, Weekend MVP",
+    "paragraphs": [
+      "I'm a product designer. For most of my career that meant making other people's products work — until I decided to find out whether design skill alone could carry a product of its own.",
+      "It could. Without becoming an engineer, I've built and shipped multiple AI-native products and agentic workflows solo — and broken down {ideas} more ideas in public at weekendmvp.app. Every one of them started the same way: one buyer, one workflow, one designed agentic flow.",
+      "Watching other designers circle the same transition, I kept seeing the same three traps — and the same fix. Not more tutorials. A decision, made with a method. DARE is that method: the system I wish someone had handed me at the start, compressed into {duration} minutes and applied to your idea, not a hypothetical one.",
+      "And I'm in this for the long haul: DARE is the first of several frameworks I'm building for designers who want to become AI-native founders."
+    ],
+    "yearsChip": "[[STAT_YEARS]] yrs designing products",
+    "shippedChip": "[[STAT_SHIPPED]] AI-native products shipped solo",
+    "frameworkChip": "Frameworks: DARE — more coming"
+  },
+  "seatSection": {
+    "eyebrow": "Save your seat",
+    "title": "One workshop. One decision.",
+    "accent": "Four weeks of momentum.",
+    "body": "Grab your {price} seat. In {duration} minutes you'll choose your direction and leave with your 4-week plan."
+  }
+}

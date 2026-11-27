@@ -34,6 +34,10 @@ Open **Shipable** to edit copy, metadata, testimonials and the FAQ used in struc
 - Ticket line labels live with the matching items in **What is included**. Their six dollar amounts, the total value, the two bonuses, and the displayed seat price come from code.
 - Keep `{price}` in the ticket heading and `{stackValue}` in the value stack heading. Use these tokens for monetary amounts in offer prose. The editor has fields for copy on the free form. Its signup automation, the date and timezone values, and the seat status come from code.
 
+## Editing the Dare draft
+
+Select **Dare (draft)** for editorial copy and the existing worked examples. Keep the `[[DATE]]`, `[[TIME]]`, `[[TZ]]`, `[[STAT_YEARS]]` and `[[STAT_SHIPPED]]` placeholders where they appear in copy. The code supplies the draft schedule and timezone rows, ticket amounts and $29 CTA. The page stays noindex and the seat form continues to capture waitlist leads.
+
 ## GitHub setup for the owner
 
 1. Protect `main` on GitHub. Require a pull request and passing CI. Apply the rule to the owner and GitHub App, including administrator bypass settings. Keystatic opens the repository default branch. Saving there prompts for a content branch before sending a commit. GitHub enforces branch protection independently for every client.

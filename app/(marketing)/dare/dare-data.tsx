@@ -1,25 +1,8 @@
-/**
- * Static data for /dare (page.tsx hoists this so the page file stays
- * slim and is primarily section composition). Pure data and JSX
- * fragments only — no client state, no hooks.
- *
- * Draft pages ship a literal "[[WORKSHOP_DATE_ISO]]" deadline and other
- * [[PLACEHOLDER]] strings; those are preserved verbatim until the
- * workshop is launch-ready. See the orchestrator-owned page.tsx note.
- */
-
-import * as React from "react";
+import type { ReactNode } from "react";
 import { ArrowRight } from "lucide-react";
-
-import {
-  SITE,
-  eventSchema,
-  breadcrumbSchema,
-  buildGraph,
-  personSchema,
-  organizationSchema,
-} from "@/lib/seo";
-
+import { SITE, breadcrumbSchema, buildGraph, eventSchema, organizationSchema, personSchema } from "@/lib/seo";
+import { DURATION_MINUTES, IDEAS, PRICE_USD, WORKSHOP_DEADLINE, dareText, includes, usd } from "@/lib/landing/dare-offer";
+import type { DareBlock, DareCopy } from "@/lib/landing/read-dare";
 import type { WorkshopStatItem } from "@/components/marketing/workshop/WorkshopStats";
 import type { WorkshopTldrItem } from "@/components/marketing/workshop/WorkshopTldr";
 import type { WorkshopMoveItem } from "@/components/marketing/workshop/WorkshopMoves";
@@ -30,19 +13,15 @@ import type {
 } from "@/components/marketing/workshop/WorkshopTicket";
 import type { WorkshopTimezoneRow } from "@/components/marketing/workshop/WorkshopTimezones";
 
-export const WORKSHOP_DEADLINE = "[[WORKSHOP_DATE_ISO]]";
-
-/* JSON-LD: Person + Organization + Event + Breadcrumb via lib/seo.ts. */
-
 const DARE_EVENT = eventSchema({
   name: "DARE Live · Choose your AI product direction in 90 minutes",
   description:
     "A 90-minute live working session for experienced designers. Choose one concrete AI/agentic product or AI-powered service and leave with a 4-week plan to move it into the real world.",
-  startDate: "[[WORKSHOP_DATE_ISO]]",
+  startDate: WORKSHOP_DEADLINE,
   url: "/dare",
   location: { name: "Zoom", url: `${SITE}/dare` },
   offers: {
-    price: "29",
+    price: String(PRICE_USD),
     priceCurrency: "USD",
     availability: "https://schema.org/InStock",
   },
@@ -58,285 +37,89 @@ export const SCHEMA = buildGraph(
   ]),
 );
 
-export const STATS: WorkshopStatItem[] = [
-  {
-    value: "[[STAT_YEARS]]",
-    suffix: " yrs",
-    label: "Designing products professionally",
-    revealClass: "reveal-fade",
-  },
-  {
-    value: "[[STAT_SHIPPED]]",
-    suffix: " shipped",
-    label: <>AI-native products &amp; agentic workflows, built solo</>,
-    revealClass: "reveal-fade",
-  },
-  {
-    value: "78",
-    suffix: " broken down",
-    label: <>AI &amp; SaaS ideas analyzed at weekendmvp.app</>,
-    revealClass: "reveal-fade",
-  },
-  {
-    value: "1",
-    suffix: " framework",
-    label: "DARE, taught live · more coming",
-    revealClass: "reveal-fade",
-  },
-];
+export function dareStats(copy: DareBlock<"stats">): WorkshopStatItem[] {
+  return [
+    { value: "[[STAT_YEARS]]", suffix: " yrs", label: copy.years },
+    { value: "[[STAT_SHIPPED]]", suffix: " shipped", label: copy.shipped },
+    { value: String(IDEAS), suffix: " broken down", label: copy.ideas },
+    { value: "1", suffix: " framework", label: copy.framework },
+  ].map((item) => ({ ...item, revealClass: "reveal-fade" }));
+}
 
-export const TLDR_ITEMS: WorkshopTldrItem[] = [
-  {
-    lead: <>It&apos;s $29, one-time.</>,
-    rest: <>A working session, not a course.</>,
-  },
-  {
-    lead: <>It&apos;s 90 minutes live</>,
-    rest: <>on [[DATE]], [[TIME]] [[TZ]], on Zoom — with Q&amp;A after.</>,
-  },
-  {
-    lead: <>It&apos;s for experienced designers,</>,
-    rest: <>design-leaning PMs, and semi-technical builders. No engineering required.</>,
-  },
-  {
-    lead: <>You leave with one direction and a 4-week plan</>,
-    rest: (
-      <>
-        — a tiny agentic SaaS or an AI-powered productized service, chosen and
-        mapped.
-      </>
-    ),
-  },
-  {
-    lead: <>Can&apos;t make it live? Replay included,</>,
-    rest: <>same day, yours forever.</>,
-  },
-  {
-    lead: <>It&apos;s the front door, not the whole house.</>,
-    rest: (
-      <>
-        DARE Live stands alone — and live attendees get first access when the
-        deeper DARE program opens.
-      </>
-    ),
-  },
-];
+export function dareSummary(copy: DareBlock<"tldr">): WorkshopTldrItem[] {
+  return copy.points.map(({ lead, body }) => ({ lead: dareText(lead), rest: dareText(body) }));
+}
 
-export const MOVES: WorkshopMoveItem[] = [
-  {
-    glyph: "D",
+export function dareMoves(copy: DareBlock<"moves">): WorkshopMoveItem[] {
+  return ([
+    [copy.discover, "D", "~25 min"],
+    [copy.architect, "A", "~35 min"],
+    [copy.runEarn, "R+E", "~30 min"],
+  ] as const).map(([move, glyph, time]) => ({
+    glyph,
     glyphColorClass: "text-[#C9D8F7]",
     glyphAriaHidden: true,
     glyphExtraClass: "w-24",
-    heading: (
-      <>
-        Discover.{" "}
-        <span className="accent-italic text-[#1D4ED8] font-normal">
-          One buyer, one painful workflow.
-        </span>
-      </>
-    ),
-    body: (
-      <>
-        You already know how to find the real problem under a vague brief —
-        you&apos;ve done it in every discovery call of your career. We aim that
-        skill at the AI landscape and cut your idea cloud down to one specific
-        person, one workflow, one why-now. Written down.
-      </>
-    ),
-    time: "~25 min",
+    heading: <DareHeading title={move.title} accent={move.accent} />,
+    body: move.body,
+    time,
     timeColorClass: "text-neutral-500",
-  },
-  {
-    glyph: "A",
-    glyphColorClass: "text-[#C9D8F7]",
-    glyphAriaHidden: true,
-    glyphExtraClass: "w-24",
-    heading: (
-      <>
-        Architect.{" "}
-        <span className="accent-italic text-[#1D4ED8] font-normal">
-          This is where designers win.
-        </span>
-      </>
-    ),
-    body: (
-      <>
-        Anyone can call an API. Almost nobody can design where the agent acts,
-        where the human stays in control, and why anyone would trust it —
-        that&apos;s interaction design, and it&apos;s the scarcest skill in AI
-        products right now. You&apos;ll map your workflow into an Agent
-        Blueprint: a simple agentic flow a real person would love to use.
-      </>
-    ),
-    time: "~35 min",
-    timeColorClass: "text-neutral-500",
-  },
-  {
-    glyph: "R+E",
-    glyphColorClass: "text-[#C9D8F7]",
-    glyphAriaHidden: true,
-    glyphExtraClass: "w-24",
-    heading: (
-      <>
-        Run + Earn.{" "}
-        <span className="accent-italic text-[#1D4ED8] font-normal">
-          The scrappy v1, and the honest ask.
-        </span>
-      </>
-    ),
-    body: (
-      <>
-        We scope the smallest real version — live prototype, tiny SaaS, or
-        repeatable service workflow — then turn it into a concrete offer with a
-        price and the exact words to ask for money without cringing. Both land
-        in your 4-week plan: run in weeks 1–3, earn in week 4.
-      </>
-    ),
-    time: "~30 min",
-    timeColorClass: "text-neutral-500",
-  },
-];
+  }));
+}
 
-export const VALUE_STACK: WorkshopValueItem[] = [
-  {
-    number: "01",
-    title: <h3 className="text-lg font-semibold">DARE Live Workshop</h3>,
-    body: (
-      <>
-        90-minute working session with John on Zoom. Bring one idea — or none.
-        Discover handles that.
-      </>
-    ),
-    value: "$97 value",
-    border: true,
-  },
-  {
-    number: "02",
-    title: (
-      <h3 className="text-lg font-semibold">
-        DARE{" "}
-        <span className="accent-italic text-neutral-500 font-normal">
-          Opportunity Canvas
-        </span>
-      </h3>
-    ),
-    body: (
-      <>
-        The Discover worksheet: buyer, workflow, pain, why-now. You fill it in
-        live.
-      </>
-    ),
-    value: "$47 value",
-    border: true,
-  },
-  {
-    number: "03",
-    title: (
-      <h3 className="text-lg font-semibold">
-        Agent{" "}
-        <span className="accent-italic text-neutral-500 font-normal">
-          Blueprint Worksheet
-        </span>
-      </h3>
-    ),
-    body: (
-      <>
-        The Architect tool: map the flow, place the agent, design the
-        human-in-the-loop guardrails.
-      </>
-    ),
-    value: "$67 value",
-    border: true,
-  },
-  {
-    number: "04",
-    title: <h3 className="text-lg font-semibold">4-Week DARE Plan template</h3>,
-    body: (
-      <>
-        Your direction, sequenced one concrete move per week — from blueprint to
-        first revenue or real market signal.
-      </>
-    ),
-    value: "$147 value",
-    border: true,
-  },
-  {
-    number: "05",
-    title: <h3 className="text-lg font-semibold">Lifetime replay</h3>,
-    body: <>Full recording, yours forever. Rewatch the move you&apos;re on.</>,
-    value: "$47 value",
-    border: true,
-  },
-  {
-    number: "06",
-    title: (
-      <h3 className="text-lg font-semibold">
-        Agentic Founder{" "}
-        <span className="accent-italic text-neutral-500 font-normal">
-          Prompt Pack
-        </span>
-      </h3>
-    ),
-    body: (
-      <>
-        The prompts that take your Agent Blueprint to a working v1 with
-        today&apos;s tools — no engineering detour.
-      </>
-    ),
-    value: "$97 value",
-    bonus: true,
-    creamRow: true,
-    border: true,
-  },
-  {
-    number: "07",
-    title: (
-      <h3 className="text-lg font-semibold">
-        Founding Member{" "}
-        <span className="accent-italic text-neutral-500 font-normal">
-          Invite
-        </span>
-      </h3>
-    ),
-    body: <>First access and founding pricing when the full DARE program opens.</>,
-    bonus: true,
-    creamRow: true,
-    border: false,
-  },
-];
+export function DareHeading({ title, accent }: { title: string; accent: string }) {
+  return (
+    <>
+      {dareText(title)}{" "}
+      <span className="accent-italic text-[#1D4ED8] font-normal">{dareText(accent)}</span>
+    </>
+  );
+}
 
-export const TICKET_DETAILS: WorkshopTicketDetail[] = [
-  { label: "Date", value: "[[DATE]]" },
-  {
-    label: "Start",
-    value: (
-      <>
-        [[TIME]] <span className="accent-italic text-neutral-500">[[TZ]]</span>
-      </>
-    ),
-  },
-  { label: "Length", value: <>90 min + Q&amp;A</> },
-  { label: "Format", value: "Live on Zoom" },
-];
+export function dareValueStack(copy: DareBlock<"valueStack">): WorkshopValueItem[] {
+  return includes.map(({ key, amount, bonus }, index) => {
+    const { title, accent, body } = copy[key];
+    return {
+      number: String(index + 1).padStart(2, "0"),
+      title: (
+        <h3 className="text-lg font-semibold">
+          {title}
+          {accent ? (
+            <>
+              {" "}
+              <span className="accent-italic text-neutral-500 font-normal">{accent}</span>
+            </>
+          ) : null}
+        </h3>
+      ),
+      body: dareText(body),
+      value: amount === null ? undefined : `${usd(amount)} value`,
+      bonus,
+      creamRow: bonus,
+      border: index < includes.length - 1,
+    };
+  });
+}
 
-export const TICKET_LINES: WorkshopTicketLine[] = [
-  { label: "DARE Live Workshop", value: "$97" },
-  { label: "DARE Opportunity Canvas", value: "$47" },
-  { label: "Agent Blueprint Worksheet", value: "$67" },
-  { label: "4-Week DARE Plan template", value: "$147" },
-  { label: "Lifetime replay", value: "$47" },
-  {
-    label: "Bonus · Agentic Founder Prompt Pack",
-    value: "$97",
-    rowColorClass: "text-[#1E40AF]",
-  },
-  {
-    label: "Bonus · Founding Member Invite",
-    value: "—",
-    rowColorClass: "text-[#1E40AF]",
-  },
-];
+export function dareTicketDetails(copy: DareCopy["ticket"]): WorkshopTicketDetail[] {
+  return [
+    { label: copy.dateLabel, value: "[[DATE]]" },
+    {
+      label: copy.startLabel,
+      value: <>[[TIME]] <span className="accent-italic text-neutral-500">[[TZ]]</span></>,
+    },
+    { label: copy.lengthLabel, value: `${DURATION_MINUTES} min + Q&A` },
+    { label: copy.formatLabel, value: "Live on Zoom" },
+  ];
+}
+
+export function dareTicketLines(copy: DareBlock<"valueStack">): WorkshopTicketLine[] {
+  return includes.map(({ key, amount, bonus }) => ({
+    label: copy[key].ticketLabel,
+    value: amount === null ? "—" : usd(amount),
+    rowColorClass: bonus ? "text-[#1E40AF]" : undefined,
+  }));
+}
 
 export const TIMEZONES: WorkshopTimezoneRow[] = [
   { city: "New York", date: "[[TZ_NYC_DATE]] · EDT", time: "[[TZ_NYC_TIME]]" },
@@ -349,17 +132,7 @@ export const TIMEZONES: WorkshopTimezoneRow[] = [
   },
 ];
 
-export const TEACHER_CHIPS: React.ReactNode[] = [
-  "[[STAT_YEARS]] yrs designing products",
-  "[[STAT_SHIPPED]] AI-native products shipped solo",
-  "Frameworks: DARE — more coming",
-];
-
-/* ============================================================
- * Page-specific JSX (hero, deliverable teaser, proof, seat capture).
- * ============================================================ */
-
-export function DareHero() {
+export function DareHero({ copy }: { copy: DareCopy["hero"] }) {
   return (
     // DARE accent system: ink blue. #1D4ED8 large/accent text · #1E40AF
     // small text (WCAG AA on cream) · #A7C0F2 on dark
@@ -371,7 +144,7 @@ export function DareHero() {
         ></span>
         <span className="sr-only">Live:</span>
         <span className="font-mono-eyebrow text-[11px] uppercase text-neutral-600">
-          Live Workshop · For Designers
+          {copy.eyebrow}
         </span>
       </div>
 
@@ -382,16 +155,15 @@ export function DareHero() {
         <span className="text-[#1D4ED8]">.</span>
       </h1>
       <p className="mt-4 font-mono-eyebrow text-[10px] md:text-xs uppercase text-[#1E40AF]">
-        Discover · Architect · Run · Earn
+        {copy.tagline}
       </p>
 
       <p className="mt-8 max-w-2xl text-xl md:text-2xl leading-snug text-neutral-700">
-        A 90-minute live working session for experienced designers. You&apos;ll
-        choose{" "}
+        {dareText(copy.intro)}{" "}
         <span className="accent-italic text-[#1D4ED8]">
-          one concrete AI product or AI-powered service,
+          {copy.accent}
         </span>{" "}
-        and leave with a 4-week plan to move it into the real world.
+        {copy.ending}
       </p>
 
       <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-5">
@@ -401,7 +173,7 @@ export function DareHero() {
         >
           <span>Save my seat</span>
           <span className="h-5 w-px bg-white/25" aria-hidden="true"></span>
-          <span className="text-[#A7C0F2]">$29</span>
+          <span className="text-[#A7C0F2]">{usd(PRICE_USD)}</span>
           <ArrowRight
             size={18}
             className="transition-transform group-hover:translate-x-0.5"
@@ -409,14 +181,14 @@ export function DareHero() {
           />
         </a>
         <p className="text-sm text-neutral-500">
-          Live on Zoom · Replay included · No engineering background required.
+          {copy.note}
         </p>
       </div>
     </section>
   );
 }
 
-export function DareDeliverableTeaser() {
+export function DareDeliverableTeaser({ copy }: { copy: DareBlock<"deliverableTeaser"> }) {
   return (
     <section className="px-5 py-12 max-w-5xl mx-auto reveal-fade">
       <div className="rounded-3xl border border-black/10 bg-white p-8 md:p-10 flex flex-col md:flex-row items-start gap-8">
@@ -454,16 +226,13 @@ export function DareDeliverableTeaser() {
         </div>
         <div>
           <span className="font-mono-eyebrow text-[11px] uppercase text-[#1E40AF]">
-            Your 4-Week DARE Plan
+            {copy.eyebrow}
           </span>
           <h2 className="mt-3 text-3xl md:text-4xl font-semibold tracking-tight">
-            You leave with a decision, on paper.
+            {copy.title}
           </h2>
           <p className="mt-3 text-lg text-neutral-600 max-w-xl">
-            During the session you&apos;ll fill in the DARE worksheets live. By
-            the end, they become your 4-Week DARE Plan: one product or one
-            service, one clear path — your chosen direction broken into one
-            concrete move per week.
+            {copy.body}
           </p>
         </div>
       </div>
@@ -471,69 +240,35 @@ export function DareDeliverableTeaser() {
   );
 }
 
-export function DareProblemBody() {
+export function DareProblemBody({ copy }: { copy: DareBlock<"problem"> }) {
   return (
     <>
-      <p>
-        You&apos;ve been paying attention. You&apos;ve used the tools. You can
-        see, more clearly than most engineers, where AI actually fits a real
-        person&apos;s workflow.
-      </p>
-      <p>And yet nothing&apos;s moving. Three traps, usually:</p>
+      <p>{copy.intro}</p>
+      <p>{copy.setup}</p>
       <ul className="space-y-4">
-        <li className="flex gap-4">
-          <span
-            className="mt-3 h-px w-6 bg-[#1D4ED8] shrink-0"
-            aria-hidden="true"
-          ></span>
-          <span>
-            <strong className="font-semibold">The engineer myth.</strong>{" "}
-            &quot;I need to get technical first.&quot; So you collect tutorials
-            instead of making a decision.
-          </span>
-        </li>
-        <li className="flex gap-4">
-          <span
-            className="mt-3 h-px w-6 bg-[#1D4ED8] shrink-0"
-            aria-hidden="true"
-          ></span>
-          <span>
-            <strong className="font-semibold">The big-idea trap.</strong> Every
-            idea you take seriously feels like it needs a team and a roadmap. So
-            you take none of them seriously.
-          </span>
-        </li>
-        <li className="flex gap-4">
-          <span
-            className="mt-3 h-px w-6 bg-[#1D4ED8] shrink-0"
-            aria-hidden="true"
-          ></span>
-          <span>
-            <strong className="font-semibold">The model maze.</strong> SaaS?
-            Service? Agency? You&apos;re trying to pick the perfect vehicle
-            before you&apos;ve picked the problem.
-          </span>
-        </li>
+        {copy.traps.map(({ lead, body }, index) => (
+          <li key={index} className="flex gap-4">
+            <span className="mt-3 h-px w-6 bg-[#1D4ED8] shrink-0" aria-hidden="true"></span>
+            <span>
+              <strong className="font-semibold">{lead}</strong>{" "}
+              {body}
+            </span>
+          </li>
+        ))}
       </ul>
-      <p>
-        <span className="accent-italic text-[#1a1a1a]">
-          The hard part of AI products is design judgment — which you already
-          have. What you&apos;re missing isn&apos;t knowledge. It&apos;s a
-          path.
-        </span>
-      </p>
-      <p>DARE is that path, walked in 90 minutes.</p>
+      <p><span className="accent-italic text-[#1a1a1a]">{copy.pitch}</span></p>
+      <p>{dareText(copy.ending)}</p>
     </>
   );
 }
 
-export function DareProof() {
+export function DareProof({ copy }: { copy: DareBlock<"proof"> }) {
   return (
     <section className="px-5 py-20 md:py-28 max-w-4xl mx-auto">
       <h2 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02] mb-12">
-        What changes{" "}
+        {copy.title}{" "}
         <span className="accent-italic text-[#1D4ED8] font-normal">
-          in 90 minutes.
+          {dareText(copy.accent)}
         </span>
       </h2>
 
@@ -541,50 +276,30 @@ export function DareProof() {
           Before→After alumni quotes after the first session runs. */}
       <div className="rounded-3xl bg-[#1a1a1a] text-white p-8 md:p-10 mb-6 reveal-fade">
         <span className="font-mono-eyebrow text-[10px] uppercase text-neutral-300">
-          Before → After · A DARE outcome
+          {copy.featured.eyebrow}
         </span>
         <p className="mt-6 text-xl md:text-2xl text-neutral-400 line-through decoration-white/30">
-          &quot;I should do something with AI… maybe an assistant for
-          freelancers?&quot;
+          {copy.featured.before}
         </p>
         <p className="mt-4 text-2xl md:text-3xl font-semibold tracking-tight">
-          &quot;A done-for-you client-onboarding agent for B2B design studios —{" "}
+          {copy.featured.after}{" "}
           <span className="accent-italic text-[#A7C0F2] font-normal">
-            sold as a productized service, first three conversations booked in
-            week 4.
+            {copy.featured.emphasis}
           </span>
           &quot;
         </p>
         <p className="mt-8 pt-6 border-t border-white/10 text-neutral-300 leading-relaxed max-w-2xl">
-          That&apos;s the shape of the shift: from a category to a buyer, from a
-          vibe to an offer, from someday to a dated plan.
+          {copy.featured.takeaway}
         </p>
       </div>
       <div className="grid sm:grid-cols-2 gap-6">
-        <div className="rounded-3xl bg-white border border-black/10 p-8 reveal-fade">
-          <span className="font-mono-eyebrow text-[10px] uppercase text-neutral-500">
-            Before → After · Tiny SaaS
-          </span>
-          <p className="mt-4 text-neutral-400 line-through">
-            &quot;Something with agents for research?&quot;
-          </p>
-          <p className="mt-2 text-lg font-semibold">
-            &quot;A competitor-watch agent for boutique brand strategists —
-            $19/mo, waitlist live in week 1.&quot;
-          </p>
-        </div>
-        <div className="rounded-3xl bg-white border border-black/10 p-8 reveal-fade">
-          <span className="font-mono-eyebrow text-[10px] uppercase text-neutral-500">
-            Before → After · Productized service
-          </span>
-          <p className="mt-4 text-neutral-400 line-through">
-            &quot;AI audits, maybe? For startups?&quot;
-          </p>
-          <p className="mt-2 text-lg font-semibold">
-            &quot;A fixed-scope &apos;agent-ready UX audit&apos; for seed-stage
-            SaaS teams — $1.5k flat, pitched to five founders in week 2.&quot;
-          </p>
-        </div>
+        {[copy.saas, copy.service].map(({ eyebrow, before, after }, index) => (
+          <div key={index} className="rounded-3xl bg-white border border-black/10 p-8 reveal-fade">
+            <span className="font-mono-eyebrow text-[10px] uppercase text-neutral-500">{eyebrow}</span>
+            <p className="mt-4 text-neutral-400 line-through">{before}</p>
+            <p className="mt-2 text-lg font-semibold">{after}</p>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -599,35 +314,10 @@ export const TEACHER_PICTURE_DARE = (
   />
 );
 
-export const TEACHER_BODY_DARE = (
-  <>
-    <p>
-      I&apos;m a product designer. For most of my career that meant making other
-      people&apos;s products work — until I decided to find out whether design
-      skill alone could carry a product of its own.
-    </p>
-    <p>
-      It could. Without becoming an engineer, I&apos;ve built and shipped
-      multiple AI-native products and agentic workflows solo — and broken down
-      78 more ideas in public at weekendmvp.app. Every one of them started the
-      same way: one buyer, one workflow, one designed agentic flow.
-    </p>
-    <p>
-      Watching other designers circle the same transition, I kept seeing the
-      same three traps — and the same fix. Not more tutorials. A decision, made
-      with a method. DARE is that method: the system I wish someone had handed
-      me at the start, compressed into 90 minutes and applied to your idea, not
-      a hypothetical one.
-    </p>
-    <p>
-      And I&apos;m in this for the long haul: DARE is the first of several
-      frameworks I&apos;m building for designers who want to become AI-native
-      founders.
-    </p>
-  </>
-);
-
-export function DareSeatSection({ formSlot }: { formSlot: React.ReactNode }) {
+export function DareSeatSection({ copy, formSlot }: {
+  copy: DareCopy["seatSection"];
+  formSlot: ReactNode;
+}) {
   return (
     <section
       id="seat"
@@ -641,18 +331,17 @@ export function DareSeatSection({ formSlot }: { formSlot: React.ReactNode }) {
           ></span>
           <span className="sr-only">Live:</span>
           <span className="font-mono-eyebrow text-[11px] uppercase text-neutral-300">
-            Save your seat
+            {copy.eyebrow}
           </span>
         </div>
         <h2 className="text-4xl md:text-5xl font-semibold tracking-tight">
-          One workshop. One decision.{" "}
+          {copy.title}{" "}
           <span className="accent-italic text-[#A7C0F2] font-normal">
-            Four weeks of momentum.
+            {copy.accent}
           </span>
         </h2>
         <p className="mt-4 text-neutral-300">
-          Grab your $29 seat. In 90 minutes you&apos;ll choose your direction
-          and leave with your 4-week plan.
+          {dareText(copy.body)}
         </p>
 
         {formSlot}

@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
+import { readDare, type DareSection } from "@/lib/landing/read-dare";
+import { PRICE_USD, STACK_VALUE_USD, WORKSHOP_DEADLINE, dareText, usd } from "@/lib/landing/dare-offer";
 
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { MotionEffects } from "@/components/marketing/MotionEffects";
@@ -17,19 +20,17 @@ import { WorkshopStickyBar } from "@/components/marketing/workshop/WorkshopStick
 
 import { DareSeatForm } from "./DareSeatForm";
 import {
-  WORKSHOP_DEADLINE,
   SCHEMA,
-  STATS,
-  TLDR_ITEMS,
-  MOVES,
-  VALUE_STACK,
-  TICKET_DETAILS,
-  TICKET_LINES,
   TIMEZONES,
-  TEACHER_CHIPS,
   TEACHER_PICTURE_DARE,
-  TEACHER_BODY_DARE,
+  DareHeading,
   DareHero,
+  dareMoves,
+  dareStats,
+  dareSummary,
+  dareTicketDetails,
+  dareTicketLines,
+  dareValueStack,
   DareDeliverableTeaser,
   DareProblemBody,
   DareProof,
@@ -52,42 +53,110 @@ import { SITE } from "@/lib/seo";
     [[TZ_*]]  local-time conversions
    ============================================================ */
 
-export const metadata: Metadata = {
-  title: {
-    absolute:
-      "DARE | Choose your AI product direction in 90 minutes · Live workshop for designers",
-  },
-  description:
-    "DARE Live: a 90-minute live working session for experienced designers. Choose one concrete AI/agentic product or AI-powered service and leave with a 4-week plan to move it into the real world. $29. Live on Zoom. Replay included.",
-  authors: [{ name: "John Iseghohi" }],
-  robots: { index: false, follow: false },
-  alternates: { canonical: "/dare" },
-  openGraph: {
-    type: "website",
-    url: "/dare",
-    title: "DARE | Choose your AI product direction in 90 minutes",
-    description:
-      "A 90-minute live working session for experienced designers. Choose one concrete AI product or AI-powered service and leave with a 4-week plan. $29. Replay included.",
-    images: [
-      {
-        url: `${SITE}/image/og-image.png`,
-        alt: "DARE Live, a workshop for designers becoming AI-native founders",
-        type: "image/png",
-        width: 1200,
-        height: 630,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "DARE | Choose your AI product direction in 90 minutes",
-    description:
-      "A 90-minute live working session for experienced designers. Choose one concrete AI product or AI-powered service and leave with a 4-week plan. $29. Replay included.",
-    images: [`${SITE}/image/og-image.png`],
-  },
-};
+async function getDare() {
+  "use cache";
+  return readDare();
+}
 
-export default function DarePage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const { copy } = await getDare();
+  return {
+    title: { absolute: dareText(copy.seoTitle) },
+    description: dareText(copy.seoDescription),
+    authors: [{ name: "John Iseghohi" }],
+    robots: { index: false, follow: false },
+    alternates: { canonical: "/dare" },
+    openGraph: {
+      type: "website",
+      url: "/dare",
+      title: dareText(copy.socialTitle),
+      description: dareText(copy.socialDescription),
+      images: [
+        {
+          url: `${SITE}/image/og-image.png`,
+          alt: "DARE Live, a workshop for designers becoming AI-native founders",
+          type: "image/png",
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: dareText(copy.socialTitle),
+      description: dareText(copy.socialDescription),
+      images: [`${SITE}/image/og-image.png`],
+    },
+  };
+}
+
+const priceDisplay = <><span className="text-[#A7C0F2]">$</span>{PRICE_USD}</>;
+
+function renderSection(section: DareSection) {
+  const { discriminant, value } = section;
+  switch (discriminant) {
+    case "deliverableTeaser":
+      return <DareDeliverableTeaser copy={value} />;
+    case "stats":
+      return <WorkshopStats eyebrow={value.eyebrow} italicClass="text-[#A7C0F2]" items={dareStats(value)} />;
+    case "problem":
+      return (
+        <WorkshopProblem
+          revealClass="reveal-fade"
+          headingWeight="semibold"
+          bodyClass="text-lg text-neutral-700"
+          heading={<DareHeading title={value.title} accent={value.accent} />}
+        >
+          <DareProblemBody copy={value} />
+        </WorkshopProblem>
+      );
+    case "tldr":
+      return (
+        <WorkshopTldr
+          headingWeight="semibold"
+          textColorClass="text-neutral-700"
+          checkColorClass="text-[#1D4ED8]"
+          heading={<DareHeading title={value.title} accent={value.accent} />}
+          items={dareSummary(value)}
+        />
+      );
+    case "moves":
+      return (
+        <WorkshopMoves
+          headingWeight="semibold"
+          bodyTextClass="text-lg text-neutral-600"
+          revealClass="reveal-fade"
+          heading={<DareHeading title={value.title} accent={value.accent} />}
+          items={dareMoves(value)}
+        />
+      );
+    case "valueStack":
+      return (
+        <WorkshopValueStack
+          eyebrow={value.eyebrow}
+          eyebrowColorClass="text-neutral-600"
+          headingWeight="semibold"
+          itemBodyColorClass="text-neutral-600"
+          valueChipColorClass="text-neutral-500"
+          heading={<DareHeading title={value.title} accent={value.accent} />}
+          items={dareValueStack(value)}
+          totalValue={usd(STACK_VALUE_USD)}
+          payValue={priceDisplay}
+          bonusPillClass="border-[#1E40AF]/40 text-[#1E40AF]"
+          strikeDecorationClass="decoration-[#1D4ED8]/70"
+          ctaHref="#seat"
+          ctaLabel="Save my seat · $29"
+          totalPreamble={value.preamble}
+        />
+      );
+    case "proof":
+      return <DareProof copy={value} />;
+  }
+}
+
+export default async function DarePage() {
+  const { copy, sections, stack } = await getDare();
+  const { countdownCard, ticket, timezones, teacher } = copy;
   return (
     <div
       className={`${newsreader.variable} theme-cream overflow-x-hidden bg-[#fcfaf7] text-[#1a1a1a]`}
@@ -97,120 +166,30 @@ export default function DarePage() {
       <MotionEffects effects={["reveal", "smooth-anchor"]} />
 
       <main>
-        <DareHero />
+        <DareHero copy={copy.hero} />
 
         <WorkshopCountdownCard
           deadline={WORKSHOP_DEADLINE}
-          eyebrow="DARE Live starts in"
+          eyebrow={countdownCard.eyebrow}
           timezone="[[TZ]]"
           dateLabel="[[DATE]]"
           timeLabel="[[TIME]]"
           italicClass="text-[#A7C0F2]"
-          meta="90 minutes live · working session, not a lecture · Q&A after"
-          footnote="One direction chosen. Four weeks mapped. In one sitting."
+          meta={dareText(countdownCard.meta)}
+          footnote={countdownCard.footnote}
           sectionClass="px-5 pb-16 md:pb-20 max-w-5xl mx-auto"
         />
 
-        <DareDeliverableTeaser />
-
-        <WorkshopStats
-          eyebrow="Why listen to me"
-          italicClass="text-[#A7C0F2]"
-          items={STATS}
-        />
-
-        <WorkshopProblem
-          revealClass="reveal-fade"
-          headingWeight="semibold"
-          bodyClass="text-lg text-neutral-700"
-          heading={
-            <>
-              You&apos;re a strong designer with vague AI ideas…{" "}
-              <span className="accent-italic text-[#1D4ED8] font-normal">
-                and vague doesn&apos;t ship.
-              </span>
-            </>
-          }
-        >
-          <DareProblemBody />
-        </WorkshopProblem>
-
-        <WorkshopTldr
-          headingWeight="semibold"
-          textColorClass="text-neutral-700"
-          checkColorClass="text-[#1D4ED8]"
-          heading={
-            <>
-              Everything you need to know,{" "}
-              <span className="accent-italic text-[#1D4ED8] font-normal">
-                in ten seconds.
-              </span>
-            </>
-          }
-          items={TLDR_ITEMS}
-        />
-
-        <WorkshopMoves
-          headingWeight="semibold"
-          bodyTextClass="text-lg text-neutral-600"
-          revealClass="reveal-fade"
-          heading={
-            <>
-              Three moves.{" "}
-              <span className="accent-italic text-[#1D4ED8] font-normal">
-                One direction by the end.
-              </span>
-            </>
-          }
-          items={MOVES}
-        />
-
-        <WorkshopValueStack
-          eyebrow="What's included"
-          eyebrowColorClass="text-neutral-600"
-          headingWeight="semibold"
-          itemBodyColorClass="text-neutral-600"
-          valueChipColorClass="text-neutral-500"
-          heading={
-            <>
-              Six things in your seat.{" "}
-              <span className="accent-italic text-[#1D4ED8] font-normal">
-                ~$500 of value.
-              </span>
-            </>
-          }
-          items={VALUE_STACK}
-          totalValue="$502"
-          payValue={
-            <>
-              <span className="text-[#A7C0F2]">$</span>29
-            </>
-          }
-          bonusPillClass="border-[#1E40AF]/40 text-[#1E40AF]"
-          strikeDecorationClass="decoration-[#1D4ED8]/70"
-          ctaHref="#seat"
-          ctaLabel="Save my seat · $29"
-          totalPreamble={
-            <>
-              Everything above exists for one outcome: you choose one direction
-              and leave with a 4-week plan to move it into the real world.
-            </>
-          }
-        />
-
-        <DareProof />
+        {sections.map((section) => <Fragment key={section.discriminant}>{renderSection(section)}</Fragment>)}
 
         <WorkshopTicket
-          eyebrow="Here's your ticket"
+          eyebrow={ticket.eyebrow}
           eyebrowColorClass="text-neutral-600"
           headingWeight="semibold"
           heading={
             <>
-              90 minutes.{" "}
-              <span className="accent-italic text-[#1D4ED8] font-normal">
-                $29.
-              </span>{" "}
-              Walk out with a direction.
+              <DareHeading title={ticket.title} accent={ticket.accent} />{" "}
+              {ticket.ending}
             </>
           }
           stubLabel="Admission · DARE Live №01"
@@ -225,33 +204,24 @@ export default function DarePage() {
           }
           brandSub={
             <>
-              A working session with John Iseghohi.{" "}
+              {ticket.intro}{" "}
               <span className="accent-italic text-[#1E40AF]">
-                Choose your direction. Map your four weeks.
+                {ticket.introAccent}
               </span>
             </>
           }
           brandSubColorClass="text-neutral-600"
-          details={TICKET_DETAILS}
+          details={dareTicketDetails(ticket)}
           detailLabelColorClass="text-neutral-500"
           includedEyebrowColorClass="text-neutral-500"
-          includedLines={TICKET_LINES}
-          footerPrice={
-            <>
-              <span className="text-[#A7C0F2]">$</span>29
-            </>
-          }
+          includedLines={dareTicketLines(stack)}
+          footerPrice={priceDisplay}
           footerValueLabel={
             <>
-              <span className="line-through">$502</span> value · 2 bonuses (live)
+              <span className="line-through">{usd(STACK_VALUE_USD)}</span> value · 2 bonuses (live)
             </>
           }
-          footerNote={
-            <>
-              One direction chosen live. A 4-week path to shipping and earning
-              from it.
-            </>
-          }
+          footerNote={ticket.note}
           ctaHref="#seat"
           ctaLabel="Save my seat · $29"
           fineprint="DARE·26·S0001 · Bring one idea"
@@ -263,22 +233,14 @@ export default function DarePage() {
           cityColorClass="text-[#1E40AF]"
           dateColorClass="text-neutral-500"
           introColorClass="text-neutral-600"
-          heading={
-            <>
-              Here&apos;s when it lands{" "}
-              <span className="accent-italic text-[#1D4ED8] font-normal">
-                where you are.
-              </span>
-            </>
-          }
+          heading={<DareHeading title={timezones.title} accent={timezones.accent} />}
           intro={
             <>
-              DARE Live runs{" "}
+              {timezones.intro}{" "}
               <strong className="font-semibold text-[#1a1a1a]">
                 [[TIME]] [[TZ]]
               </strong>{" "}
-              on [[DATE]]. Find your local time below. Can&apos;t make it live?
-              The replay hits your inbox the same day.
+              {timezones.remainder}
             </>
           }
           rows={TIMEZONES}
@@ -286,18 +248,18 @@ export default function DarePage() {
 
         <WorkshopTeacher
           nameWeight="semibold"
-          name="John Iseghohi."
-          role="Product Designer · Founder, Weekend MVP"
+          name={teacher.name}
+          role={teacher.role}
           roleColorClass="text-[#1E40AF]"
           bodyColorClass="text-neutral-700"
           chipColorClass="text-neutral-600"
-          chips={TEACHER_CHIPS}
+          chips={[teacher.yearsChip, teacher.shippedChip, teacher.frameworkChip]}
           pictureSlot={TEACHER_PICTURE_DARE}
         >
-          {TEACHER_BODY_DARE}
+          {teacher.paragraphs.map((paragraph, index) => <p key={index}>{dareText(paragraph)}</p>)}
         </WorkshopTeacher>
 
-        <DareSeatSection formSlot={<DareSeatForm />} />
+        <DareSeatSection copy={copy.seatSection} formSlot={<DareSeatForm />} />
       </main>
 
       <WorkshopStickyBar
