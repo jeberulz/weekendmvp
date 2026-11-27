@@ -13,7 +13,8 @@
     "caption": "List five problems you've already solved. Circle one.",
     "form": {
       "submitLabel": "Send me Day 1",
-      "finePrint": "Day 1 arrives in a few minutes. Unsubscribe anytime."
+      "finePrint": "Day 1 arrives in a few minutes.",
+      "unsubscribeLine": "Unsubscribe anytime."
     }
   },
   "sections": [
@@ -140,7 +141,8 @@
     "body": "Five days from now you'll know whether your idea is worth a weekend, or whether to drop it and pick a better one. Either way, you'll know.",
     "form": {
       "submitLabel": "Send me Day 1",
-      "finePrint": "Free. Unsubscribe anytime."
+      "finePrint": "Free.",
+      "unsubscribeLine": "Unsubscribe anytime."
     }
   }
 }

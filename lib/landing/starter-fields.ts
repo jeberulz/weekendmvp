@@ -5,6 +5,7 @@ const section = { eyebrow: text("Eyebrow"), title: text("Heading"), emphasis: te
 const form = fields.object({
   submitLabel: text("Subscribe button"),
   finePrint: text("Fine print"),
+  unsubscribeLine: text("Unsubscribe line"),
 }, { label: "Subscription form" });
 const day = (number: number) => fields.object({
   title: text("Title"),
