@@ -86,3 +86,12 @@ Dare now reads editorial copy and metadata from Keystatic and still prerenders. 
 
 The production HTML matched the reference section tree, robots tag and JSON-LD. The served sitemap contained Shipable and Live while excluding Dare. Search and social metadata matched. Both viewport captures matched pixel for pixel. The app and Convex typechecks, lint, production build and trace checks passed.
 An operator saved, reloaded and restored the Dare singleton in the local browser smoke. The first run stalled during teardown after its assertions passed. The rerun exited normally. The full suite passed 7,203 tests.
+
+## PR 6 · Live hub migration
+
+Local branch `codex/wp104-live-hub-cms` stacks on the Dare draft. The twelve screenshots and production HTML fixture came from main at `692b7b3f` before the reader switch.
+
+The hub still renders per request. Keystatic supplies metadata, editorial blocks and FAQ wording. The host sentence stays behind the existing confirmation flag, the FAQ resolves time and next-session tokens from configuration, and the upcoming cards keep their clock, inventory, seat labels and CTAs. The route has no page JSON-LD.
+
+The production HTML matched the published section tree, links and metadata. All twelve screenshots across the six supported time and inventory scenarios matched pixel for pixel. The production build and server trace checks passed, with the singleton in the route artifact. The existing live tests passed without edits.
+The local browser saved and reloaded all fields, and the test restored the original singleton. Both typechecks and lint passed. The full suite passed 7,205 tests.
