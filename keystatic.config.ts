@@ -1,4 +1,5 @@
 import { config, singleton } from "@keystatic/core";
+import { starterKitFields } from "@/lib/landing/starter-kit-fields";
 import { starterFields } from "@/lib/landing/starter-fields";
 import { builderGuideFields } from "@/lib/landing/builder-guide-fields";
 
@@ -16,6 +17,12 @@ export function landingEditorConfig(mode: StorageMode) {
       : { kind: "local" },
     ui: { brand: { name: "Weekend MVP" } },
     singletons: {
+      "starter-kit": singleton({
+        label: "Starter Kit",
+        path: prefix + "starter-kit/",
+        format: "json",
+        schema: starterKitFields,
+      }),
       "starter-5-to-9": singleton({
         label: "5-to-9 Starter",
         path: prefix + "starter-5-to-9/",

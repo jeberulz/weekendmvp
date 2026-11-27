@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
 import { readFileSync } from "node:fs";
-import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 
@@ -109,8 +108,8 @@ describe("5-to-9 Starter landing page", () => {
     expect(renderPage()).toContain('href="/guides/5-to-9-builder"');
   });
 
-  test("links to both pages from the homepage, footer and Starter Kit", () => {
-    const kit = renderToStaticMarkup(createElement(StarterKitPage));
+  test("links to both pages from the homepage, footer and Starter Kit", async () => {
+    const kit = renderToStaticMarkup(await StarterKitPage());
     const footer = readFileSync("components/layout/SiteFooter.tsx", "utf8");
     const homepageHrefs = START_HERE.map(({ href }) => href);
     for (const href of ["/5-to-9-starter", "/guides/5-to-9-builder"]) {

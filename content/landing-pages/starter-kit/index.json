@@ -1,0 +1,248 @@
+{
+  "seoTitle": "Weekend MVP Starter Kit | Build your product in 48 hours",
+  "seoDescription": "The exact 48-hour plan, templates, and AI prompts to build and launch your weekend MVP. Created by John Iseghohi.",
+  "socialDescription": "Follow the exact 48-hour plan, templates, and AI prompts to build and launch your weekend MVP. Created by John Iseghohi.",
+  "hero": {
+    "heading": "Weekend MVP Starter Kit",
+    "navLabel": "Introduction",
+    "intro": "Ship a tiny product in 48 hours that you can",
+    "demo": "demo",
+    "share": "share",
+    "collect": "collect emails",
+    "outcomeTail": "for.",
+    "relatedLead": "Still testing an idea? Try",
+    "starterLabel": "The 5-to-9 Starter",
+    "relatedJoin": "or read",
+    "builderLabel": "The 5-to-9 Builder",
+    "checklistHeading": "By Sunday night you’ll have:",
+    "deliverables": [
+      "A live link or working demo",
+      "A simple landing page + waitlist",
+      "A 15–30 sec demo video",
+      "10 people invited to try it via DM outreach",
+      "A LinkedIn post driving signups"
+    ]
+  },
+  "rules": {
+    "heading": "The rules (this is what makes it shippable)",
+    "navLabel": "The Rules",
+    "includeHeading": "Must Include",
+    "excludeHeading": "Must NOT Include",
+    "include": [
+      {
+        "strong": "One user type",
+        "rest": "(be specific)"
+      },
+      {
+        "strong": "One core action",
+        "rest": "(one job)"
+      },
+      {
+        "strong": "One clear output",
+        "rest": "(what they get)"
+      }
+    ],
+    "exclude": [
+      "login/accounts",
+      "payment",
+      "complex dashboards",
+      "\"perfect UI\""
+    ],
+    "screensHeading": "The 3-screen MVP (always)",
+    "screens": {
+      "landing": {
+        "title": "Landing page",
+        "sub": "Promise + Waitlist"
+      },
+      "input": {
+        "title": "Input screen",
+        "sub": "A short form"
+      },
+      "output": {
+        "title": "Output screen",
+        "sub": "Result + Join waitlist"
+      }
+    }
+  },
+  "scorecard": {
+    "heading": "Pick a shippable idea",
+    "intro": "Use this scorecard. Pick the highest total. Score each 1–5.",
+    "navLabel": "Pick an Idea",
+    "questions": [
+      "Can I build the core flow in 8–12 hours?",
+      "Can I demo it in 15 seconds?",
+      "Do I know where to find 10 target users?",
+      "Does it solve a real “annoying” problem?"
+    ],
+    "note": "\"If your idea scores low on 'demo in 15 seconds', kill it or shrink it.\""
+  },
+  "spec": {
+    "heading": "Write a one-page MVP spec",
+    "intro": "Fill this in. No fancy doc needed. Keep it to one page.",
+    "navLabel": "Write a Spec",
+    "nameLabel": "MVP Name",
+    "customerLabel": "Customer",
+    "promiseLabel": "The Promise",
+    "metricLabel": "Success Metric for this weekend",
+    "metrics": [
+      "10 emails collected",
+      "5 people complete the flow",
+      "3 people reply “I’d use this”"
+    ],
+    "promptHeading": "AI Prompt: Generate your spec",
+    "prompt": "\"Act as a Product Manager. Help me write a one-page spec for my Weekend MVP. My idea is: [DESCRIBE YOUR IDEA]. Generate: 1. A short, punchy MVP Name. 2. A specific target Customer. 3. A one-sentence Promise. 4. The single Core Action. 5. The primary Output. 6. A realistic Success Metric for a 48-hour build. Keep it brief and high-impact.\"",
+    "advancedHeading": "Advanced Prompt: Full Spec Doc",
+    "advancedPrompt": "\"I am building a Weekend MVP. Based on the concept [PASTE CONCEPT], generate a comprehensive one-page spec. Include: User Personas, Core User Story, Technical Constraints (No Auth/No Payments), 3-Screen Architecture (Landing/Input/Output), and a 48-hour build roadmap. Structure the output as a clean markdown document ready for a developer.\""
+  },
+  "plan": {
+    "heading": "The 48-hour plan",
+    "navLabel": "48-Hour Plan",
+    "fridayHeading": "Friday night (30–45 mins)",
+    "fridayTasks": [
+      "Pick the idea (scorecard)",
+      "Write the one-page spec",
+      "Draft landing page copy",
+      "Decide your tool stack"
+    ],
+    "saturdayHeading": "Saturday (Build Day)",
+    "saturdayTasks": [
+      {
+        "label": "Hour 1: Setup",
+        "body": "Create project, define 3 screens, basic layout."
+      },
+      {
+        "label": "Hours 2–5: Core Flow",
+        "body": "Build input form, output page, and transformation logic."
+      },
+      {
+        "label": "Hour 6–8: Launch",
+        "body": "Add waitlist capture, deploy, and test on mobile."
+      }
+    ],
+    "sundayHeading": "Sunday (Distribution Day)",
+    "sundayTasks": [
+      "Create demo assets (15s video)",
+      "Outreach: DM 10 people to test",
+      "LinkedIn: Post your build story"
+    ]
+  },
+  "resources": [
+    {
+      "discriminant": "ideas",
+      "value": {
+        "heading": "{count} shippable MVP ideas",
+        "navLabel": "{count} MVP Ideas",
+        "ideas": [
+          {
+            "title": "Meeting Minutes Cleaner",
+            "description": "Input: messy notes → Output: clean summary + action items"
+          },
+          {
+            "title": "Resume Bullet Rewriter",
+            "description": "Input: JD + current bullet → Output: improved bullet"
+          },
+          {
+            "title": "Cold DM Writer",
+            "description": "Input: profile + goal → Output: 3 DM variations"
+          },
+          {
+            "title": "Creator Hook Generator",
+            "description": "Input: topic + audience → Output: 20 scroll-stopping hooks"
+          },
+          {
+            "title": "“What Should I Build?” Idea Narrower",
+            "description": "Input: skills + interests → Output: 3 weekend MVP ideas + scope"
+          },
+          {
+            "title": "Gym Routine Generator",
+            "description": "Input: days + equipment → Output: simple 7-day workout plan"
+          },
+          {
+            "title": "Meal Plan From Ingredients",
+            "description": "Input: fridge contents → Output: 3 simple meals + shopping list"
+          },
+          {
+            "title": "Budget Splitter for Couples",
+            "description": "Input: monthly expenses → Output: who owes what + clean breakdown"
+          },
+          {
+            "title": "Interview Answer Builder (STAR)",
+            "description": "Input: role + experience → Output: STAR method answer draft"
+          },
+          {
+            "title": "Personal Brand Bio Generator",
+            "description": "Input: role + proof → Output: LinkedIn headline + bio + about section"
+          }
+        ]
+      }
+    },
+    {
+      "discriminant": "prompts",
+      "value": {
+        "heading": "{count} Build Prompts",
+        "navLabel": "{count} Build Prompts",
+        "intro": "Choose the idea you want to build and copy the prompt to dive deep into the implementation details with AI.",
+        "prompts": [
+          {
+            "title": "Meeting Minutes Cleaner",
+            "text": "\"Act as an MVP Architect. I'm building a Meeting Minutes Cleaner. Customer: Busy Managers. Pain: Hours spent re-writing messy notes. Promise: Clean summary in 60 seconds. Core Action: Paste raw notes. Output: Action items + key decisions. Help me define the technical logic to parse text and handle edge cases like incomplete sentences.\""
+          },
+          {
+            "title": "Resume Bullet Rewriter",
+            "text": "\"Act as a Career Coach. I'm building a Resume Bullet Rewriter. Customer: Job seekers. Pain: Vague resume bullets that don't land interviews. Promise: Metrics-driven bullets in seconds. Core Action: Paste JD + current bullet. Output: Improved bullet with keywords. Give me 10 specific 'Action Verbs' and metrics patterns the logic should prioritize.\""
+          },
+          {
+            "title": "Cold DM Writer",
+            "text": "\"Act as a Sales Strategist. I'm building a Cold DM Writer. Customer: Freelancers/Sellers. Pain: High rejection rates from boring DMs. Promise: 3 high-conversion variations. Core Action: Paste recipient profile + goal. Output: 3 personalized DMs. Help me structure the prompt logic to ensure the output is concise, non-spammy, and includes a clear CTA.\""
+          },
+          {
+            "title": "Creator Hook Generator",
+            "text": "\"Act as a Content Viral Specialist. I'm building a Creator Hook Generator. Customer: Content Creators. Pain: Low engagement on social posts. Promise: 20 scroll-stopping hooks. Core Action: topic + audience. Output: Hooks + 5 angles. Create a library of 5 'Hook Frameworks' (e.g., The Contrarian, The Mystery) that the generator should use.\""
+          },
+          {
+            "title": "Idea Narrower",
+            "text": "\"Act as an MVP Coach. I'm building an Idea Narrower. Customer: Want-to-be builders. Pain: Decision paralysis. Promise: 3 shippable ideas + scope. Core Action: Skills + interests. Output: Ideas + weekend plan. Help me design a scoring system that automatically ranks ideas based on 'Shippability' and 'Market Need'.\""
+          },
+          {
+            "title": "Gym Routine Generator",
+            "text": "\"Act as a Personal Trainer. I'm building a Gym Routine Generator. Customer: Beginners. Pain: Intimidated by the gym/equipment. Promise: 7-day plan in 30 seconds. Core Action: Days + equipment. Output: Simple routine. Help me define the mapping logic for equipment (e.g., if 'Dumbbells only' → show 'DB Goblet Squats' instead of 'Barbell').\""
+          },
+          {
+            "title": "Meal Plan Generator",
+            "text": "\"Act as a Nutritionist. I'm building a Meal Plan From Ingredients. Customer: Busy parents. Pain: Food waste + 'what's for dinner?' stress. Promise: 3 meals + shopping list. Core Action: Fridge contents. Output: Meal plan. Help me create a simple data structure to handle common ingredient substitutions.\""
+          },
+          {
+            "title": "Budget Splitter",
+            "text": "\"Act as a Financial Planner. I'm building a Budget Splitter for Couples. Customer: Modern couples. Pain: Awkward money conversations. Promise: Fair split in 1 minute. Core Action: Monthly expenses. Output: Clean breakdown. Define the 'Fair Split' algorithm (e.g., proportional to income vs. 50/50) and how to present it without friction.\""
+          },
+          {
+            "title": "STAR Answer Builder",
+            "text": "\"Act as an Interview Coach. I'm building an Interview Answer Builder. Customer: Candidates. Pain: Rambling during behavioral questions. Promise: STAR answer draft. Core Action: Role + experience. Output: Structured answer. Help me create the 'Transformation Logic' that takes a raw story and sorts it into Situation, Task, Action, and Result.\""
+          },
+          {
+            "title": "Personal Brand Bio Generator",
+            "text": "\"Act as a Personal Branding Expert. I'm building a Bio Generator. Customer: Professionals. Pain: Invisible or boring LinkedIn profiles. Promise: Headline + Bio in seconds. Core Action: Role + proof. Output: Full LinkedIn section. Define 3 'Brand Archetypes' (e.g., The Expert, The Builder, The Strategist) for the generator to use.\""
+          }
+        ]
+      }
+    },
+    {
+      "discriminant": "templates",
+      "value": {
+        "heading": "Templates & Scripts",
+        "navLabel": "Templates & Scripts",
+        "wireframeHeading": "Landing Page Wireframe",
+        "waitlistLabel": "Join the Waitlist",
+        "outreachHeading": "Tester Outreach Script",
+        "outreachLabel": "// DM to potential tester",
+        "outreachScript": "\"Hey [Name], quick one. I’m building a tiny tool this weekend for [problem]. Can I send you a 15-second demo and ask 2 questions?\""
+      }
+    }
+  ],
+  "finalCta": {
+    "heading": "Ready to build your Weekend MVP?",
+    "body": "Take the next step and book a 1:1 sprint to ship your project in 48 hours.",
+    "bookLabel": "Book a Sprint",
+    "signupLabel": "Get the Starter Kit"
+  }
+}

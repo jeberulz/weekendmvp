@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 
+import { readStarterKit, type StarterKit } from "@/lib/landing/read-starter-kit";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { SignupCta } from "@/components/marketing/SignupCta";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
@@ -27,39 +28,41 @@ import {
   TemplatesSection,
 } from "./_sections";
 
-const TITLE = "Weekend MVP Starter Kit | Build your product in 48 hours";
-const DESCRIPTION =
-  "The exact 48-hour plan, templates, and AI prompts to build and launch your weekend MVP. Created by John Iseghohi.";
-const OG_DESCRIPTION =
-  "Follow the exact 48-hour plan, templates, and AI prompts to build and launch your weekend MVP. Created by John Iseghohi.";
+async function loadStarterKit() {
+  "use cache";
+  return readStarterKit();
+}
 
-export const metadata: Metadata = {
-  title: { absolute: TITLE },
-  description: DESCRIPTION,
-  authors: [{ name: "John Iseghohi" }],
-  alternates: { canonical: "/starter-kit" },
-  openGraph: {
-    type: "website",
-    url: `${SITE}/starter-kit`,
-    title: TITLE,
-    description: OG_DESCRIPTION,
-    images: [
-      {
-        url: `${SITE}/image/og-image.png`,
-        alt: "Weekend MVP — ship your product in 48 hours",
-        type: "image/png",
-        width: 1200,
-        height: 630,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: TITLE,
-    description: OG_DESCRIPTION,
-    images: [`${SITE}/image/og-image.png`],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { seoTitle, seoDescription, socialDescription } = await loadStarterKit();
+  return {
+    title: { absolute: seoTitle },
+    description: seoDescription,
+    authors: [{ name: "John Iseghohi" }],
+    alternates: { canonical: "/starter-kit" },
+    openGraph: {
+      type: "website",
+      url: `${SITE}/starter-kit`,
+      title: seoTitle,
+      description: socialDescription,
+      images: [
+        {
+          url: `${SITE}/image/og-image.png`,
+          alt: "Weekend MVP — ship your product in 48 hours",
+          type: "image/png",
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seoTitle,
+      description: socialDescription,
+      images: [`${SITE}/image/og-image.png`],
+    },
+  };
+}
 
 const STARTER_KIT_SCHEMA = buildGraph(
   personSchema(),
@@ -92,7 +95,16 @@ const STARTER_KIT_SCHEMA = buildGraph(
   },
 );
 
-export default function StarterKitPage() {
+function renderResource(resource: StarterKit["resources"][number]) {
+  switch (resource.discriminant) {
+    case "ideas": return <Step4Ideas key={resource.discriminant} resource={resource} />;
+    case "prompts": return <Step5Prompts key={resource.discriminant} resource={resource} />;
+    case "templates": return <TemplatesSection key={resource.discriminant} resource={resource} />;
+  }
+}
+
+export default async function StarterKitPage() {
+  const { hero, rules, scorecard, spec, plan, resources, finalCta, contents } = await loadStarterKit();
   return (
     <div className="bg-[#fcfaf7] text-[#1a1a1a] min-h-screen selection:bg-black/10 selection:text-black">
       <JsonLd schema={STARTER_KIT_SCHEMA} />
@@ -102,41 +114,38 @@ export default function StarterKitPage() {
       </Suspense>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <StarterKitShell>
-          <KitHero />
+        <StarterKitShell contents={contents}>
+          <KitHero copy={hero} />
 
           <div className="space-y-40">
-            <RulesSection />
-            <Step1Scorecard />
-            <Step2Spec />
-            <Step3Plan />
-            <Step4Ideas />
-            <Step5Prompts />
-            <TemplatesSection />
+            <RulesSection copy={rules} />
+            <Step1Scorecard copy={scorecard} />
+            <Step2Spec copy={spec} />
+            <Step3Plan copy={plan} />
+            {resources.map(renderResource)}
           </div>
 
           {/* Final CTA */}
           <section className="mt-40 p-12 bg-black rounded-[3rem] text-center">
             <h2 className="text-3xl font-medium text-white mb-6">
-              Ready to build your Weekend MVP?
+              {finalCta.heading}
             </h2>
             <p className="text-neutral-400 mb-10 max-w-sm mx-auto">
-              Take the next step and book a 1:1 sprint to ship your project in
-              48 hours.
+              {finalCta.body}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
               <NavExternalLink
                 href="https://cal.com/switchtoux/mvp-sprint"
                 className="inline-block px-10 py-4 bg-white text-black rounded-full font-semibold hover:bg-neutral-200 transition-all"
               >
-                Book a Sprint
+                {finalCta.bookLabel}
               </NavExternalLink>
               <SignupCta
                 buttonLocation="starter-kit-final-cta"
                 utmCampaign="starter-kit"
                 className="inline-block px-10 py-4 bg-white/10 border border-white/20 text-white rounded-full font-semibold hover:bg-white/20 transition-all"
               >
-                Get the Starter Kit
+                {finalCta.signupLabel}
               </SignupCta>
             </div>
           </section>

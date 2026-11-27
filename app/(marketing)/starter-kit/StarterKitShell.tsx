@@ -8,49 +8,12 @@ import { IconButton } from "@/components/primitives/IconButton";
 import { cn } from "@/lib/utils";
 
 type TocLink = { href: string; label: string };
-type TocGroup = { heading: string; headingClassName?: string; links: TocLink[] };
+export type KitContents = readonly [readonly TocLink[], readonly TocLink[], readonly TocLink[]];
 
-const TOC: TocGroup[] = [
-  {
-    heading: "The Framework",
-    headingClassName:
-      "text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-1",
-    links: [
-      { href: "#intro", label: "Introduction" },
-      { href: "#rules", label: "The Rules" },
-    ],
-  },
-  {
-    heading: "The Steps",
-    headingClassName:
-      "text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-1",
-    links: [
-      { href: "#step-1", label: "1. Pick an Idea" },
-      { href: "#step-2", label: "2. Write a Spec" },
-      { href: "#step-3", label: "3. 48-Hour Plan" },
-    ],
-  },
-  {
-    heading: "Resources",
-    headingClassName:
-      "text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-1",
-    links: [
-      { href: "#step-4", label: "4. 10 MVP Ideas" },
-      { href: "#step-5", label: "5. 10 Build Prompts" },
-      { href: "#templates", label: "Templates & Scripts" },
-    ],
-  },
-];
-
-const SECTION_IDS = [
-  "intro",
-  "rules",
-  "step-1",
-  "step-2",
-  "step-3",
-  "step-4",
-  "step-5",
-  "templates",
+const groupHeadings = [
+  { heading: "The Framework", headingClassName: "text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-1" },
+  { heading: "The Steps", headingClassName: "text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-1" },
+  { heading: "Resources", headingClassName: "text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-1" },
 ];
 
 /** Explore row ported from partials/nav-starter-kit.html (hrefs extensionless). */
@@ -73,7 +36,7 @@ const SCROLL_OFFSET = 140;
  * - table-of-contents scroll-spy (IntersectionObserver, -20%/-70% margins)
  * - smooth-scroll with fixed-header offset on sidebar link clicks
  */
-export function StarterKitShell({ children }: { children: React.ReactNode }) {
+export function StarterKitShell({ children, contents }: { children: React.ReactNode; contents: KitContents }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [activeId, setActiveId] = React.useState<string | null>(null);
 
@@ -90,12 +53,12 @@ export function StarterKitShell({ children }: { children: React.ReactNode }) {
       { root: null, rootMargin: "-20% 0px -70% 0px", threshold: 0 },
     );
 
-    for (const id of SECTION_IDS) {
-      const el = document.getElementById(id);
+    for (const { href } of contents.flat()) {
+      const el = document.getElementById(href.slice(1));
       if (el) observer.observe(el);
     }
     return () => observer.disconnect();
-  }, []);
+  }, [contents]);
 
   // Lock body scroll while the mobile sidebar is open.
   React.useEffect(() => {
@@ -198,10 +161,10 @@ export function StarterKitShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <nav className="space-y-1">
-            {TOC.map((group) => (
+            {groupHeadings.map((group, index) => (
               <React.Fragment key={group.heading}>
                 <p className={group.headingClassName}>{group.heading}</p>
-                {group.links.map((link) => {
+                {contents[index].map((link) => {
                   const active = activeId === link.href.slice(1);
                   return (
                     <a
