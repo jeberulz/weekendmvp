@@ -1,15 +1,17 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
+import { render, screen } from "@testing-library/react";
 
 // vi.mock factories are hoisted above top-level consts, so the stubs live
 // inside the factories (same pattern as five-to-nine-starter.test.ts).
+const searchState = vi.hoisted(() => ({ params: new URLSearchParams() }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => searchState.params,
 }));
 vi.mock("@/lib/fonts", () => ({
   newsreaderEditorial: { variable: "newsreader-test" },
@@ -19,6 +21,7 @@ vi.mock("@/components/forms/BeehiivSubscribeForm", async () => {
   return {
     // .test.ts files cannot use JSX in this repo, so the stub is createElement.
     BeehiivSubscribeForm: (props: {
+      automationId?: string;
       utmCampaign?: string;
       successHref?: string | null;
       submitLabel?: string;
@@ -28,7 +31,10 @@ vi.mock("@/components/forms/BeehiivSubscribeForm", async () => {
     }) =>
       React.createElement(
         "form",
-        { action: props.successHref ?? "" },
+        {
+          action: props.successHref ?? "",
+          "data-automation-id": props.automationId ?? "",
+        },
         React.createElement(
           "label",
           { htmlFor: "proof-email" },
@@ -53,6 +59,16 @@ vi.mock("@/components/forms/BeehiivSubscribeForm", async () => {
 import ProofOfWorkPage, {
   metadata,
 } from "../../app/(marketing)/proof-of-work/page";
+import { ProofSubscribedModal } from "../../app/(marketing)/proof-of-work/ProofSubscribedModal";
+import {
+  PROOF_OF_WORK_AUTOMATION_ID,
+  subscribeViaApi,
+} from "../../lib/beehiiv-client";
+
+afterEach(() => {
+  searchState.params = new URLSearchParams();
+  vi.unstubAllGlobals();
+});
 
 describe("Proof of Work landing page", () => {
   const html = renderToStaticMarkup(createElement(ProofOfWorkPage));
@@ -135,6 +151,57 @@ describe("Proof of Work landing page", () => {
     expect(submits).toHaveLength(2);
     const actions = html.match(/action="\/proof-of-work\?subscribed=true"/g) ?? [];
     expect(actions).toHaveLength(2);
+  });
+
+  it("passes the Proof of Work automation id to both forms", () => {
+    const ids = html.match(/data-automation-id="([^"]*)"/g) ?? [];
+    expect(ids).toHaveLength(2);
+    for (const id of ids) {
+      expect(id).toBe(
+        'data-automation-id="aut_de485adc-9924-4b55-a1b3-fa1b8599d6c0"',
+      );
+    }
+  });
+
+  it("subscribes through the Proof of Work automation", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      subscribeViaApi({
+        email: "test@example.com",
+        automationIds: [PROOF_OF_WORK_AUTOMATION_ID],
+        utmCampaign: "proof-of-work",
+        utmSource: "proof-of-work",
+      }),
+    ).resolves.toMatchObject({ ok: true });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/subscribe",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          email: "test@example.com",
+          automation_ids: ["aut_de485adc-9924-4b55-a1b3-fa1b8599d6c0"],
+          utm_campaign: "proof-of-work",
+          utm_source: "proof-of-work",
+        }),
+      }),
+    );
+  });
+
+  it("shows the download link and the real email subject after subscribing", async () => {
+    searchState.params = new URLSearchParams("subscribed=true");
+    render(createElement(ProofSubscribedModal));
+    const dialog = await screen.findByRole("dialog", undefined, {
+      timeout: 2000,
+    });
+    expect(dialog).toBeTruthy();
+    expect(screen.getByText("Your Proof of Work file is ready")).toBeTruthy();
+    const link = screen.getByRole("link", { name: "Open Proof of Work" });
+    expect(link.getAttribute("href")).toBe(
+      "https://proof-of-work-john-iseghohis-projects.vercel.app",
+    );
   });
 
   it("closes with the proof statement", () => {

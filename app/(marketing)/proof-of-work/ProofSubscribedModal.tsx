@@ -12,10 +12,9 @@ import { Icon } from "@/components/home/icons";
  * query string. Direct loads of /proof-of-work never render the dialog.
  * Must be rendered inside <Suspense> (uses useSearchParams).
  *
- * TODO-PROOF-AUTOMATION: the Proof of Work Beehiiv automation does not exist
- * yet, so no download email is sent today. Before launch, create the
- * automation, wire its id into the form (see _sections.tsx), and update this
- * modal with the real email subject line and the download URL.
+ * The download email is "Your Proof of Work file is ready", sent by the
+ * Proof of Work download automation. The modal also links the file directly,
+ * so the reader is not stuck waiting on the inbox.
  */
 export function ProofSubscribedModal() {
   const searchParams = useSearchParams();
@@ -96,6 +95,25 @@ export function ProofSubscribedModal() {
             folder for an email from Weekend MVP with your Proof of Work
             download link.
           </p>
+
+          <div className="mb-8 w-full rounded-[10px] border border-home-rule bg-home-paper p-6 text-left">
+            <p className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-home-orange-ink">
+              Search for this subject:
+            </p>
+            <p className="select-all text-sm font-medium text-home-ink">
+              Your Proof of Work file is ready
+            </p>
+          </div>
+
+          {/* Keep in sync with the download link in the Proof of Work automation email. */}
+          <a
+            href="https://proof-of-work-john-iseghohis-projects.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-3 w-full rounded-full bg-home-ink px-6 py-3 text-center text-sm font-semibold text-home-paper transition-colors hover:bg-home-orange-ink"
+          >
+            Open Proof of Work
+          </a>
 
           <div className="mb-8 flex items-start gap-3 rounded-[10px] bg-home-paper p-4 text-left">
             <svg
