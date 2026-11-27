@@ -20,7 +20,7 @@ function formatBuildAlongLabel(label: string) {
 }
 
 function IntroTitle({ title, emphasis }: { title: string; emphasis: string }) {
-  return <>{title} <Em>{emphasis}</Em></>;
+  return <>{`${title} `}<Em>{emphasis}</Em></>;
 }
 
 
@@ -49,7 +49,7 @@ function GuideForm({ placement, copy }: { placement: "hero" | "final"; copy: Sta
         buttonClassName="min-h-12 cursor-pointer whitespace-nowrap bg-home-orange-ink px-6 py-0 text-[15px] text-white duration-180 hover:bg-[#8f3f00] focus:ring-0 focus:ring-home-orange-ink disabled:cursor-wait"
       />
       <p className="text-[13px] leading-[1.6] text-home-ink-3">
-        {copy.finePrint}
+        {`${copy.finePrint} `}{copy.unsubscribeLine}
       </p>
     </div>
   );
@@ -97,7 +97,7 @@ export function GuideHero({ total, copy }: { total: number; copy: StarterEntry["
           </p>
           <GuideForm placement="hero" copy={copy.form} />
           <p className="max-w-[520px] border-t border-home-rule pt-[18px] text-sm leading-[1.6] text-home-ink-3">
-            {copy.bylineStart} <span className="font-mono text-[13px] text-home-ink">{total}</span>{" "}
+            {`${copy.bylineStart} `}<span className="font-mono text-[13px] text-home-ink">{total}</span>{" "}
             {copy.bylineEnd}
           </p>
         </div>
