@@ -54,6 +54,12 @@ The guide and CLI audit use the same Keystatic Reader. The page still prerenders
 
 The production visual gate passed at 375 and 1440 pixels in both locked and returning states. The built guide's JSON-LD matched the pre-switch script byte for byte. The full suite passed 7,194 tests, and typechecks, lint, production build, trace checks and guide audit passed. A local browser save and reload round-tripped the full singleton. The seed omits its optional empty hero label to match Keystatic's serializer.
 
+### PR 1 hosted review
+
+PR #350 passed the hosted quality job on the submitted Builder guide branch. The review identified two gaps for future content saves: live copy was compared with the migration snapshot, and whitespace in section labels could break lookup of their copy slots.
+
+The historical comparisons now use the frozen CMS input with the workshop switch explicitly off. The live guide tests check the rendered slots, metadata and subscription behavior against the current entry. A temporary edit changed metadata and prose, moved the first gated section and padded several structural labels. All 264 homepage tests passed, and the guide audit passed with its existing upsell warning. The original guide JSON was restored. Checklist section tokens now resolve for the same reordered sections as guide prose.
+
 ## PR 2 · Starter migration
 
 Local branch `codex/wp104-starter-cms` stacks on the verified builder guide migration. The Starter's two production screenshots, rendered section tree and JSON-LD were captured from main at `692b7b3f` before the Keystatic switch.
