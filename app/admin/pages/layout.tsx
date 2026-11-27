@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { Suspense, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { assertEditorialRoutesEnabled } from "@/lib/editorial/runtime/route-guard";
-import { requireLandingEditor } from "@/lib/landing/editor-server";
-import { LandingEditor } from "./keystatic";
 
 export const metadata: Metadata = {
   title: { absolute: "Page editor — Weekend MVP" },
@@ -10,16 +8,7 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
 };
 
-async function AuthorizedEditor() {
-  return <LandingEditor mode={await requireLandingEditor()} />;
-}
-
 export default function EditorLayout({ children }: { children: ReactNode }) {
   assertEditorialRoutesEnabled();
-  return (
-    <>
-      <Suspense fallback={null}><AuthorizedEditor /></Suspense>
-      {children}
-    </>
-  );
+  return children;
 }

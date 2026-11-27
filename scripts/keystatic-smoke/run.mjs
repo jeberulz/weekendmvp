@@ -83,7 +83,7 @@ async function checkRefusals() {
   await checkStatus(`/keystatic/singleton/${singleton}`, 404, operator);
   await checkStatus("/api/keystatic/github/oauth/callback", github ? 400 : 404);
   for (const token of [undefined, member]) {
-    for (const path of ["/admin/pages", `/admin/pages/singleton/${singleton}`]) {
+    for (const path of ["/admin/pages", "/admin/pages/enhance", `/admin/pages/singleton/${singleton}`]) {
       const response = await checkStatus(path, 404, token);
       assert.match(response.headers.get("cache-control") || "", /no-store/);
       assert.match(response.headers.get("x-robots-tag") || "", /noindex/);
@@ -197,6 +197,10 @@ async function checkEditor(browser) {
     assert(editorHrefs.includes("/admin/pages/singleton/" + singleton));
     assert(editorHrefs.every((href) => !/^\/keystatic(?:\/|$)/.test(href)));
     assert.deepEqual(resourceViolations, [], "CSP blocked editor resources");
+    await page.goto(origin + "/admin/pages/enhance", { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("main h1", { visible: true });
+    assert.equal(await page.$eval("main h1", (heading) => heading.textContent), "Enhance with AI");
+    assert.equal(await page.$eval("main button[type=submit]", (button) => button.disabled), true);
   } finally {
     const after = await readFile(fixtureFile, "utf8");
     if (after !== original) {

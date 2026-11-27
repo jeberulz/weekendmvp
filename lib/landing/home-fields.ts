@@ -72,6 +72,16 @@ export const homeFields = {
     title, letter: fields.array(prose("Paragraph"), { label: "Letter", validation: { length: { min: 1 } } }),
     biography: text("Author line"), link: linkLabel,
   }, { label: "Founder note" }),
+  additionalSections: fields.blocks({
+    editorialNote: { label: "Editorial note", schema: card },
+    checklist: {
+      label: "Checklist",
+      schema: fields.object({
+        title,
+        items: fields.array(prose("Checklist item"), { label: "Items", validation: { length: { min: 1 } } }),
+      }),
+    },
+  }, { label: "Optional sections before the closing call" }),
   finalCall: fields.object({
     title, accent, signUp, ownIdea: text("Own-idea prompt"),
     faqs: fields.array(fields.object({ question: text("Question"), answer: prose("Answer") }), {

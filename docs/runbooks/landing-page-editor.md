@@ -54,6 +54,10 @@ Select **Build-Along** to edit the session description, agenda wording, included
 
 Select **Homepage** for the eleven sections, search copy, and the questions and answers shown on the page. Page copy and FAQ structured data use the same entries. Keep `{ideaCount}` in the search title and description, and `{hours}` in the Weekend Test estimate and closing line. The page keeps reading current idea figures, selection, library rows, signup availability and prompt text from the app. The Start here links keep their existing destinations.
 
+## Enhance with AI
+
+Open **Enhance with AI** from the page editor. The section menu is built from the landing content schema. The homepage can also accept a new editorial note or checklist above the closing call. The first implementation verifies the preview with local fixtures. Provider requests and approval are implemented in separate steps.
+
 ## GitHub setup for the owner
 
 1. Protect `main` on GitHub. Require a pull request and passing CI. Apply the rule to the owner and GitHub App, including administrator bypass settings. Keystatic opens the repository default branch. Saving there prompts for a content branch before sending a commit. GitHub enforces branch protection independently for every client.

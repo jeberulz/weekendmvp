@@ -5,6 +5,7 @@ export const instant = false;
 
 import { readHome } from "@/lib/landing/read-home";
 import { HomeMotion } from "@/components/home/motion/HomeMotion";
+import { AdditionalHomeSections } from "@/components/home/sections/AdditionalHomeSections";
 import { BuildWithAI } from "@/components/home/sections/BuildWithAI";
 import { FinalCall } from "@/components/home/sections/FinalCall";
 import { FounderNote } from "@/components/home/sections/FounderNote";
@@ -124,6 +125,7 @@ export default async function HomePage() {
       <YourWeekend copy={copy.yourWeekend} total={data.totals.ideas} />
       <StarterKit copy={copy.starterKit} />
       <FounderNote copy={copy.founderNote} />
+      <AdditionalHomeSections sections={copy.additionalSections} />
       <FinalCall copy={copy.finalCall} total={data.totals.ideas} strip={data.strip} buildCta={buildCta} />
       <HomeMotion />
       {/* Idea 4: floating request/vote widget, same backend as /ideas/requests. */}
