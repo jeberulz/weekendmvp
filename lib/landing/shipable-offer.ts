@@ -19,7 +19,7 @@ export const BONUS_VALUE_USD = includes.reduce((total, item) => total + (item.bo
 
 export const usd = (amount: number) => `$${amount}`;
 
-const tokens = {
+const tokens: Readonly<Record<string, string>> = {
   "{price}": usd(PRICE_USD),
   "{stackValue}": usd(STACK_VALUE_USD),
   "{duration}": String(DURATION_MINUTES),
@@ -28,5 +28,5 @@ const tokens = {
 };
 
 export function shipableText(text: string) {
-  return text.replace(/\{(?:price|stackValue|duration|builders|ideas)\}/g, (token: keyof typeof tokens) => tokens[token]);
+  return text.replace(/\{[a-zA-Z]+\}/g, (token) => tokens[token] ?? token);
 }
