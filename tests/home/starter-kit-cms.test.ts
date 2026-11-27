@@ -7,7 +7,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test, vi } from "vitest";
 import StarterKitPage, { generateMetadata } from "@/app/(marketing)/starter-kit/page";
 import { Step2Spec, Step5Prompts } from "@/app/(marketing)/starter-kit/_sections";
+import * as starterKitReader from "@/lib/landing/read-starter-kit";
 import { mapStarterKit, readStarterKit } from "@/lib/landing/read-starter-kit";
+import { publishedLandingRoot, withPublishedLanding } from "./fixtures/published-landing";
 import published from "./fixtures/wp104-starter-kit/published-page.json";
 import promptsBefore from "./fixtures/wp104-starter-kit/copyable-prompts.json";
 
@@ -35,18 +37,31 @@ function snapshot(html: string) {
 }
 
 test("renders the published Starter Kit section tree, links and JSON-LD from Keystatic", async () => {
-  expect(snapshot(renderToStaticMarkup(await StarterKitPage()))).toEqual(published);
-  const metadata = await generateMetadata();
-  expect(metadata.alternates?.canonical).toBe("/starter-kit");
-  expect(metadata.title).toEqual({ absolute: "Weekend MVP Starter Kit | Build your product in 48 hours" });
+  await withPublishedLanding(readStarterKit,
+    (copy) => vi.spyOn(starterKitReader, "readStarterKit").mockResolvedValue(copy),
+    async () => {
+      expect(snapshot(renderToStaticMarkup(await StarterKitPage()))).toEqual(published);
+      expect((await generateMetadata()).title).toEqual({ absolute: "Weekend MVP Starter Kit | Build your product in 48 hours" });
+    },
+  );
 });
 
-test.runIf(process.env.CHECK_BUILT_GUIDE === "1")("preserves the Starter Kit in the actual production build", () => {
-  expect(snapshot(readFileSync(".next/server/app/starter-kit.html", "utf8"))).toEqual(published);
+test("renders the current Kit contents and metadata", async () => {
+  const copy = await readStarterKit();
+  const page = snapshot(renderToStaticMarkup(await StarterKitPage()));
+  expect(page.contents).toEqual(copy.contents.flat().map(({ href, label }) => [href, label.replace(/\s+/g, " ").trim()]));
+  const metadata = await generateMetadata();
+  expect(metadata.alternates?.canonical).toBe("/starter-kit");
+  expect(metadata.title).toEqual({ absolute: copy.seoTitle });
+});
+
+test.runIf(process.env.CHECK_BUILT_GUIDE === "1")("renders the current Kit in the actual production build", async () => {
+  const html = snapshot(readFileSync(".next/server/app/starter-kit.html", "utf8"));
+  expect(html).toEqual(snapshot(renderToStaticMarkup(await StarterKitPage())));
 });
 
 test("every existing copy button hands the exact original prompt to the clipboard", async () => {
-  const copy = await readStarterKit();
+  const copy = await readStarterKit(publishedLandingRoot);
   const prompts = copy.resources.find((resource) => resource.discriminant === "prompts");
   if (!prompts) throw new Error("Starter Kit build prompts missing");
   const saved = Object.getOwnPropertyDescriptor(navigator, "clipboard");
@@ -73,7 +88,7 @@ test("every existing copy button hands the exact original prompt to the clipboar
 });
 
 test("reordered resources keep public anchors and number the contents in displayed order", async () => {
-  const kit = await readStarterKit();
+  const kit = await readStarterKit(publishedLandingRoot);
   const [ideas, prompts, templates] = kit.resources;
   const reordered = mapStarterKit({ ...kit, resources: [templates, prompts, ideas] });
   expect(reordered.contents[2]).toEqual([
