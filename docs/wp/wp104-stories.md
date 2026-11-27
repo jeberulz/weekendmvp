@@ -34,3 +34,9 @@
 - Move the public draft's editorial copy into a Keystatic JSON singleton. Retain the existing placeholder strings, `noindex, nofollow`, and sitemap exclusion.
 - Keep schedule, timezones, numerical claims, valuation amounts, the $29 CTA, structured data and the seat form owned by code.
 - Record the draft on pristine main and compare both viewports, the rendered draft tree, placeholders and structured data before advancing.
+
+## PR 6 · Live hub
+
+- Move the hub's editorial copy, host paragraph and FAQ into the `live-hub` Keystatic singleton. Keep registration and checkout actions, dates, prices, inventory, phase logic and the conditional host claim owned by code.
+- Preserve the dynamic rendering strategy, the session cards and local-time displays. The next Build-Along label in the FAQ comes from configuration through a token. Keep the existing absence of page JSON-LD.
+- Record the published hub before changing its reader. Compare all six time and inventory scenarios at both widths and run the existing live tests.

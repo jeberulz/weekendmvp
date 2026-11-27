@@ -46,3 +46,7 @@ The two images in `shipable-baseline/` come from a clean production build of mai
 ## Dare draft reference
 
 The two images in `dare-baseline/` come from a clean production build of main at `692b7b3f`, with noindex and the original draft placeholders. Point `LANDING_VISUAL_APP` at that build and run `npm run test:visual -- --record --route=/dare` to reproduce them.
+
+## Live hub reference
+
+The twelve images in `live-hub-baseline/` come from a clean production build of main at `692b7b3f`. They cover the same six clocks and inventory settings as the initial matrix. Point `LANDING_VISUAL_APP` at that build and run `npm run test:visual -- --record --route=/live` to reproduce them.
