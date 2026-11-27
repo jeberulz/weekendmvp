@@ -45,31 +45,38 @@ export function mapBuilderGuide(entry: BuilderEntry, sprintOn = isOfferEnabled(o
     return block;
   }
 
-  const steps = section("method").value.steps;
+  const steps = section("method").value.steps.map((step) => ({
+    ...step,
+    value: { ...step.value, name: step.value.name.trim() },
+  }));
   assertUnique(steps.map((step) => step.discriminant), "step types");
   const prove = steps.find((step) => step.discriminant === "prove");
   if (!prove || steps.length !== 5) throw new Error("Builder guide requires all five steps");
 
-  const skills = section("skills").value.skills;
-  const topics = section("catch").value.topics;
-  const { labels, roles } = section("roles").value;
+  const skills = section("skills").value.skills.map((skill) => ({ ...skill, name: skill.name.trim() }));
+  const topics = section("catch").value.topics.map((topic) => ({ ...topic, name: topic.name.trim() }));
+  const roleSection = section("roles").value;
+  const roles = roleSection.roles.map((role) => ({ ...role, name: role.name.trim() }));
+  const headStartLabel = roleSection.labels.headStart.trim();
+  const gapLabel = roleSection.labels.gap.trim();
+  const leanOnLabel = roleSection.labels.leanOn.trim();
   const weeks = section("plan").value.weeks;
   const selfCheck = section("selfCheck").value;
   const faq = section("faq").value;
+  const questions = faq.questions.map((item) => ({ ...item, question: item.question.trim() }));
   const ideaBank = section("ideaBank").value;
   const sale = section("firstSale").value;
   const prompt = section("prompt").value;
-  const roleLabels = [labels.headStart, labels.gap, labels.leanOn];
-  const selfCheckItems = Array.from({ length: 18 }, (_, index) => selfCheck.items[`item${index + 1}`]);
+  const roleLabels = [headStartLabel, gapLabel, leanOnLabel];
   assertUnique(steps.map((step) => step.value.name), "step names");
   assertUnique(skills.map((skill) => skill.name), "skill names");
   assertUnique(roles.map((role) => role.name), "role names");
   assertUnique(roleLabels, "role labels");
   assertUnique(topics.map((topic) => topic.name), "topic headings");
-  assertUnique(faq.questions.map((item) => item.question), "FAQ questions");
+  assertUnique(questions.map((item) => item.question), "FAQ questions");
   requireToken(ideaBank.summary, "{ideaCount}");
   requireToken(ideaBank.introduction, "{ideaCount}");
-  if (!faq.questions.some(({ answer }) => answer.includes("{ideaCount}"))) {
+  if (!questions.some(({ answer }) => answer.includes("{ideaCount}"))) {
     throw new Error("Builder guide requires the {ideaCount} token in a FAQ answer");
   }
   requireToken(prompt.founderBody, "{founderIntro}");
@@ -77,10 +84,10 @@ export function mapBuilderGuide(entry: BuilderEntry, sprintOn = isOfferEnabled(o
   for (const card of Object.values(entry.cards)) requireToken(card.promise, "{price}");
 
   const sectionDefs = [
-    { id: "s01", title: entry.opening.title, summary: entry.opening.summary },
+    { id: "s01", title: entry.opening.title.trim(), summary: entry.opening.summary },
     ...entry.sections.map(({ discriminant, value }) => ({
       id: anchors[discriminant],
-      title: value.title,
+      title: value.title.trim(),
       summary: value.summary,
     })),
   ];
@@ -108,7 +115,7 @@ export function mapBuilderGuide(entry: BuilderEntry, sprintOn = isOfferEnabled(o
     skills: skills.map(({ name }) => name),
     roles: { names: roles.map(({ name }) => name), labels: roleLabels },
     weeks: weeks.map(({ summary }, index) => [index + 1, summary]),
-    faq: faq.questions.map(({ question }) => question),
+    faq: questions.map(({ question }) => question),
   });
 
   function resolveSectionReferences(text: string) {
@@ -118,6 +125,9 @@ export function mapBuilderGuide(entry: BuilderEntry, sprintOn = isOfferEnabled(o
       return String(index + 2);
     });
   }
+
+  const selfCheckItems = Array.from({ length: 18 }, (_, index) =>
+    resolveSectionReferences(selfCheck.items[`item${index + 1}`]));
 
   // Fixed slot names are for this guide's section renderers. Shared blocks
   // keep their existing slot contract, with titles and their text mapped together.
@@ -173,13 +183,13 @@ export function mapBuilderGuide(entry: BuilderEntry, sprintOn = isOfferEnabled(o
   }
   for (const topic of topics) add(topic.name, topic.body);
   for (const role of roles) {
-    add(slotName.role(role.name, labels.headStart), role.headStart);
-    add(slotName.role(role.name, labels.gap), role.gap);
-    add(slotName.role(role.name, labels.leanOn), role.leanOn);
+    add(slotName.role(role.name, headStartLabel), role.headStart);
+    add(slotName.role(role.name, gapLabel), role.gap);
+    add(slotName.role(role.name, leanOnLabel), role.leanOn);
   }
   weeks.forEach(({ proof }, index) => add(slotName.weekProof(index + 1), proof));
   selfCheckItems.forEach((item, index) => add(slotName.selfCheckItem(index + 1), item));
-  for (const { question, answer } of faq.questions) add(slotName.faq(question), answer);
+  for (const { question, answer } of questions) add(slotName.faq(question), answer);
 
   for (const [slot, value] of Object.entries(deck)) deck[slot] = resolveSectionReferences(value);
   return { spec, deck, selfCheckItems, sectionOrder, catchTopics: topics.map(({ name }) => name), followLabel: faq.followLabel, cards: entry.cards };

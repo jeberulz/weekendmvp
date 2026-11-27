@@ -10,3 +10,5 @@
 - Read the guide singleton from Git-backed JSON. Preserve the existing renderers, markup, public anchor IDs, metadata, and subscription boundary.
 - Edit prose, gate copy, checklist wording and structural labels together with their associated text. The opening stays public and the protected blocks can move within the gated body.
 - Verify the effective reader inputs, JSON-LD, editorial audit, and both gate states against the pre-switch fixtures.
+- Keep the original migration assertions on a frozen CMS input. Verify the live singleton through its reader and rendering contracts so valid edits can pass CI.
+- Trim editable step, skill, role and FAQ names before assigning copy slots. Verify that the original gate and published anchors survive edits.
