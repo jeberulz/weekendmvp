@@ -296,13 +296,36 @@ function auditUpsells(spec: GuideSpec, input: AuditInput, offerList: OfferList, 
   }
 
   // Copy must not link to an offer that is switched off, or a reader lands on a page that does not sell it.
+  // Only link destinations count. Text that merely contains the path, or an external URL that carries it in a
+  // query, does not send a reader to the offer.
   for (const offer of known.values()) {
     if (enabledOf(offer)) continue;
+    const target = linkIdentity(offer.url);
     for (const [slot, value] of Object.entries(input.deck)) {
-      if (value.includes(offer.url)) {
+      if (linkDestinations(value).some((destination) => linkIdentity(destination) === target)) {
         add("offer-link-in-copy", "error", `copy still links to ${offer.url} while offer "${offer.id}" is switched off`, slot);
       }
     }
+  }
+}
+
+/** The destinations of every markdown link, `[text](destination)`, in a piece of copy. */
+function linkDestinations(text: string): string[] {
+  return [...text.matchAll(/\[[^\]]*\]\(([^)\s]+)\)/g)].map((match) => match[1]);
+}
+
+/**
+ * What a link points at, ignoring the query string, the fragment and a trailing slash. An internal path stays a
+ * path. An absolute URL keeps its origin, so an external page never matches an internal offer.
+ */
+function linkIdentity(destination: string): string {
+  const trimPath = (path: string) => path.replace(/\/+$/, "") || "/";
+  if (destination.startsWith("/")) return trimPath(destination.split(/[?#]/)[0]);
+  try {
+    const url = new URL(destination);
+    return `${url.origin}${trimPath(url.pathname)}`;
+  } catch {
+    return destination;
   }
 }
 
