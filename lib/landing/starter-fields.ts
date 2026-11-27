@@ -6,7 +6,10 @@ const form = fields.object({
   submitLabel: text("Subscribe button"),
   finePrint: text("Fine print"),
 }, { label: "Subscription form" });
-const day = fields.object({ title: text("Title"), text: text("Description", true) });
+const day = (number: number) => fields.object({
+  title: text("Title"),
+  text: text("Description", true),
+}, { label: `Day ${number}` });
 
 const question = text("Question");
 const starterBlocks = {
@@ -14,7 +17,9 @@ const starterBlocks = {
     label: "Five days",
     schema: fields.object({
       ...section, intro: text("Introduction", true),
-      days: fields.object({ one: day, two: day, three: day, four: day, five: day }, { label: "Email sequence" }),
+      days: fields.object({
+        one: day(1), two: day(2), three: day(3), four: day(4), five: day(5),
+      }, { label: "Email sequence" }),
       followUp: text("After the emails", true),
       buildAlongLabel: text("Build-Along link label · keep {buildAlongPrice}"),
     }),
