@@ -187,7 +187,9 @@ npm run test:home
 npm run build
 ```
 
-Then run the `a11y-check` skill on the new page (WCAG 2.1 AA, project rules in `CLAUDE.md`). Start the production server and take screenshots at 390 pixels and at 1280 pixels, once with the consent banner open and once dismissed. Confirm the hero headline and the primary button stay visible with the banner open. Look at the hero image yourself.
+Then run the `a11y-check` skill on the new page (WCAG 2.1 AA, project rules in `CLAUDE.md`). If that skill is not in `.claude/skills/`, say so in the report and run axe-core instead (it is in `node_modules/axe-core`): inject `axe.min.js` with Playwright and run it with the `wcag2a`, `wcag2aa`, `wcag21a` and `wcag21aa` tags, on the locked page and on the unlocked page (set `localStorage.weekendmvp_subscribed` to `true`), at 390 and 1280 pixels. Zero violations is the bar. It is a substitute for the skill, not the skill.
+
+Start the production server (`npm run start`) and take screenshots at 390 pixels and at 1280 pixels, once with the consent banner open and once dismissed. With the banner open, check that the hero headline and the primary button are visible and **clickable**: use `document.elementFromPoint` at the button's centre, because a button can sit inside the viewport and still be covered. Today the banner covers the primary button at 390 pixels on every guide, including the 5-to-9 guide. That is a site-wide banner issue, so report it and do not work around it inside a guide. Look at the hero image yourself.
 
 Run the live checks against the **local** server:
 
@@ -241,6 +243,7 @@ The registry is `lib/guides/offers.ts`. `rankOffers({ topics, audiences })` rank
 - A guide needs a block the template does not have: stop and tell the owner. Do not write a component or CSS inside a guide folder.
 - Playwright is missing for `--live`: report that the live check did not run. It is not a pass.
 - `build` fails on a missing slot: add the slot to the copy deck. Do not add a default.
+- `GuideLayout` needs an `ideaCount` number even when no section summary uses one. Pass `0` and say so. Do not edit `_shared/`.
 
 ---
 
