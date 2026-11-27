@@ -503,6 +503,19 @@ describe("offer switch", () => {
     expect(errorsOf(audit({ deck, isOfferEnabled: () => true }))).not.toContain("offer-link-in-copy");
   });
 
+  test("only link destinations count, not text or external URLs that carry the path", () => {
+    const flagged = (text: string) => audit({ deck: { ...guideCopy, "Founder note · Body": text }, isOfferEnabled: off }).findings.some((f) => f.rule === "offer-link-in-copy");
+    // Not links to the offer.
+    expect(flagged("[Search references](https://www.google.com/search?q=/live/build-along)")).toBe(false);
+    expect(flagged("The old page lived at /live/build-along before it moved.")).toBe(false);
+    expect(flagged("See [the other sprint](/live/build-along-archive) for last year.")).toBe(false);
+    // Still links to the offer: plain, with a trailing slash, a query string or a fragment.
+    expect(flagged("[here](/live/build-along)")).toBe(true);
+    expect(flagged("[here](/live/build-along/)")).toBe(true);
+    expect(flagged("[here](/live/build-along?ref=guide)")).toBe(true);
+    expect(flagged("[here](/live/build-along#seats)")).toBe(true);
+  });
+
   test("the real founder note follows the switch in config", () => {
     const founder = guideCopy["Founder note · Body"];
     expect(founder.includes("/live/build-along")).toBe(BUILD_ALONG_GUIDE_CARDS_ENABLED);
