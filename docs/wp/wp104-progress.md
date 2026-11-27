@@ -110,3 +110,9 @@ All six historical production HTML fixtures and their JSON-LD match, including t
 
 An available ticket on pristine main rendered the error boundary because its button called an auth hook outside the authenticated provider. A dedicated fix uses the existing checkout API as the authority for signed-in state. A production browser run confirmed the visible $29 ticket, a real signed-out 401 and attributed signup return, and the client handling of simulated sold-out and success responses. No Stripe request was sent. The checkout endpoint, pricing, seat and recording rules remain in place.
 The full suite passed 7,225 tests. Both typechecks, lint, the production build and server traces passed. The final price text-run change also passed the focused Build-Along and live suites.
+
+## PR 9 · Homepage migration
+
+Local branch `codex/wp104-home-cms` stacks on the Build-Along. The published homepage reference uses main at `692b7b3f` and the frozen editorial fixture. Keystatic supplies all eleven editorial groups and tokenised metadata. The FAQ view and structured data use one copy object. The live count, overlay, idea rows and prompts, build CTA gating and signup remain code-owned.
+
+Both widths matched pixel for pixel after preserving the estimate's text runs. The browser's eleven rendered sections, links, metadata and JSON-LD matched the reference. An editor saved and restored the singleton. Both typechecks, lint, the production build and server traces passed. The full suite passed 7,227 tests. All homepage tests passed after the final correction to the text runs.
