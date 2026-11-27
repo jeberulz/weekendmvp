@@ -15,6 +15,9 @@ import { literals } from "./validators";
  *
  * - `importSubmission`: legacy/manual private imports with no engine authority.
  *   Validated engine submissions must use `ingest.validateAndImport` instead.
+ *   Validated Pain Engine submissions must use
+ *   `ingest.validateAndImportPainEngine` instead; they land with authority
+ *   "none" (no engine receipt) and origin "manual".
  * - `workerQueue` / `workerAdvance`: the release worker (WP46-E6) reports
  *   what happened outside; the shared rules re-check the kill switch,
  *   approval and generation fence before every move.
@@ -117,6 +120,102 @@ export const importValidatedEngine = internalMutation({
       }
     } else {
       await ctx.db.insert("editorial_engine_records", {
+        ideaId: result.value.ideaId,
+        submissionId: parsed.data.submissionId,
+        recordHash: args.recordHash,
+        recordJson: args.recordJson,
+        envelopeJson: args.envelope,
+        manifestJson: args.manifestJson,
+        createdAt: new Date(Date.now()).toISOString(),
+      });
+    }
+    return result;
+  },
+});
+
+/**
+ * Commit only a Pain Engine submission that the Node ingestion action
+ * validated. Mirrors {@link importValidatedEngine} with the Pain Engine
+ * checks: the review record must be approved, the envelope producer must
+ * be "pain-engine" with a null engineRunId and a `pe_<hash>` submissionId,
+ * and the title must be the approved title.
+ *
+ * The import lands with authority "none": there is no WP45 engine receipt
+ * for these submissions, so the stored sources and claims carry
+ * verificationAuthority "none" and the idea's origin is "manual". It then
+ * follows the normal human review flow in the admin panel. The normalized
+ * review record is pinned in `editorial_pain_engine_records` in the same
+ * transaction as the candidate import.
+ */
+export const importValidatedPainEngine = internalMutation({
+  args: {
+    envelope: v.string(),
+    recordJson: v.string(),
+    recordHash: v.string(),
+    manifestJson: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (args.recordJson.length > 512_000 || args.manifestJson.length > 32_000 || args.envelope.length > 250_000) {
+      throw new ConvexError({ code: "INVALID_INPUT", message: "Pain Engine submission exceeds its size limit." });
+    }
+    if (await sha256Hex(args.recordJson) !== args.recordHash) {
+      throw new ConvexError({ code: "RECORD_HASH_MISMATCH", message: "Pain Engine review record hash mismatch." });
+    }
+    let rawRecord: unknown;
+    let rawEnvelope: unknown;
+    try {
+      rawRecord = JSON.parse(args.recordJson);
+      rawEnvelope = JSON.parse(args.envelope);
+    } catch {
+      throw new ConvexError({ code: "INVALID_INPUT", message: "Pain Engine submission is not valid JSON." });
+    }
+    // The Node action runs the full record, source-review, MDX, and envelope
+    // validation before calling this private mutation. Keep this transaction
+    // edge-compatible: the full validator imports Node APIs and cannot be
+    // bundled into a mutation.
+    const record = rawRecord !== null && typeof rawRecord === "object" && !Array.isArray(rawRecord)
+      ? rawRecord as Record<string, unknown>
+      : null;
+    const draft = record?.draft !== null && typeof record?.draft === "object" && !Array.isArray(record.draft)
+      ? record.draft as Record<string, unknown>
+      : null;
+    const overrides = record?.publishOverrides !== null && typeof record?.publishOverrides === "object" && !Array.isArray(record.publishOverrides)
+      ? record.publishOverrides as Record<string, unknown>
+      : null;
+    const effectiveTitle = typeof overrides?.title === "string" ? overrides.title : draft?.title;
+    const parsed = editorialSubmissionSchema.safeParse(rawEnvelope);
+    if (
+      record?.status !== "approved" ||
+      typeof draft?.slug !== "string" ||
+      !parsed.success ||
+      parsed.data.producer !== "pain-engine" ||
+      parsed.data.mode !== "live" ||
+      parsed.data.proposedSlug !== draft.slug ||
+      parsed.data.title !== effectiveTitle ||
+      parsed.data.engineContractVersion !== 1 ||
+      parsed.data.submissionId !== `pe_${args.recordHash.slice(0, 32)}` ||
+      parsed.data.engineRunId !== null ||
+      parsed.data.checks.length !== 0
+    ) {
+      throw new ConvexError({ code: "INVALID_PAIN_ENGINE_SUBMISSION", message: "Pain Engine record and editorial envelope disagree." });
+    }
+    const ingestion: IngestionPrincipal = {
+      kind: "service",
+      id: "ingestion-pain-engine",
+      role: "ingestion",
+      producer: "pain-engine",
+    };
+    const result = await serviceRepository(ctx).importTrusted(ingestion, parsed.data, "none");
+    if (!result.ok) return result;
+    const existing = await ctx.db.query("editorial_pain_engine_records")
+      .withIndex("by_ideaId", (q) => q.eq("ideaId", result.value.ideaId))
+      .unique();
+    if (existing) {
+      if (existing.recordHash !== args.recordHash || existing.submissionId !== parsed.data.submissionId) {
+        throw new ConvexError({ code: "RECORD_CONFLICT", message: "A different Pain Engine record is already bound to this idea." });
+      }
+    } else {
+      await ctx.db.insert("editorial_pain_engine_records", {
         ideaId: result.value.ideaId,
         submissionId: parsed.data.submissionId,
         recordHash: args.recordHash,

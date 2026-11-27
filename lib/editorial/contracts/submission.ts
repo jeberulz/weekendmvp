@@ -13,7 +13,7 @@ import {
   slugSchema,
 } from "./primitives";
 
-export const SUBMISSION_PRODUCERS = ["engine", "legacy-import", "manual"] as const;
+export const SUBMISSION_PRODUCERS = ["engine", "pain-engine", "legacy-import", "manual"] as const;
 export type SubmissionProducer = (typeof SUBMISSION_PRODUCERS)[number];
 
 export const SUBMISSION_MODES = ["live", "fixture", "legacy"] as const;

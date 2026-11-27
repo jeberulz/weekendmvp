@@ -928,6 +928,18 @@ export default defineSchema({
       createdAt: v.string(),
     }),
   ).index("by_ideaId", ["ideaId"]),
+
+  editorial_pain_engine_records: defineTable(
+    v.object({
+      ideaId: v.string(),
+      submissionId: v.string(),
+      recordHash: v.string(),
+      recordJson: v.string(),
+      envelopeJson: v.string(),
+      manifestJson: v.string(),
+      createdAt: v.string(),
+    }),
+  ).index("by_ideaId", ["ideaId"]),
   editorial_slugs: defineTable(slugValidator).index("by_slug", ["slug"]),
   editorial_idea_summaries: defineTable(ideaSummaryValidator).index("by_ideaKey", ["ideaKey"]),
 
