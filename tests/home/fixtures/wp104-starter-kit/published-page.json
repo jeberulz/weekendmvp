@@ -1,0 +1,100 @@
+{
+  "sections": [
+    {
+      "id": "intro",
+      "text": "Weekend MVP Starter KitShip a tiny product in 48 hours that you can demo, share, and collect emails for.Still testing an idea? Try The 5-to-9 Starter or read The 5-to-9 Builder.By Sunday night you’ll have:A live link or working demoA simple landing page + waitlistA 15–30 sec demo video10 people invited to try it via DM outreachA LinkedIn post driving signups",
+      "links": [
+        [
+          "/5-to-9-starter",
+          "The 5-to-9 Starter"
+        ],
+        [
+          "/guides/5-to-9-builder",
+          "The 5-to-9 Builder"
+        ]
+      ]
+    },
+    {
+      "id": "rules",
+      "text": "The rules (this is what makes it shippable)Must IncludeOne user type (be specific)One core action (one job)One clear output (what they get)Must NOT Includelogin/accountspaymentcomplex dashboards\"perfect UI\"The 3-screen MVP (always)1Landing pagePromise + Waitlist2Input screenA short form3Output screenResult + Join waitlist",
+      "links": []
+    },
+    {
+      "id": "step-1",
+      "text": "Step 1Pick a shippable ideaUse this scorecard. Pick the highest total. Score each 1–5.Can I build the core flow in 8–12 hours?Can I demo it in 15 seconds?Do I know where to find 10 target users?Does it solve a real “annoying” problem?\"If your idea scores low on 'demo in 15 seconds', kill it or shrink it.\"",
+      "links": []
+    },
+    {
+      "id": "step-2",
+      "text": "Step 2Write a one-page MVP specFill this in. No fancy doc needed. Keep it to one page.MVP NameCustomerThe PromiseSuccess Metric for this weekend• 10 emails collected• 5 people complete the flow• 3 people reply “I’d use this”AI Prompt: Generate your spec\"Act as a Product Manager. Help me write a one-page spec for my Weekend MVP. My idea is: [DESCRIBE YOUR IDEA]. Generate: 1. A short, punchy MVP Name. 2. A specific target Customer. 3. A one-sentence Promise. 4. The single Core Action. 5. The primary Output. 6. A realistic Success Metric for a 48-hour build. Keep it brief and high-impact.\"Advanced Prompt: Full Spec Doc\"I am building a Weekend MVP. Based on the concept [PASTE CONCEPT], generate a comprehensive one-page spec. Include: User Personas, Core User Story, Technical Constraints (No Auth/No Payments), 3-Screen Architecture (Landing/Input/Output), and a 48-hour build roadmap. Structure the output as a clean markdown document ready for a developer.\"",
+      "links": []
+    },
+    {
+      "id": "step-3",
+      "text": "Step 3The 48-hour planFriday night (30–45 mins)Pick the idea (scorecard)Write the one-page specDraft landing page copyDecide your tool stackSaturday (Build Day)Hour 1: SetupCreate project, define 3 screens, basic layout.Hours 2–5: Core FlowBuild input form, output page, and transformation logic.Hour 6–8: LaunchAdd waitlist capture, deploy, and test on mobile.Sunday (Distribution Day)Create demo assets (15s video)Outreach: DM 10 people to testLinkedIn: Post your build story",
+      "links": []
+    },
+    {
+      "id": "step-4",
+      "text": "Step 410 shippable MVP ideasMeeting Minutes CleanerInput: messy notes → Output: clean summary + action itemsResume Bullet RewriterInput: JD + current bullet → Output: improved bulletCold DM WriterInput: profile + goal → Output: 3 DM variationsCreator Hook GeneratorInput: topic + audience → Output: 20 scroll-stopping hooks“What Should I Build?” Idea NarrowerInput: skills + interests → Output: 3 weekend MVP ideas + scopeGym Routine GeneratorInput: days + equipment → Output: simple 7-day workout planMeal Plan From IngredientsInput: fridge contents → Output: 3 simple meals + shopping listBudget Splitter for CouplesInput: monthly expenses → Output: who owes what + clean breakdownInterview Answer Builder (STAR)Input: role + experience → Output: STAR method answer draftPersonal Brand Bio GeneratorInput: role + proof → Output: LinkedIn headline + bio + about section",
+      "links": []
+    },
+    {
+      "id": "step-5",
+      "text": "Step 510 Build PromptsChoose the idea you want to build and copy the prompt to dive deep into the implementation details with AI.1. Meeting Minutes Cleaner\"Act as an MVP Architect. I'm building a Meeting Minutes Cleaner. Customer: Busy Managers. Pain: Hours spent re-writing messy notes. Promise: Clean summary in 60 seconds. Core Action: Paste raw notes. Output: Action items + key decisions. Help me define the technical logic to parse text and handle edge cases like incomplete sentences.\"2. Resume Bullet Rewriter\"Act as a Career Coach. I'm building a Resume Bullet Rewriter. Customer: Job seekers. Pain: Vague resume bullets that don't land interviews. Promise: Metrics-driven bullets in seconds. Core Action: Paste JD + current bullet. Output: Improved bullet with keywords. Give me 10 specific 'Action Verbs' and metrics patterns the logic should prioritize.\"3. Cold DM Writer\"Act as a Sales Strategist. I'm building a Cold DM Writer. Customer: Freelancers/Sellers. Pain: High rejection rates from boring DMs. Promise: 3 high-conversion variations. Core Action: Paste recipient profile + goal. Output: 3 personalized DMs. Help me structure the prompt logic to ensure the output is concise, non-spammy, and includes a clear CTA.\"4. Creator Hook Generator\"Act as a Content Viral Specialist. I'm building a Creator Hook Generator. Customer: Content Creators. Pain: Low engagement on social posts. Promise: 20 scroll-stopping hooks. Core Action: topic + audience. Output: Hooks + 5 angles. Create a library of 5 'Hook Frameworks' (e.g., The Contrarian, The Mystery) that the generator should use.\"5. Idea Narrower\"Act as an MVP Coach. I'm building an Idea Narrower. Customer: Want-to-be builders. Pain: Decision paralysis. Promise: 3 shippable ideas + scope. Core Action: Skills + interests. Output: Ideas + weekend plan. Help me design a scoring system that automatically ranks ideas based on 'Shippability' and 'Market Need'.\"6. Gym Routine Generator\"Act as a Personal Trainer. I'm building a Gym Routine Generator. Customer: Beginners. Pain: Intimidated by the gym/equipment. Promise: 7-day plan in 30 seconds. Core Action: Days + equipment. Output: Simple routine. Help me define the mapping logic for equipment (e.g., if 'Dumbbells only' → show 'DB Goblet Squats' instead of 'Barbell').\"7. Meal Plan Generator\"Act as a Nutritionist. I'm building a Meal Plan From Ingredients. Customer: Busy parents. Pain: Food waste + 'what's for dinner?' stress. Promise: 3 meals + shopping list. Core Action: Fridge contents. Output: Meal plan. Help me create a simple data structure to handle common ingredient substitutions.\"8. Budget Splitter\"Act as a Financial Planner. I'm building a Budget Splitter for Couples. Customer: Modern couples. Pain: Awkward money conversations. Promise: Fair split in 1 minute. Core Action: Monthly expenses. Output: Clean breakdown. Define the 'Fair Split' algorithm (e.g., proportional to income vs. 50/50) and how to present it without friction.\"9. STAR Answer Builder\"Act as an Interview Coach. I'm building an Interview Answer Builder. Customer: Candidates. Pain: Rambling during behavioral questions. Promise: STAR answer draft. Core Action: Role + experience. Output: Structured answer. Help me create the 'Transformation Logic' that takes a raw story and sorts it into Situation, Task, Action, and Result.\"10. Personal Brand Bio Generator\"Act as a Personal Branding Expert. I'm building a Bio Generator. Customer: Professionals. Pain: Invisible or boring LinkedIn profiles. Promise: Headline + Bio in seconds. Core Action: Role + proof. Output: Full LinkedIn section. Define 3 'Brand Archetypes' (e.g., The Expert, The Builder, The Strategist) for the generator to use.\"",
+      "links": []
+    },
+    {
+      "id": "templates",
+      "text": "Templates & ScriptsLanding Page WireframeJoin the Waitlist123Tester Outreach Script// DM to potential tester\"Hey [Name], quick one. I’m building a tiny tool this weekend for [problem]. Can I send you a 15-second demo and ask 2 questions?\"",
+      "links": []
+    },
+    {
+      "id": "",
+      "text": "Ready to build your Weekend MVP?Take the next step and book a 1:1 sprint to ship your project in 48 hours.Book a Sprint (opens in new tab)Get the Starter Kit",
+      "links": [
+        [
+          "https://cal.com/switchtoux/mvp-sprint",
+          "Book a Sprint (opens in new tab)"
+        ]
+      ]
+    }
+  ],
+  "contents": [
+    [
+      "#intro",
+      "Introduction"
+    ],
+    [
+      "#rules",
+      "The Rules"
+    ],
+    [
+      "#step-1",
+      "1. Pick an Idea"
+    ],
+    [
+      "#step-2",
+      "2. Write a Spec"
+    ],
+    [
+      "#step-3",
+      "3. 48-Hour Plan"
+    ],
+    [
+      "#step-4",
+      "4. 10 MVP Ideas"
+    ],
+    [
+      "#step-5",
+      "5. 10 Build Prompts"
+    ],
+    [
+      "#templates",
+      "Templates & Scripts"
+    ]
+  ],
+  "jsonLd": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"Person\",\"@id\":\"https://www.weekendmvp.app/john-iseghohi\",\"name\":\"John Iseghohi\",\"jobTitle\":\"Founder, Weekend MVP\",\"url\":\"https://www.weekendmvp.app/john-iseghohi\",\"image\":\"https://www.weekendmvp.app/image/john-portrait.jpg\",\"sameAs\":[\"https://twitter.com/weekendmvp\",\"https://cal.com/switchtoux\"],\"worksFor\":{\"@id\":\"https://www.weekendmvp.app/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://www.weekendmvp.app/#organization\",\"name\":\"Weekend MVP\",\"url\":\"https://www.weekendmvp.app/\",\"logo\":\"https://www.weekendmvp.app/image/weekendmvp-logo.svg\",\"founder\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"},\"sameAs\":[\"https://twitter.com/weekendmvp\"]},{\"@type\":\"BreadcrumbList\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":{\"@id\":\"https://www.weekendmvp.app/\",\"name\":\"Home\"}},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"Starter Kit\",\"item\":{\"@id\":\"https://www.weekendmvp.app/starter-kit\",\"name\":\"Starter Kit\"}}]},{\"@type\":\"HowTo\",\"name\":\"Build a Weekend MVP in 48 Hours\",\"description\":\"A step-by-step guide to picking an idea, building a 3-screen MVP, and launching a waitlist by Sunday night.\",\"step\":[{\"@type\":\"HowToStep\",\"position\":1,\"name\":\"Friday Night: Strategy \\u0026 Scope\",\"text\":\"Pick the idea using the scorecard, write the one-page spec, draft landing page copy, and decide your tool stack.\"},{\"@type\":\"HowToStep\",\"position\":2,\"name\":\"Saturday: Build Day\",\"text\":\"Setup the project, build the core flow (input form, transformation logic, and output page), and deploy the landing page.\"},{\"@type\":\"HowToStep\",\"position\":3,\"name\":\"Sunday: Distribution Day\",\"text\":\"Create demo assets, reach out to 10 potential testers via DM, and post your build story on social media.\"}],\"creator\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"}}]}"
+  ]
+}
