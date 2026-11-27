@@ -77,3 +77,12 @@ Local branch `codex/wp104-shipable-cms` stacks on the Starter Kit. The two scree
 Shipable now reads its JSON singleton through Keystatic and still prerenders. The server trace contains the singleton. Editors can reorder the seven middle sections and update the fixed sections, metadata and FAQ. Ticket detail and line labels come from the editor. Amounts, schedule, timezones, seat status, form routing and historical paid confirmation come from code. The next-date page continues to show the free Starter Kit form.
 
 Both screenshots matched pixel for pixel. The built page matched the published section tree, links and JSON-LD. Search and social metadata matched the reference. A local operator saved and reloaded the singleton in the browser and the smoke harness restored the original file. The full suite passed 7,201 tests. The app and Convex typechecks, lint, production build, production dependency audit at the high threshold, prompt version check, idea tags and trace checks passed.
+
+## PR 5 · Dare draft migration
+
+Local branch `codex/wp104-dare-cms` stacks on Shipable. The two draft images, section tree, sticky action, robots directive and JSON-LD came from clean main at `692b7b3f` before migration.
+
+Dare now reads editorial copy and metadata from Keystatic and still prerenders. The server trace contains the singleton. The original draft placeholders and worked examples are visible as before, and the reader rejects removal of the placeholders used in editable prose. The schedule, timezone rows, ticket amounts, $29 CTA, structured data and waitlist form come from code.
+
+The production HTML matched the reference section tree, robots tag and JSON-LD. The served sitemap contained Shipable and Live while excluding Dare. Search and social metadata matched. Both viewport captures matched pixel for pixel. The app and Convex typechecks, lint, production build and trace checks passed.
+An operator saved, reloaded and restored the Dare singleton in the local browser smoke. The first run stalled during teardown after its assertions passed. The rerun exited normally. The full suite passed 7,203 tests.
