@@ -1,4 +1,7 @@
+import { GuideReviewError, assertReviewPass, sourceFreshness } from "./guide-review.ts";
 import { PRICE_TOKEN, offerSchema, offers as registry, type EffectiveStatus, type Offer, type PriceConfigKey } from "./offers.ts";
+import { researchRecordSchema } from "./research-record.ts";
+import { checkCopyAgainstRecord, checkRecordConsistency } from "./verify-claims.ts";
 import { requiredSlots } from "./slots.ts";
 import { guideSpecSchema, type GuideSpec } from "./spec-schema.ts";
 
@@ -40,6 +43,11 @@ export type AuditInput = {
   routeExists?: (urlPath: string) => boolean;
   /** Is the offer's switch on in config? Without it every offer counts as on. */
   isOfferEnabled?: (offer: Offer) => boolean;
+  /**
+   * The guide's research record and its sealed Source Critic review, when it has them. With a record, the
+   * audit requires a sealed PASS and checks the copy against the claims. Without one, claims are not checked.
+   */
+  research?: { record: unknown; review: unknown; now: number };
 };
 
 /** An offer link must be an internal path or an https URL, and must not be a stand-in. */
@@ -213,8 +221,39 @@ export function auditGuide(input: AuditInput): AuditResult {
   }
 
   auditUpsells(spec, input, offerList, add);
+  // Inline Receipt amounts are reader-facing figures too, so they must trace to a claim like any other figure.
+  if (input.research) auditResearch(spec, input.research, [...readerStrings, ...amountStrings], add);
 
   return { ok: !findings.some((finding) => finding.severity === "error"), findings, spec };
+}
+
+/** Research rules (WP103-S4): a sealed PASS, a consistent record, and copy figures that trace to claims. */
+function auditResearch(spec: GuideSpec, research: NonNullable<AuditInput["research"]>, readerStrings: readonly string[], add: AddFinding) {
+  const parsed = researchRecordSchema.safeParse(research.record);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) add("research-record-invalid", "error", issue.message, `record.${issue.path.join(".")}`);
+    return;
+  }
+  const record = parsed.data;
+  if (record.slug !== spec.slug) {
+    add("research-record-invalid", "error", `the research record is for "${record.slug}", this guide is "${spec.slug}"`, "record.slug");
+  }
+
+  for (const finding of checkRecordConsistency(record)) add(finding.rule, finding.severity, finding.message, finding.path);
+
+  // No sealed PASS, no draft. Every reason the review does not stand is its own finding.
+  try {
+    assertReviewPass(record, research.review, research.now);
+  } catch (error) {
+    if (!(error instanceof GuideReviewError)) throw error;
+    for (const issue of error.issues) add("research-review", "error", issue, "review");
+  }
+
+  for (const entry of sourceFreshness(record, research.now)) {
+    if (entry.level === "warn") add("source-aging", "warn", `source "${entry.sourceId}" was last checked ${entry.ageDays} days ago, check it again soon`, `source:${entry.sourceId}`);
+  }
+
+  for (const finding of checkCopyAgainstRecord(record, readerStrings)) add(finding.rule, finding.severity, finding.message, finding.path);
 }
 
 type AddFinding = (rule: string, severity: FindingSeverity, message: string, path?: string) => void;
