@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { makeRouteHandler } from "@keystatic/next/route-handler";
 import { landingContentDirectory, landingEditorConfig } from "@/keystatic.config";
 import { scopeEditorCookies } from "@/lib/landing/editor-cookies";
+import { withLocalEditorWrite } from "@/lib/landing-ai/write-lock";
 import { isPublicEditorOAuth } from "@/lib/landing/editor-policy";
 import { configuredEditorMode, editorAccessAllowed } from "@/lib/landing/editor-server";
 
@@ -21,7 +22,10 @@ async function dispatch(request: Request): Promise<Response> {
     config: landingEditorConfig(mode),
     localBaseDirectory: resolve(landingContentDirectory),
   });
-  const response = await handlers[request.method === "POST" ? "POST" : "GET"](request);
+  const handle = () => handlers[request.method === "POST" ? "POST" : "GET"](request);
+  const response = mode === "local" && request.method === "POST" && url.pathname === "/api/keystatic/update"
+    ? await withLocalEditorWrite(handle)
+    : await handle();
   // The stock OAuth handler returns relative redirects to its native UI.
   const location = response.headers.get("location");
   if (location && /^\/keystatic(?:[/?#]|$)/.test(location)) {

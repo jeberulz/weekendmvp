@@ -16,6 +16,7 @@ export const generateInput = z.strictObject({
   blockId: z.string().min(1).max(120),
   action: actionSchema,
   instruction: z.string().trim().max(1500).optional(),
+  branch: z.string().max(120).optional(),
 });
 export type GenerateInput = z.infer<typeof generateInput>;
 

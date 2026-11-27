@@ -1,6 +1,7 @@
 import { ZodError } from "zod";
-import { generateInput, type LandingPageId } from "./blocks";
+import { generateInput, type GenerateInput, type LandingPageId } from "./blocks";
 import { isSameOrigin, privateJson, privateNotFound } from "./http";
+import { DraftStorageError } from "./storage";
 import { generateProposal, ProposalRejected, type Model } from "./proposal";
 
 type Dependencies = {
@@ -8,6 +9,7 @@ type Dependencies = {
   limit: () => number;
   model: () => Model | null;
   read: (id: LandingPageId) => Promise<unknown>;
+  preview?: (input: GenerateInput, model: Model) => Promise<unknown>;
 };
 
 export async function handleGenerate(request: Request, dependencies: Dependencies) {
@@ -24,8 +26,11 @@ export async function handleGenerate(request: Request, dependencies: Dependencie
   const retryAfter = dependencies.limit();
   if (retryAfter) return privateJson({ error: "Too many previews. Try again shortly." }, 429, { "Retry-After": String(retryAfter) });
   try {
-    return privateJson(await generateProposal(input, { model, read: dependencies.read }));
+    return privateJson(await (dependencies.preview
+      ? dependencies.preview(input, model)
+      : generateProposal(input, { model, read: dependencies.read })));
   } catch (error) {
+    if (error instanceof DraftStorageError) return privateJson({ error: error.message }, error.status);
     if (error instanceof ProposalRejected) return privateJson({ error: error.message }, 422);
     if (error instanceof ZodError) return privateJson({ error: "The proposed copy did not match the section format." }, 422);
     return privateJson({ error: "The preview could not be generated. Try again." }, 502);

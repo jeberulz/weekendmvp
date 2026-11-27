@@ -91,6 +91,7 @@ async function checkRefusals() {
     await checkStatus("/api/keystatic/tree", 404, token);
     await checkStatus("/api/keystatic/update", 404, token, "POST");
     await checkStatus("/api/admin/page-ai/generate", 404, token, "POST");
+    await checkStatus("/api/admin/page-ai/approve", 404, token, "POST");
     await checkStatus("/api/keystatic/github/login", 404, token, "POST");
   }
 }
@@ -212,6 +213,16 @@ async function checkEditor(browser) {
     });
     assert.equal(configured.status, 503);
     assert.match(configured.body.error, /Anthropic key/);
+    const unreviewed = await page.evaluate(async () => {
+      const response = await fetch("/api/admin/page-ai/approve", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ page: "home", blockId: "hero", action: "rewrite", after: {}, approval: "unreviewed" }),
+      });
+      return { status: response.status, body: await response.json() };
+    });
+    assert.equal(unreviewed.status, 409);
+    assert.match(unreviewed.body.error, /does not match the preview/);
   } finally {
     const after = await readFile(fixtureFile, "utf8");
     if (after !== original) {

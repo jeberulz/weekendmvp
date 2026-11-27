@@ -42,3 +42,31 @@ test("selecting a new section previews a fixture and discards it without writing
   expect(screen.queryByText("Choose a single idea.")).toBeNull();
   expect(fetcher).toHaveBeenCalledOnce();
 });
+
+test("the branch and exact reviewed copy are submitted only when the operator approves", async () => {
+  const after = { "hero.title": "Make a practical start" };
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce(Response.json({
+      before: { "hero.title": "Make a start" }, after, approval: "signed-preview",
+      costEstimate: { inputTokens: 23, outputTokens: 12 },
+    }))
+    .mockResolvedValueOnce(Response.json({
+      saved: true, href: "/admin/pages/branch/content%2Fhome/singleton/home", branch: "content/home",
+    }));
+  vi.stubGlobal("fetch", fetcher);
+  render(<EnhancePanel pages={pages} generationAvailable github />);
+  expect(screen.queryByRole("button", { name: "Approve and save draft" })).toBeNull();
+  fireEvent.change(screen.getByRole("textbox", { name: "Draft branch" }), { target: { value: "content/home" } });
+  fireEvent.click(screen.getByRole("button", { name: "Generate preview" }));
+  const approve = await screen.findByRole("button", { name: "Approve and save draft" });
+  expect(fetcher).toHaveBeenCalledOnce();
+  expect(JSON.parse(fetcher.mock.calls[0][1].body)).toMatchObject({ branch: "content/home" });
+  fireEvent.click(approve);
+  expect(await screen.findByRole("status")).toBeDefined();
+  expect(screen.getByRole("link", { name: "Open in the page editor" }).getAttribute("href"))
+    .toBe("/admin/pages/branch/content%2Fhome/singleton/home");
+  expect(fetcher.mock.calls[1][0]).toBe("/api/admin/page-ai/approve");
+  expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({
+    page: "home", blockId: "hero", action: "rewrite", branch: "content/home", after, approval: "signed-preview",
+  });
+});

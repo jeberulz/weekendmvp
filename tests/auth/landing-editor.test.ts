@@ -105,6 +105,7 @@ test.each([3600, 0])("token cookies are scoped when issued, refreshed or expired
   scopeEditorCookies(headers);
   expect(headers.getSetCookie()).toEqual([
     `keystatic-gh-access-token=test; ${attrs}; Path=/admin/pages`,
+    `keystatic-gh-access-token=test; ${attrs}; Path=/api/admin/page-ai; HttpOnly`,
     `keystatic-gh-access-token=test; ${attrs}; Path=/api/keystatic; HttpOnly`,
     `keystatic-gh-refresh-token=test; ${attrs}; Path=/api/keystatic; HttpOnly`,
     "ks-state=test; Path=/; HttpOnly",

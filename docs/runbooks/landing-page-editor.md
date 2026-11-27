@@ -58,6 +58,10 @@ Select **Homepage** for the eleven sections, search copy, and the questions and 
 
 Open **Enhance with AI** from the page editor. The section menu is built from the landing content schema. The homepage can also accept a new editorial note or checklist above the closing call. Generate a preview to compare the proposed wording and see reported token usage with an approximate charge. The server uses the existing `ANTHROPIC_API_KEY`. Its absence disables generation. Pre-call estimates are rough and actual billing is calculated by Anthropic. The preview uses Claude Haiku 5.5 and a six-per-minute process-local limiter for the single operator. [Claude Haiku 5.5 model card and pricing](https://platform.claude.com/docs/en/models/haiku-5-5/overview)
 
+In GitHub mode, enter a `content/` branch before generating. Enhance reads the selected branch or uses `main` as the starting point for a new branch. **Approve and save draft** commits the reviewed wording to that branch, and the confirmation links to the saved page in Keystatic. Continue on GitHub to open and merge the pull request. Local development saves the same JSON file directly. Discard simply closes the preview. Generate a fresh preview if the source copy changes or the review expires after 15 minutes.
+
+Enhance uses the current Keystatic GitHub session and the existing `KEYSTATIC_SECRET`. If Enhance asks you to reconnect after an upgrade, sign out of and back into GitHub from Keystatic. The approval API uses the GitHub App’s Contents permission and the page’s reviewed blob SHA. [GitHub repository contents API](https://docs.github.com/en/rest/repos/contents#create-or-update-file-contents)
+
 ## GitHub setup for the owner
 
 1. Protect `main` on GitHub. Require a pull request and passing CI. Apply the rule to the owner and GitHub App, including administrator bypass settings. Keystatic opens the repository default branch. Saving there prompts for a content branch before sending a commit. GitHub enforces branch protection independently for every client.

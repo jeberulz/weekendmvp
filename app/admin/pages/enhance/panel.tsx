@@ -6,7 +6,7 @@ import type { Copy, LandingPageId } from "@/lib/landing-ai/blocks";
 import type { Usage } from "@/lib/landing-ai/proposal";
 import { estimatedUsd, estimateInputTokens, MAX_OUTPUT_TOKENS } from "@/lib/landing-ai/cost";
 
-type Preview = { before: Copy; after: Copy; costEstimate: Usage };
+type Preview = { before: Copy; after: Copy; costEstimate: Usage; approval?: string };
 
 const actionLabels = [
   ["rewrite", "Rewrite"], ["freshen", "Freshen"], ["shorten", "Shorten"], ["add", "Add a section"],
@@ -21,9 +21,10 @@ function copyText(value: string | string[] | undefined) {
   return Array.isArray(value) ? value.join("\n") : value ?? "—";
 }
 
-export function EnhancePanel({ pages, generationAvailable }: {
+export function EnhancePanel({ pages, generationAvailable, github = false }: {
   pages: PanelCatalog;
   generationAvailable: boolean;
+  github?: boolean;
 }) {
   const [page, setPage] = useState<LandingPageId>(pages[0].id);
   const [blockId, setBlockId] = useState(pages[0].blocks[0]?.id ?? "");
@@ -31,32 +32,40 @@ export function EnhancePanel({ pages, generationAvailable }: {
   const [instruction, setInstruction] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [branch, setBranch] = useState("");
+  const [saved, setSaved] = useState<{ href: string; branch: string | null } | null>(null);
+  const [busy, setBusy] = useState<"generate" | "approve" | null>(null);
 
   const blocks = pages.find(({ id }) => id === page)?.blocks ?? [];
   const selected = blocks.find(({ id }) => id === blockId);
   const inputEstimate = estimateInputTokens(selected?.characters ?? 0, selected?.fieldCount ?? 0, instruction.length);
   const maximumEstimate = estimatedUsd(inputEstimate, MAX_OUTPUT_TOKENS);
 
+  const selection = { page, blockId, action, ...(github ? { branch: branch.trim() } : {}) };
+
+  function clearReview() {
+    setPreview(null);
+    setError("");
+    setSaved(null);
+  }
+
   function choosePage(id: LandingPageId) {
     setPage(id);
     setBlockId(pages.find((entry) => entry.id === id)?.blocks[0]?.id ?? "");
     setAction("rewrite");
-    setPreview(null);
-    setError("");
+    clearReview();
   }
 
   async function generate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!generationAvailable || !selected || busy) return;
-    setBusy(true);
-    setError("");
-    setPreview(null);
+    setBusy("generate");
+    clearReview();
     try {
       const response = await fetch("/api/admin/page-ai/generate", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ page, blockId, action, instruction }),
+        body: JSON.stringify({ ...selection, instruction }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -67,14 +76,38 @@ export function EnhancePanel({ pages, generationAvailable }: {
     } catch {
       setError("The preview could not be generated. Try again.");
     } finally {
-      setBusy(false);
+      setBusy(null);
+    }
+  }
+
+  async function approve() {
+    if (!preview?.approval || busy) return;
+    setBusy("approve");
+    setError("");
+    try {
+      const response = await fetch("/api/admin/page-ai/approve", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ...selection, after: preview.after, approval: preview.approval }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(typeof data.error === "string" ? data.error : "The preview could not be saved.");
+        return;
+      }
+      setSaved({ href: data.href, branch: data.branch });
+      setPreview(null);
+    } catch {
+      setError("The save could not be confirmed. Check the draft in the editor before trying again.");
+    } finally {
+      setBusy(null);
     }
   }
 
   return (
     <div className="mt-6">
       <form onSubmit={generate} className="rounded-xl border border-neutral-200 bg-white p-5 sm:p-6">
-        <fieldset disabled={busy} className="space-y-4">
+        <fieldset disabled={busy !== null} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <label className="text-sm font-semibold">
               Page
@@ -88,20 +121,27 @@ export function EnhancePanel({ pages, generationAvailable }: {
                 const id = event.target.value;
                 setBlockId(id);
                 setAction(blocks.find((block) => block.id === id)?.kind === "add" ? "add" : "rewrite");
-                setPreview(null);
-                setError("");
+                clearReview();
               }}>
                 {blocks.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
               </select>
             </label>
             <label className="text-sm font-semibold">
               Action
-              <select className={control} value={action} onChange={(event) => { setAction(event.target.value); setPreview(null); }}>
+              <select className={control} value={action} onChange={(event) => { setAction(event.target.value); clearReview(); }}>
                 {actionLabels.filter(([value]) => (value === "add") === (selected?.kind === "add")).map(([value, label]) =>
                   <option key={value} value={value}>{label}</option>)}
               </select>
             </label>
           </div>
+          {github && (
+            <div className="text-sm">
+              <label htmlFor="draft-branch" className="font-semibold">Draft branch</label>
+              <input id="draft-branch" className={control} value={branch} placeholder="content/home-refresh" required maxLength={120}
+                onChange={(event) => { setBranch(event.target.value); clearReview(); }} aria-describedby="draft-branch-help" />
+              <p id="draft-branch-help" className="mt-1 text-neutral-600">Use a content/ branch. Approval can create it if it does not exist.</p>
+            </div>
+          )}
           <label className="block text-sm font-semibold">
             Instruction <span className="font-normal text-neutral-600">(optional)</span>
             <textarea className={control} rows={3} value={instruction} maxLength={1500} onChange={(event) => setInstruction(event.target.value)} />
@@ -111,12 +151,18 @@ export function EnhancePanel({ pages, generationAvailable }: {
               ? `Estimated usage: about ${inputEstimate} input tokens and up to ${MAX_OUTPUT_TOKENS} output tokens (about ${dollars.format(maximumEstimate)} at that cap).`
               : "Generation is unavailable until a provider is configured."}
           </p>
-          <button className={button} type="submit" disabled={!generationAvailable || !selected} aria-describedby="preview-cost">
-            {busy ? "Generating…" : "Generate preview"}
+          <button className={button} type="submit" disabled={!generationAvailable || !selected || (github && !branch.trim())} aria-describedby="preview-cost">
+            {busy === "generate" ? "Generating…" : "Generate preview"}
           </button>
         </fieldset>
       </form>
       {error && <p role="alert" className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900">{error}</p>}
+      {saved && (
+        <p role="status" className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">
+          {saved.branch ? <>Saved to <strong>{saved.branch}</strong>. Review the branch and open a pull request when ready.</> : "Saved to the local draft."}{" "}
+          <a href={saved.href} className="font-semibold underline">Open in the page editor</a>
+        </p>
+      )}
       {preview && (
         <section aria-label="Draft preview" className="mt-6 rounded-xl border border-neutral-200 bg-white p-5 sm:p-6">
           <h2 className="text-xl font-semibold">Review changes</h2>
@@ -132,7 +178,15 @@ export function EnhancePanel({ pages, generationAvailable }: {
               </div>
             ))}
           </dl>
-          <button type="button" className="mt-4 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold" onClick={() => setPreview(null)}>Discard</button>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {preview.approval && (
+              <button type="button" className={button} disabled={busy !== null} onClick={approve}>
+                {busy === "approve" ? "Saving…" : "Approve and save draft"}
+              </button>
+            )}
+            <button type="button" className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold disabled:opacity-50"
+              disabled={busy !== null} onClick={clearReview}>Discard</button>
+          </div>
         </section>
       )}
     </div>
