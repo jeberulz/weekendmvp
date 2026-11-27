@@ -19,3 +19,9 @@
 - Capture the current Starter page from main, including both visual widths, accessible content and JSON-LD.
 - Feed the existing Starter sections from Keystatic. Preserve both subscription placements, the day sequence, cross-links, confirmation modal, live idea count and canonical metadata.
 - Keep the Build-Along price in live configuration and resolve its token at render. Verify the reader, price substitution, visual parity, and complete quality suite.
+
+## PR 3 · Starter Kit migration
+
+- Capture the two visual widths, section tree, JSON-LD and exact copyable prompts before switching the page from inline copy.
+- Expose Starter Kit copy, templates, scorecard, ideas and prompts through Keystatic. Preserve the instructional sequence, anchor IDs, navigation and code-owned signup and booking controls.
+- Verify the public page and round-trip the singleton through the editor. Verify the exact text handed to the clipboard component.
