@@ -158,6 +158,12 @@ Keep today's behavior (email unlocks, starts the 5-day Starter) as the default f
 - Every claim carries `dateChecked`. The page shows a single "last verified" date.
 - A re-check command re-fetches excerpts and reports drift. Tool-based guides (Claude Code) get a 30 day cadence.
 - Re-check can run as a session task (Tier A) or a scheduled job (Tier B).
+- Built (WP103-S7): `npm run guide:source-review -- recheck`. It reports each claim as unchanged, drifted (old excerpt and
+  the page's own sentence now), gone or unreachable, reproduces first-hand counts, and saves the result and the date next
+  to the record (`{slug}.recheck.json`, not part of the sealed record). It never edits the record or the review.
+- Decisions left to the owner: who runs it on the cadence (a scheduled GitHub Action, or a scheduled Claude task), whether
+  an unresolved drift should warn in `audit:guide`, and whether a clean mechanical re-check should refresh a source's age
+  without a full re-review. Today it does not: only `dateChecked` plus a redone review resets age.
 
 ## What the live check of PR 331 taught us (2026-11-26)
 

@@ -219,6 +219,32 @@ npm run audit:guide -- --slug={slug} --live --url=https://www.weekendmvp.app/gui
 
 Checks for every guide: no page errors, no sideways scroll at 390 pixels, no placeholder text, one currency. For a gated guide it also checks the locked state, the unlocked state and a reload as a returning reader. Pass `--email` only with a test address the owner controls, because the gated run subscribes it.
 
+## Step 11 — Re-check (after a guide is live, on its cadence)
+
+A guide's facts go stale. A vendor rewrites a page, a figure changes, a page disappears. Re-check on a cadence: **every 30 days for a tool guide** such as the Claude Code guide. The skill does not schedule this. The owner chooses how it runs (see below).
+
+```bash
+NODE_USE_ENV_PROXY=1 npm run guide:source-review -- recheck --record=guides/records/{slug}.json --write
+NODE_USE_ENV_PROXY=1 npm run guide:source-review -- recheck --all --write
+```
+
+It fetches every cited page again and reports each outside claim as:
+- `unchanged`: the excerpt is still on the page word for word.
+- `drifted`: the excerpt is not there as written, but a close passage is. The report shows the old excerpt and the page's own sentence now, with how much of the old wording it shares.
+- `gone`: the page has no passage close to it.
+- `unreachable`: the page could not be read. That is never a pass.
+
+It also reproduces first-hand counts from this repo (a count that no longer holds is drift), says when the last re-check ran and whether the next is overdue, and exits 1 when anything needs a person. `--write` saves `guides/records/{slug}.recheck.json`, which holds the result and the date, so commit it. It does not save when a page could not be read, so an incomplete check never resets the clock. `--pages-dir=<dir>` reads saved `<source id>.html` files instead of the web. `--every=<days>` changes the cadence.
+
+When a claim has drifted or is gone, read the page yourself before touching anything:
+- The meaning changed: update the claim text, the excerpt, `asOf`, the source's `dateChecked` and the guide copy together.
+- Only the wording changed: update the excerpt and `dateChecked`.
+- The sentence is gone: replace the claim and the copy, or drop both.
+
+Never edit an excerpt to match without reading the page. Any edit to the record makes the sealed review stale, so run `draft --force`, have an independent reviewer judge every claim again, `seal`, `check`, then `audit:guide`. **A re-check does not reset a source's age.** That moves only when `dateChecked` is updated and the review is redone, and the review fails any source last checked more than 120 days ago.
+
+Scheduling is the owner's call: a scheduled GitHub Action that runs `recheck --all` monthly, or a scheduled Claude task. Neither exists until the owner asks.
+
 ---
 
 ## Offers (upsell cards)
@@ -278,4 +304,5 @@ Not run: {anything that did not run, and why}
 - [ ] `audit:guide` clean, or its failures listed.
 - [ ] Typecheck, lint, tests and build run. `a11y-check` run. Screenshots at 390 and 1280 checked, banner open and closed.
 - [ ] Not deployed, not seeded, not merged to `main`.
+- [ ] Once live: re-check on its cadence (Step 11), 30 days for a tool guide.
 - [ ] Owner sign-off asked for (Step 9).
