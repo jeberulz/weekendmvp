@@ -15,3 +15,5 @@ The Anthropic provider uses the existing API key and Claude Haiku 5.5. The gener
 The approval route independently checks operator access, verifies a 15-minute proof of the preview and revalidates both the selected copy and the resulting page schema. Local approval serialises writes with the Keystatic handler and atomically replaces the reviewed file. GitHub approval uses the operator's Keystatic session and an optimistic file-SHA check. New branches start at the reviewed commit. Draft saves require `content/`.
 
 The fixtures cover all nine current page documents, a local write and replay, rejection of altered wording and stale content, an optional homepage checklist, and GitHub branch creation plus a conflicting create. Provider and GitHub calls use fixtures. The hosted workflow and a live operator sign-in still require the repository owner.
+
+The final local browser smoke passed the homepage edit and restore, operator access, anonymous and member 404s for both endpoints, missing-key refusal and rejection of an unreviewed save. The focused approval, generation and editor auth suites passed all 41 tests. Typecheck, lint and server trace checks passed.
