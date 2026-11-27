@@ -95,3 +95,9 @@ The hub still renders per request. Keystatic supplies metadata, editorial blocks
 
 The production HTML matched the published section tree, links and metadata. All twelve screenshots across the six supported time and inventory scenarios matched pixel for pixel. The production build and server trace checks passed, with the singleton in the route artifact. The existing live tests passed without edits.
 The local browser saved and reloaded all fields, and the test restored the original singleton. Both typechecks and lint passed. The full suite passed 7,205 tests.
+
+## PR 7 · Free webinar migration
+
+Local branch `codex/wp104-free-webinar-cms` stacks on the Live hub. Keystatic supplies the four phase variants and editorial sections. Agenda timing, screen artwork, title, registration and replay destinations, proof availability and JSON-LD remain code-owned.
+
+The production HTML matched the published section tree, links and JSON-LD in all eight combinations of phase and configured URLs. All eight screenshots matched pixel for pixel after preserving the two original text runs in the open-state subtitle. A browser editor save round-tripped the singleton and restored the committed JSON. The app and Convex typechecks, lint, production builds and server traces passed. The run of the full suite passed 7,214 tests and the final text-run change passed the focused webinar and live suites.
