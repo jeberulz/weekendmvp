@@ -53,3 +53,11 @@ PR #348 merged the spike with a green hosted quality check. This branch starts f
 The guide and CLI audit use the same Keystatic Reader. The page still prerenders, and the server trace includes the guide JSON. The reader matches the original section inputs, keeps the original fragment IDs through reorder, and derives the gate's next link from the first protected section. The FAQ moves with its closing panel. The countdown and live workshop price remain outside the guide content model. Existing guide links and publication dates from main survive the migration.
 
 The production visual gate passed at 375 and 1440 pixels in both locked and returning states. The built guide's JSON-LD matched the pre-switch script byte for byte. The full suite passed 7,194 tests, and typechecks, lint, production build, trace checks and guide audit passed. A local browser save and reload round-tripped the full singleton. The seed omits its optional empty hero label to match Keystatic's serializer.
+
+## PR 2 · Starter migration
+
+Local branch `codex/wp104-starter-cms` stacks on the verified builder guide migration. The Starter's two production screenshots, rendered section tree and JSON-LD were captured from main at `692b7b3f` before the Keystatic switch.
+
+The Starter reads a JSON singleton through Keystatic and still prerenders. The trace contains the singleton. Editors can update the fixed opening and final signup copy, arrange the four middle sections and edit the five emails in sequence. Form placement, automation IDs, subscription callbacks, live idea count and offer routing come from code. Build-Along link labels contain a validated price token and render the standard USD price from live configuration.
+
+Both final screenshots match pixel for pixel. The actual production HTML matches the published section and JSON-LD fixtures. Restoring the original adjacent text grouping resolved small raster differences in the first candidate. The editor browser test round-tripped the Starter JSON, and the full suite passed 7,196 tests. Lint, both typechecks and trace checks passed.
