@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   cacheComponents: true,
   allowedDevOrigins: ["127.0.0.1"],
+  experimental: {
+    agentUpgrade: "security",
+  },
   // Own trailing-slash 308s in middleware so apex+slash collapses to www
   // clean in one hop (WP13). Without this, Next emits a same-host relative
   // slash redirect before our apex→www logic can run.
