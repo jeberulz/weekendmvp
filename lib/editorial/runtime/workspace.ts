@@ -48,7 +48,7 @@ export type ActiveWorkspace = Extract<EditorialWorkspace, { status: "fixture" | 
 
 export const FIXTURE_MODE_VALUE = "local-demo";
 
-async function resolveLiveWorkspace(): Promise<EditorialWorkspace> {
+export async function resolveLiveWorkspace(): Promise<EditorialWorkspace> {
   if (!isValidPlatformConvexUrl(process.env.NEXT_PUBLIC_CONVEX_URL)) {
     return { status: "unavailable", reason: "not_configured" };
   }

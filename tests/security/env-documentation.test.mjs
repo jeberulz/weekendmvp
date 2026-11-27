@@ -128,8 +128,11 @@ test("every statically referenced environment key is named in .env.example", asy
     }
   }
 
+  // These are inherited from the operating system when a gate launches Next.
+  // A copied .env.example must never overwrite the shell path or home directory.
+  const hostEnvironment = new Set(["PATH", "HOME", "TMPDIR"]);
   const missing = [...references.keys()]
-    .filter((key) => !documented.has(key))
+    .filter((key) => !hostEnvironment.has(key) && !documented.has(key))
     .sort();
 
   assert.deepEqual(
