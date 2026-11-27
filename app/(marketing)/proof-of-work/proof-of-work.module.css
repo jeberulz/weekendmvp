@@ -36,10 +36,6 @@
   padding-block: clamp(56px, 8vw, 96px);
 }
 
-.tight {
-  padding-top: 0;
-}
-
 /* Announcement strip — thin dark-teal bar, scrolls away. */
 .strip {
   background: var(--pow-teal-deep);

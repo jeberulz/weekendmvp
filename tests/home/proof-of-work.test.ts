@@ -228,6 +228,21 @@ describe("Proof of Work landing page", () => {
     }
   });
 
+  it("gives the capture and closing sections the page's standard section spacing", () => {
+    // Both bands previously used the `tight` override (padding-top: 0), so
+    // the capture eyebrow sat flush against the gateway above while the
+    // band's bottom padding stacked against the next section's top padding.
+    // They now use the standard section padding like every other section.
+    const capture = html.match(/<section[^>]*\bid="get"[^>]*>/);
+    expect(capture).not.toBeNull();
+    expect(capture![0]).not.toContain("tight");
+    const closing = html.match(
+      /<section[^>]*aria-labelledby="proof-closing-title"[^>]*>/,
+    );
+    expect(closing).not.toBeNull();
+    expect(closing![0]).not.toContain("tight");
+  });
+
   it("has the right metadata", () => {
     expect(metadata.title).toEqual({
       absolute:
