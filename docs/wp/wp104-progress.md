@@ -41,3 +41,7 @@ The spike was updated through main at `69baeb5d`. The main-branch CI run failed 
 The updated branch passed 7,186 tests, both typechecks, lint, the production build and artifact trace checks. The built guide passed its HTML test, and its JSON-LD was byte-identical to the file captured from pristine main. The latest visual replay passed all 44 references, with the existing rounding allowance used on two mobile checkout images. An earlier replay differed at two mobile Shipable pixels. The final replay matched them exactly with the same reference and comparison rules.
 
 The owner-run hosted PR 0 check remains the entry gate for page migrations.
+
+## PR 1 · Builder guide migration
+
+The owner reported that PR 0 passed its hosted check and authorised the migration. Local branch `codex/wp104-guide-cms` starts at the verified PR 0 tip `efc98494`. The remote branch initially points to that same commit. The pristine guide reader and JSON-LD fixtures come from `43721c0f`.
