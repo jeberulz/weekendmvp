@@ -19,7 +19,7 @@ const appPort = 44074;
 const convexPort = 44075;
 const origin = `http://127.0.0.1:${appPort}`;
 const singleton = process.argv[3] ?? "guide-5-to-9-builder";
-assert(singleton === "guide-5-to-9-builder" || (mode === "dev-local" && ["starter-5-to-9", "starter-kit", "shipable", "dare", "live-hub"].includes(singleton)),
+assert(singleton === "guide-5-to-9-builder" || (mode === "dev-local" && ["starter-5-to-9", "starter-kit", "shipable", "dare", "live-hub", "live-48-hours"].includes(singleton)),
   "The selected content singleton is supported in dev-local mode");
 const fixtureFile = `content/landing-pages/${singleton}/index.json`;
 const github = mode.includes("github") || mode === "build";
@@ -169,8 +169,12 @@ async function checkEditor(browser) {
   assert.equal(new URL(page.url()).pathname, `/admin/pages/singleton/${singleton}`);
   const original = await readFile(fixtureFile, "utf8");
   const baseline = JSON.parse(original);
-  assert.equal(await field.evaluate((input) => input.value), baseline.seoTitle);
+  const webinar = singleton === "live-48-hours";
+  assert.equal(await field.evaluate((input) => input.value), webinar ? baseline.hero.open.intro : baseline.seoTitle);
   const editedTitle = "Smoke check " + randomUUID();
+  const edited = webinar
+    ? { ...baseline, hero: { ...baseline.hero, open: { ...baseline.hero.open, intro: editedTitle } } }
+    : { ...baseline, seoTitle: editedTitle };
   try {
     await field.focus();
     await field.evaluate((input) => input.select());
@@ -178,7 +182,7 @@ async function checkEditor(browser) {
     const saved = page.waitForResponse((r) => new URL(r.url()).pathname === "/api/keystatic/update" && r.request().method() === "POST");
     await page.locator('::-p-aria(Save[role="button"])').click();
     assert.equal((await saved).status(), 200);
-    assert.deepEqual(JSON.parse(await readFile(fixtureFile, "utf8")), { ...baseline, seoTitle: editedTitle });
+    assert.deepEqual(JSON.parse(await readFile(fixtureFile, "utf8")), edited);
     await page.reload({ waitUntil: "domcontentloaded" });
     const persisted = await page.waitForSelector('input[aria-labelledby][aria-required="true"]');
     assert.equal(await persisted.evaluate((input) => input.value), editedTitle);
@@ -190,7 +194,7 @@ async function checkEditor(browser) {
   } finally {
     const after = await readFile(fixtureFile, "utf8");
     if (after !== original) {
-      assert.deepEqual(JSON.parse(after), { ...baseline, seoTitle: editedTitle }, "Refusing to overwrite an unexpected edit");
+      assert.deepEqual(JSON.parse(after), edited, "Refusing to overwrite an unexpected edit");
       await writeFile(fixtureFile, original);
     }
   }

@@ -4,7 +4,7 @@ function dateLabel(ms: number, weekday?: "short") {
   return new Intl.DateTimeFormat("en-GB", { weekday, day: "numeric", month: "short", timeZone: "UTC" }).format(ms);
 }
 
-function timeLabel(ms: number, timeZone = "UTC") {
+export function timeLabel(ms: number, timeZone = "UTC") {
   return new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone }).format(ms);
 }
 

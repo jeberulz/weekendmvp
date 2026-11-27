@@ -12,6 +12,7 @@ import { Em } from "@/components/home/ui";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { newsreaderEditorial } from "@/lib/fonts";
 import { FREE_WEBINAR, LIVE_ASSETS, STARTUP_IDEAS_HREF, liveUrls } from "@/lib/live/config";
+import { readFreeWebinar } from "@/lib/landing/read-free-webinar";
 import { freeWebinarPhase } from "@/lib/live/schedule";
 import { readLiveClockMs } from "@/lib/live/now";
 import { cn } from "@/lib/utils";
@@ -23,18 +24,7 @@ import {
   personSchema,
 } from "@/lib/seo";
 
-import {
-  FREE_AGENDA,
-  FREE_FOR_YOU,
-  FREE_LEAVE_WITH,
-  FREE_NOT_FOR_YOU,
-  HYDROTRAIL,
-  HYDROTRAIL_OUTPUTS,
-  HYDROTRAIL_SCREENS,
-  PROMISE,
-  WEEKEND_TEST,
-  freeFaqItemsVisible,
-} from "./free-data";
+import { AGENDA, PRODUCT_NAME, SCREENS, freeFaqItemsVisible, freeWebinarText } from "./free-data";
 import { HikeScreenMock, ScreenSketch } from "./hydrotrail-sketches";
 import { RegisterBar } from "./RegisterBar";
 
@@ -129,12 +119,18 @@ function SeatButton({ lumaUrl, className }: { lumaUrl: string; className?: strin
   );
 }
 
+async function getFreeWebinarCopy() {
+  "use cache";
+  return readFreeWebinar();
+}
+
 export default async function FreeWebinarPage() {
   await connection();
   const now = readLiveClockMs();
   const phase = freeWebinarPhase(now);
   const urls = liveUrls();
   const proof = LIVE_ASSETS.freeProofQuotes;
+  const { hero, whatItDoes, screens, agenda, promise, weekendTest, leaveWith, host, proofQuotes, finalCta, faq } = await getFreeWebinarCopy();
 
   return (
     <div
@@ -148,12 +144,10 @@ export default async function FreeWebinarPage() {
         {phase === "live" ? (
           <section className="mx-auto max-w-[1120px] px-5 pt-28 pb-14 sm:px-10 sm:pt-36 sm:pb-20">
             <h1 className="font-editorial text-[46px] leading-[1.02] font-medium tracking-[-0.02em] sm:text-[76px]">
-              We&apos;re <Em>live.</Em>
+              {hero.live.title + " "}<Em>{hero.live.accent}</Em>
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#4A453C]">
-              HydroTrail, a hydration coach for hikers, is being built right now from an empty
-              folder. The stream is public, so you don&apos;t need to sign up to watch. Register
-              on Luma to get the replay for 7 days.
+              {freeWebinarText(hero.live.body)}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               {urls.youtubeLiveUrl ? (
@@ -177,12 +171,10 @@ export default async function FreeWebinarPage() {
         ) : phase === "replay" ? (
           <section className="mx-auto max-w-[1120px] px-5 pt-28 pb-14 sm:px-10 sm:pt-36 sm:pb-20">
             <h1 className="font-editorial text-[46px] leading-[1.02] font-medium tracking-[-0.02em] sm:text-[64px]">
-              This session has <Em>ended.</Em>
+              {hero.replay.title + " "}<Em>{hero.replay.accent}</Em>
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#4A453C]">
-              Registrants: the replay is in your email, for 7 days after the session. After
-              that, an edited version goes up on YouTube. Missed it? Start with the free
-              library and the Starter Kit.
+              {freeWebinarText(hero.replay.body)}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <LiveButton href={STARTUP_IDEAS_HREF} variant="primary">
@@ -199,13 +191,11 @@ export default async function FreeWebinarPage() {
         ) : phase === "ended" ? (
           <section className="mx-auto max-w-[1120px] px-5 pt-28 pb-14 sm:px-10 sm:pt-36 sm:pb-20">
             <h1 className="font-editorial text-[46px] leading-[1.02] font-medium tracking-[-0.02em] sm:text-[64px]">
-              This session has <Em>ended.</Em>
+              {hero.ended.title + " "}<Em>{hero.ended.accent}</Em>
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#4A453C]">
-              {urls.youtubeReplayUrl
-                ? "An edited replay is on YouTube."
-                : "An edited replay is coming to YouTube."}{" "}
-              Next free webinar coming soon.
+              {urls.youtubeReplayUrl ? hero.ended.replayReady : hero.ended.replayPending}{" "}
+              {hero.ended.ending}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               {urls.youtubeReplayUrl ? (
@@ -234,23 +224,21 @@ export default async function FreeWebinarPage() {
                 Build a real app live in <Em>one hour</Em> (free)
               </h1>
               <p className="font-editorial mt-5 text-[22px] leading-[1.32] text-balance sm:text-[26px]">
-                On Saturday I build{" "}
-                <span className="font-medium text-home-orange-ink">{HYDROTRAIL.name}</span>,{" "}
-                {HYDROTRAIL.oneLiner}, starting from an empty folder.
+                {hero.open.intro}{" "}
+                <span className="font-medium text-home-orange-ink">{PRODUCT_NAME}</span>,{" "}
+                {hero.open.product}
               </p>
               <p className="font-editorial mt-3 text-[19px] leading-snug text-[#4A453C] italic sm:text-[21px]">
-                &ldquo;{HYDROTRAIL.hook}&rdquo;
+                &ldquo;{hero.open.hook}&rdquo;
               </p>
               <p className="mt-4 max-w-[46ch] leading-relaxed text-[#4A453C]">
-                I work in Claude Code on YouTube Live. By about 16:25 the first screen should be
-                running. If something breaks, you&apos;ll see me fix it.
+                {freeWebinarText(hero.open.body)}
               </p>
 
               <div id="hero-register" className="mt-6 grid justify-items-start gap-2.5 sm:mt-7">
                 <SeatButton lumaUrl={urls.lumaEventUrl} />
                 <p className="max-w-[44ch] text-sm leading-relaxed text-[#6B6457]">
-                  Luma sends a reminder and the replay, which stays up for 7 days. The stream is
-                  public, so you can also just turn up.
+                  {freeWebinarText(hero.open.registrationNote)}
                 </p>
               </div>
               <div className="mt-5 border-t border-home-rule pt-4 text-[15px] leading-relaxed text-[#4A453C]">
@@ -295,26 +283,15 @@ export default async function FreeWebinarPage() {
           <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
             <div>
               <h2 id="does-heading" className={H2}>
-                HydroTrail sets your water by the trail
+                {whatItDoes.title}
               </h2>
-              <p className={LEAD}>
-                Day-hikers plan to sip every 20 minutes. Then the heat and the climbs break the
-                plan.
-              </p>
-              <p className={LEAD}>
-                Apple Health, Garmin and kitchen water apps remind you on a wall clock. They
-                don&apos;t know you just climbed 550 m (1,800 ft) in the heat.
-              </p>
-              <p className={LEAD}>
-                HydroTrail starts from your weight and the packets you carry, then adjusts for
-                heat, altitude and pace.
-              </p>
+              {whatItDoes.intro.map((paragraph, index) => <p key={index} className={LEAD}>{paragraph}</p>)}
             </div>
 
             <div>
               <dl className="divide-y divide-home-rule border-y border-home-rule">
-                {HYDROTRAIL_OUTPUTS.map((item) => (
-                  <div key={item.title} className="py-4">
+                {whatItDoes.outputs.map((item, index) => (
+                  <div key={index} className="py-4">
                     <dt className="font-editorial text-[21px] leading-tight">{item.title}</dt>
                     <dd className="mt-1 text-[15px] leading-relaxed text-[#4A453C]">
                       {item.body}
@@ -323,18 +300,17 @@ export default async function FreeWebinarPage() {
                 ))}
               </dl>
               <p className="mt-6 rounded-2xl bg-home-sunk px-5 py-4 text-[15px] leading-relaxed text-[#4A453C]">
-                The rules are plain TypeScript, with no AI call on each step. Heat over{" "}
+                {whatItDoes.rulesIntro + " Heat over"}{" "}
                 <code className="font-mono text-sm text-home-ink">24°C</code>, altitude over{" "}
                 <code className="font-mono text-sm text-home-ink">2,500 m</code> or a grade over{" "}
                 <code className="font-mono text-sm text-home-ink">8%</code> raises the target. It
-                never goes past <code className="font-mono text-sm text-home-ink">1.2 L/h</code>.
-                At the cap it tells you to slow down and find shade.
+                never goes past <code className="font-mono text-sm text-home-ink">1.2 L/h</code>{". " + whatItDoes.rulesEnding}
               </p>
               <Link
                 href={DEMO_IDEA_HREF}
                 className={`mt-6 inline-flex items-center gap-2 font-semibold text-home-orange-ink underline decoration-home-rule underline-offset-4 hover:decoration-home-orange-ink ${FOCUS}`}
               >
-                Read the HydroTrail idea page
+                {whatItDoes.ideaLink}
                 <ArrowRight aria-hidden="true" className="size-[18px]" strokeWidth={2.25} />
               </Link>
             </div>
@@ -344,20 +320,19 @@ export default async function FreeWebinarPage() {
         {/* The four screens */}
         <section aria-labelledby="screens-heading" className={SECTION}>
           <h2 id="screens-heading" className={H2}>
-            The four screens, in the order I build them
+            {screens.title}
           </h2>
           <p className={LEAD}>
-            The landing screen is the one I promise to get working. Setup and the live hike come
-            next. The recap comes last, if time holds.
+            {screens.intro}
           </p>
           <ol className="mt-10 grid grid-cols-2 gap-x-4 gap-y-9 lg:grid-cols-4 lg:gap-6">
-            {HYDROTRAIL_SCREENS.map((screen) => (
+            {SCREENS.map((screen) => (
               <li key={screen.key} className="flex flex-col">
                 <div className="mx-auto w-full max-w-[230px]">
                   <ScreenSketch kind={screen.key} />
                 </div>
                 <h3 className="font-editorial mt-4 text-xl leading-tight font-medium">
-                  {screen.title}
+                  {screens[screen.key].title}
                 </h3>
                 <p
                   className={
@@ -368,59 +343,63 @@ export default async function FreeWebinarPage() {
                 >
                   {screen.status}
                 </p>
-                <p className="mt-1 text-sm leading-relaxed text-[#4A453C]">{screen.body}</p>
+                <p className="mt-1 text-sm leading-relaxed text-[#4A453C]">{screens[screen.key].body}</p>
               </li>
             ))}
           </ol>
           <p className="mt-9 max-w-[64ch] text-[15px] leading-relaxed text-[#6B6457]">
-            Built with Claude Code on Next.js, Tailwind and shadcn. Data stays on the device for
-            now. Supabase sign-in is the next step, and you can add it yourself afterwards.
+            {screens.closing}
           </p>
         </section>
 
         {/* How the hour runs */}
         <section aria-labelledby="agenda-heading" className={SECTION}>
           <h2 id="agenda-heading" className={H2}>
-            How the hour runs
+            {agenda.title}
           </h2>
-          <p className={LEAD}>All times GMT on Saturday 31 October.</p>
+          <p className={LEAD}>{freeWebinarText(agenda.intro)}</p>
           <ol className="mt-8 divide-y divide-home-rule border-y border-home-rule">
-            {FREE_AGENDA.map((row) => (
-              <li
-                key={row.clock}
-                className="grid grid-cols-[96px_minmax(0,1fr)] gap-3 py-4 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-6"
-              >
-                <span
-                  className={
-                    row.mark
-                      ? "font-mono text-sm leading-7 text-home-orange-ink tabular-nums"
-                      : "font-mono text-sm leading-7 text-[#4A453C] tabular-nums"
-                  }
+            {AGENDA.map((slot) => {
+              const row = agenda[slot.key];
+              const body = "body" in row ? row.body : null;
+              const mark = "mark" in row ? row.mark : null;
+              return (
+                <li
+                  key={slot.key}
+                  className="grid grid-cols-[96px_minmax(0,1fr)] gap-3 py-4 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-6"
                 >
-                  {row.approx ? (
-                    <>
-                      <span aria-hidden="true">~</span>
-                      <span className="sr-only">About </span>
-                    </>
-                  ) : null}
-                  {row.clock}
-                </span>
-                <div>
-                  <h3 className="font-editorial text-[19px] leading-7 font-medium">{row.title}</h3>
-                  {row.body ? (
-                    <p className="mt-0.5 max-w-[56ch] text-[15px] leading-relaxed text-[#4A453C]">
-                      {row.body}
-                      {row.mark ? (
-                        <>
-                          {" "}
-                          <strong className="font-semibold text-home-orange-ink">{row.mark}</strong>
-                        </>
-                      ) : null}
-                    </p>
-                  ) : null}
-                </div>
-              </li>
-            ))}
+                  <span
+                    className={
+                      "milestone" in slot
+                        ? "font-mono text-sm leading-7 text-home-orange-ink tabular-nums"
+                        : "font-mono text-sm leading-7 text-[#4A453C] tabular-nums"
+                    }
+                  >
+                    {"approx" in slot ? (
+                      <>
+                        <span aria-hidden="true">~</span>
+                        <span className="sr-only">About </span>
+                      </>
+                    ) : null}
+                    {slot.clock}
+                  </span>
+                  <div>
+                    <h3 className="font-editorial text-[19px] leading-7 font-medium">{row.title}</h3>
+                    {body ? (
+                      <p className="mt-0.5 max-w-[56ch] text-[15px] leading-relaxed text-[#4A453C]">
+                        {body}
+                        {mark ? (
+                          <>
+                            {" "}
+                            <strong className="font-semibold text-home-orange-ink">{mark}</strong>
+                          </>
+                        ) : null}
+                      </p>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })}
           </ol>
         </section>
 
@@ -428,18 +407,18 @@ export default async function FreeWebinarPage() {
         <section aria-labelledby="promise-heading" className="mx-auto max-w-[1120px] px-5 py-4 sm:px-10">
           <div className="rounded-[22px] bg-home-panel px-6 py-10 text-[#d6cdbd] sm:px-14 sm:py-14">
             <h2 id="promise-heading" className={`${H2} text-white`}>
-              What I promise, and what I don&apos;t
+              {promise.title}
             </h2>
             <dl className="mt-7 grid gap-5 sm:grid-cols-3 sm:gap-8">
-              {PROMISE.map((item) => (
-                <div key={item.term}>
+              {promise.items.map((item, index) => (
+                <div key={index}>
                   <dt className="font-semibold text-white">{item.term}</dt>
                   <dd className="mt-1 leading-relaxed">{item.body}</dd>
                 </div>
               ))}
             </dl>
             <p className="mt-7 border-t border-home-panel-rule pt-5">
-              If something breaks, you&apos;ll see me fix it.
+              {promise.closing}
             </p>
             {phase === "open" && urls.lumaEventUrl ? (
               <div className="mt-6">
@@ -455,15 +434,14 @@ export default async function FreeWebinarPage() {
         {/* Weekend test */}
         <section aria-labelledby="test-heading" className={SECTION}>
           <h2 id="test-heading" className={H2}>
-            Why HydroTrail passes the weekend test
+            {weekendTest.title}
           </h2>
           <p className={LEAD}>
-            If an idea passes all six checks, a first version fits in one weekend. Here is how
-            HydroTrail scores.
+            {weekendTest.intro}
           </p>
           <dl className="mt-8 grid border-t border-home-rule sm:grid-cols-2 sm:gap-x-10">
-            {WEEKEND_TEST.map((check) => (
-              <div key={check.title} className="border-b border-home-rule py-3.5">
+            {weekendTest.checks.map((check, index) => (
+              <div key={index} className="border-b border-home-rule py-3.5">
                 <dt className="flex items-start gap-3 font-semibold">
                   <Check
                     aria-hidden="true"
@@ -484,21 +462,21 @@ export default async function FreeWebinarPage() {
         <section className="mx-auto max-w-[1120px] px-5 pb-14 sm:px-10 sm:pb-20">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-14">
             <div>
-              <h2 className={H2}>What you leave with</h2>
+              <h2 className={H2}>{leaveWith.title}</h2>
               <ul className="mt-5 space-y-3 text-[15px] leading-relaxed text-[#4A453C]">
-                {FREE_LEAVE_WITH.map((item) => (
-                  <li key={item}>{item}</li>
+                {leaveWith.outcomes.map((item, index) => (
+                  <li key={index}>{item}</li>
                 ))}
               </ul>
             </div>
             <div>
-              <h2 className={H2}>Who this is for</h2>
+              <h2 className={H2}>{leaveWith.audienceTitle}</h2>
               <ul className="mt-5 space-y-3 text-[15px] leading-relaxed text-[#4A453C]">
-                {FREE_FOR_YOU.map((item) => (
-                  <li key={item}>{item}</li>
+                {leaveWith.audience.map((item, index) => (
+                  <li key={index}>{item}</li>
                 ))}
               </ul>
-              <p className="mt-4 text-[15px] text-[#6B6457]">{FREE_NOT_FOR_YOU}</p>
+              <p className="mt-4 text-[15px] text-[#6B6457]">{leaveWith.notFor}</p>
             </div>
           </div>
 
@@ -515,14 +493,14 @@ export default async function FreeWebinarPage() {
             ) : null}
             <div>
               <h2 className="font-editorial text-[26px] leading-tight font-medium">
-                John Iseghohi
+                {host.title}
               </h2>
               <p className="mt-2 max-w-[60ch] text-[15px] leading-relaxed text-[#4A453C]">
-                Staff product designer and founder of Weekend MVP.{" "}
+                {host.intro}{" "}
                 {LIVE_ASSETS.hostEveningsConfirmed
                   ? "I build Weekend MVP around a full-time job, on evenings and Saturdays. "
                   : null}
-                On Saturday I take one idea from the site and build it in front of you.
+                {host.body}
               </p>
             </div>
           </div>
@@ -531,7 +509,7 @@ export default async function FreeWebinarPage() {
         {/* Proof — hidden until quotes exist */}
         {proof.length >= 2 ? (
           <section className={SECTION}>
-            <h2 className={H2}>From people who came</h2>
+            <h2 className={H2}>{proofQuotes.title}</h2>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {proof.map((q) => (
                 <blockquote
@@ -546,20 +524,20 @@ export default async function FreeWebinarPage() {
           </section>
         ) : null}
 
-        <LiveFaq items={freeFaqItemsVisible()} />
+        <LiveFaq heading={faq.title} items={freeFaqItemsVisible(faq)} />
 
         {/* Final CTA — only useful while registration is open */}
         {phase === "open" ? (
           <section className="mx-auto max-w-[1120px] px-5 pb-24 sm:px-10">
             <div className="rounded-[20px] border border-home-rule bg-home-card px-6 py-12 text-center sm:px-14 sm:py-14">
-              <h2 className={H2}>Watch HydroTrail get built</h2>
+              <h2 className={H2}>{finalCta.title}</h2>
               <p className="mt-3 text-[#4A453C]">
                 Sat 31 Oct, 16:00–17:00 GMT, on YouTube Live. Free.
               </p>
               <div className="mt-6 grid justify-items-center gap-2.5">
                 <SeatButton lumaUrl={urls.lumaEventUrl} />
                 <p className="text-sm text-[#6B6457]">
-                  Reminders and the 7-day replay come by email.
+                  {freeWebinarText(finalCta.note)}
                 </p>
               </div>
             </div>

@@ -42,6 +42,10 @@ Select **Dare (draft)** for editorial copy and the existing worked examples. Kee
 
 Select **Live hub** for the opening, explanatory copy, host bio, audience lists and FAQs. Keep one of each editorial section. Keep `{sessionTimes}` in the local-time FAQ and `{nextBuildAlongLabel}` in the next-session answer. Code supplies session cards, dates, prices, inventory, links and the confirmed sentence about the host's working hours.
 
+## Editing the free webinar
+
+Select **Free webinar** for the open, live, replay and ended copy. The published title, schedule, screen sketches, registration and replay destinations come from code. Keep `{replayDays}`, `{longDate}` and `{firstScreenTime}` where the current copy uses them. The FAQ also uses `{timeZoneSummary}`, `{tools}` and `{supportEmail}`. The tools answer requires configured tools. The attendee section requires at least two configured quotes.
+
 ## GitHub setup for the owner
 
 1. Protect `main` on GitHub. Require a pull request and passing CI. Apply the rule to the owner and GitHub App, including administrator bypass settings. Keystatic opens the repository default branch. Saving there prompts for a content branch before sending a commit. GitHub enforces branch protection independently for every client.

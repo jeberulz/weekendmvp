@@ -1,0 +1,247 @@
+{
+  "hero": {
+    "open": {
+      "intro": "On Saturday I build",
+      "product": "a hydration coach for hikers, starting from an empty folder.",
+      "hook": "Your bladder is full. Your plan is already wrong.",
+      "body": "I work in Claude Code on YouTube Live. By about {firstScreenTime} the first screen should be running. If something breaks, you'll see me fix it.",
+      "registrationNote": "Luma sends a reminder and the replay, which stays up for {replayDays} days. The stream is public, so you can also just turn up."
+    },
+    "live": {
+      "title": "We're",
+      "accent": "live.",
+      "body": "HydroTrail, a hydration coach for hikers, is being built right now from an empty folder. The stream is public, so you don't need to sign up to watch. Register on Luma to get the replay for {replayDays} days."
+    },
+    "replay": {
+      "title": "This session has",
+      "accent": "ended.",
+      "body": "Registrants: the replay is in your email, for {replayDays} days after the session. After that, an edited version goes up on YouTube. Missed it? Start with the free library and the Starter Kit."
+    },
+    "ended": {
+      "title": "This session has",
+      "accent": "ended.",
+      "replayReady": "An edited replay is on YouTube.",
+      "replayPending": "An edited replay is coming to YouTube.",
+      "ending": "Next free webinar coming soon."
+    }
+  },
+  "whatItDoes": {
+    "title": "HydroTrail sets your water by the trail",
+    "intro": [
+      "Day-hikers plan to sip every 20 minutes. Then the heat and the climbs break the plan.",
+      "Apple Health, Garmin and kitchen water apps remind you on a wall clock. They don't know you just climbed 550 m (1,800 ft) in the heat.",
+      "HydroTrail starts from your weight and the packets you carry, then adjusts for heat, altitude and pace."
+    ],
+    "outputs": [
+      {
+        "title": "A sip target",
+        "body": "Millilitres per hour, updated as the heat, the climb and your pace change."
+      },
+      {
+        "title": "A next-packet time",
+        "body": "When to take your next electrolyte or carb packet."
+      },
+      {
+        "title": "A “Took a sip” button",
+        "body": "One tap logs it, with your other hand still on a pole."
+      }
+    ],
+    "rulesIntro": "The rules are plain TypeScript, with no AI call on each step.",
+    "rulesEnding": "At the cap it tells you to slow down and find shade.",
+    "ideaLink": "Read the HydroTrail idea page"
+  },
+  "screens": {
+    "title": "The four screens, in the order I build them",
+    "intro": "The landing screen is the one I promise to get working. Setup and the live hike come next. The recap comes last, if time holds.",
+    "closing": "Built with Claude Code on Next.js, Tailwind and shadcn. Data stays on the device for now. Supabase sign-in is the next step, and you can add it yourself afterwards.",
+    "landing": {
+      "title": "Landing",
+      "body": "What HydroTrail is and who it's for."
+    },
+    "setup": {
+      "title": "Setup",
+      "body": "Weight, duration, temperature, humidity and your packets."
+    },
+    "hike": {
+      "title": "Live hike",
+      "body": "The sip target, a countdown and the packet prompt."
+    },
+    "recap": {
+      "title": "Recap",
+      "body": "Planned against confirmed intake, and a sweat-rate tweak."
+    }
+  },
+  "agenda": {
+    "title": "How the hour runs",
+    "intro": "All times GMT on {longDate}.",
+    "idea": {
+      "title": "Why HydroTrail",
+      "body": "I explain the idea and open an empty folder. Put the idea you've been sitting on in the chat, in five words."
+    },
+    "test": {
+      "title": "The weekend test",
+      "body": "I score HydroTrail against the six checks, then two ideas from the chat."
+    },
+    "prompts": {
+      "title": "The idea page and Prompt 1",
+      "body": "I open the HydroTrail idea page and its research, then paste Prompt 1 into Claude Code."
+    },
+    "firstScreen": {
+      "title": "First screen working",
+      "body": "The landing screen runs, built from the empty folder.",
+      "mark": "This is the promise."
+    },
+    "remainingScreens": {
+      "title": "Setup and the live hike",
+      "body": "The next two screens, then the recap if time holds."
+    },
+    "deploy": {
+      "title": "Deploy",
+      "body": "If it holds, it goes live on a public link before the hour's up.",
+      "mark": "A bonus, not a promise."
+    },
+    "questions": {
+      "title": "Your questions",
+      "body": "Ask anything, including how to run the same steps on your own idea."
+    },
+    "close": {
+      "title": "Close"
+    }
+  },
+  "promise": {
+    "title": "What I promise, and what I don't",
+    "items": [
+      {
+        "term": "Promised",
+        "body": "HydroTrail's first working screen, built live from an empty folder."
+      },
+      {
+        "term": "Planned",
+        "body": "Setup and the live hike, then the recap if time holds."
+      },
+      {
+        "term": "Not promised",
+        "body": "A public link. If it holds, it goes live before the hour's up."
+      }
+    ],
+    "closing": "If something breaks, you'll see me fix it."
+  },
+  "weekendTest": {
+    "title": "Why HydroTrail passes the weekend test",
+    "intro": "If an idea passes all six checks, a first version fits in one weekend. Here is how HydroTrail scores.",
+    "checks": [
+      {
+        "title": "One core feature",
+        "body": "A sip target that moves with the trail."
+      },
+      {
+        "title": "Three screens",
+        "body": "Setup, live hike and recap."
+      },
+      {
+        "title": "Existing tools",
+        "body": "Claude Code, Next.js, Tailwind and shadcn."
+      },
+      {
+        "title": "A buyer you can name",
+        "body": "Weekend day-hikers."
+      },
+      {
+        "title": "About 10 hours",
+        "body": "To a first version, around a day job."
+      },
+      {
+        "title": "Prompts included",
+        "body": "The build prompts are on the idea page."
+      }
+    ]
+  },
+  "leaveWith": {
+    "title": "What you leave with",
+    "outcomes": [
+      "The order I work in: prompts first, then one screen at a time. You can run it on your own idea.",
+      "The six weekend-test checks, to score your own idea.",
+      "The 48-hour plan from the free Starter Kit, for Friday night, Saturday and Sunday."
+    ],
+    "audienceTitle": "Who this is for",
+    "audience": [
+      "Designers who want to build their own product with AI.",
+      "Non-technical founders with a day job and no co-founder.",
+      "Anyone with an idea, or several, who has never got one live."
+    ],
+    "notFor": "It isn't a coding course or a six-month program."
+  },
+  "host": {
+    "title": "John Iseghohi",
+    "intro": "Staff product designer and founder of Weekend MVP.",
+    "body": "On Saturday I take one idea from the site and build it in front of you."
+  },
+  "proofQuotes": {
+    "title": "From people who came"
+  },
+  "finalCta": {
+    "title": "Watch HydroTrail get built",
+    "note": "Reminders and the {replayDays}-day replay come by email."
+  },
+  "faq": {
+    "title": "Questions",
+    "items": [
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "Is it really free?",
+          "answer": "Yes. Watching is free, and so is registering, which gets you the replay for {replayDays} days."
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "Do I need to code?",
+          "answer": "No. We use AI tools and copy-paste prompts. Knowing some code helps, but you don't need it to follow along or to get a first screen working."
+        }
+      },
+      {
+        "discriminant": "tools",
+        "value": {
+          "question": "What tools will you use, and do they cost anything?",
+          "answer": "We'll use {tools}. You don't need to install anything to watch. If you want to try Prompt 1 afterwards, a free account on one of these is enough to start."
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "Do I have to register to watch?",
+          "answer": "No. It's on YouTube Live, the link is public, and it'll be on this page when we start. Register on Luma if you want a reminder and the replay."
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "I can't make it live. Is there a replay?",
+          "answer": "Yes, for registrants. You'll get the replay link by email, and it stays up for {replayDays} days. After that, an edited version goes up publicly on YouTube."
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "What time is it for me?",
+          "answer": "{timeZoneSummary} The line under the register button shows your own time."
+        }
+      },
+      {
+        "discriminant": "support",
+        "value": {
+          "question": "Will you email me?",
+          "answer": "Yes: a confirmation, reminders before the session, the replay link afterwards, and the Weekend MVP newsletter. You can unsubscribe at any time. Questions? Email {supportEmail}."
+        }
+      },
+      {
+        "discriminant": "answer",
+        "value": {
+          "question": "Do I need an idea already?",
+          "answer": "No. If you don't have one, you'll leave knowing how to pick one from the library."
+        }
+      }
+    ]
+  }
+}

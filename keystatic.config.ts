@@ -1,4 +1,5 @@
 import { config, singleton } from "@keystatic/core";
+import { freeWebinarFields } from "@/lib/landing/free-webinar-fields";
 import { liveHubFields } from "@/lib/landing/live-hub-fields";
 import { dareFields } from "@/lib/landing/dare-fields";
 import { shipableFields } from "@/lib/landing/shipable-fields";
@@ -20,6 +21,12 @@ export function landingEditorConfig(mode: StorageMode) {
       : { kind: "local" },
     ui: { brand: { name: "Weekend MVP" } },
     singletons: {
+      "live-48-hours": singleton({
+        label: "Free webinar",
+        path: prefix + "live-48-hours/",
+        format: "json",
+        schema: freeWebinarFields,
+      }),
       "live-hub": singleton({
         label: "Live hub",
         path: prefix + "live-hub/",
