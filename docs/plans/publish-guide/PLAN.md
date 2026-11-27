@@ -64,7 +64,7 @@ lib/guides/offers.ts                   offers registry (paid, waitlist, free ass
 lib/guides/audit.ts                    audit rules, run by `npm run audit:guide -- --slug={slug}`
 guides/records/{slug}.json             research record (sources, claims, excerpts)
 guides/records/{slug}.source-review.json   sealed Source Critic result
-guides/records/{slug}.evidence.json    John's first-hand evidence (screenshots, numbers, prompts)
+(first-hand evidence lives inside the record, as evidence[] entries: file-count, git-count or owner-statement)
 ```
 
 GuideSpec fields: slug, title, thesis, archetype, audience, lastVerified, outlineStrip, readerRoutes, skills, roles,
@@ -181,7 +181,8 @@ draft data-image file is deleted. Receipt labels, currency and the gate preview 
 - S4 Extend Source Critic claim kinds. Today it covers market stats, competitor prices and community quotes. Guides
   need stats, pay or job data, tool facts, dates and quotes. Done when: sealed PASS gates the draft step.
 - S5 Write `.claude/skills/publish-guide/SKILL.md`, following `publish-article` and `publish-idea`.
-  Done when: a dry run walks steps 0 to 7 with the human gates stopping the run.
+  Done when: a dry run walks steps 0 to 7 with the human gates stopping the run. Built (WP103-S5). The skill allows a
+  placeholder mode for owner evidence, and a mechanical rule (`evidence-placeholder`) keeps such a run from publishing.
 - S6 Pilot: guide two (mastering Claude Code). Needs John's evidence file. Done when: private candidate passes audit.
 - S7 Re-check command and cadence. Done when: a stale claim is reported with the old and new excerpt.
 

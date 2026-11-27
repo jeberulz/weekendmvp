@@ -73,3 +73,14 @@ Append-only progress log. Do not rely on chat history for project state.
 - Result: S4 acceptance met, except that `--fetch` was not run against a live page: it uses Node's own fetch, which does not go through this session's proxy, so excerpt fetching is covered by tests with an injected fetcher only.
 - Gotchas: a first draft of two tests round-tripped data through JSON or compared against `JSON.stringify` output and failed for that reason, not because of the code. GitHub Actions checks out a shallow clone by default, so a `git-count` claim cannot be verified in CI without fetching full history.
 - Next: S5, the `/publish-guide` skill, which calls `guide:source-review check` as its gate before drafting.
+
+## 2026-11-27 - WP103-S4 re-land and S5 (the /publish-guide skill)
+
+- Why: PR 339 (S4) merged into `claude/wp103-guide-cards-switch` seven seconds after PR 338 merged into `main`. The base branch was not deleted, so GitHub never retargeted it, and S4 never reached `main`. PR 340 re-lands the same squash commit on `main`.
+- Actions taken: opened PR 340 from `claude/wp103-s4-source-critic-main` (the S4 commit cherry-picked onto `main` at `a3ae45f6`, no edits). Wrote `.claude/skills/publish-guide/SKILL.md`, steps 0 to 10 with gates. Added one mechanical rule to `checkRecordConsistency`: evidence or a first-hand claim that reads as a stand-in (`PLACEHOLDER`, `TODO`, `TBD`, `FIXME`, `lorem ipsum`, `to be supplied`, `owner to supply`) is an `evidence-placeholder` error.
+- Decisions made: the skill is written for what exists. Each guide still needs its own `_sections.tsx` composed from shared blocks, and `gate.mode: none` is not rendered by the layout, so the skill says both. Evidence lives in the research record (S4's design), so the plan's separate `{slug}.evidence.json` is replaced. The Source Critic is a fresh agent that sees only the record and pages. Placeholder mode is allowed for test runs and cannot publish. Stacked PRs now always use `main` as the base, and the merge order is stated in the PR.
+- Checks run: `npx tsc --noEmit` exit 0. `npx eslint lib/guides` and the new test, 0 errors. `npm run test:home` 237 passed, 1 skipped. `npm run test:security` 121 passed. The new test fails on the old code. The harness lists `publish-guide`. `NODE_USE_ENV_PROXY=1` makes Node's fetch use this session's proxy, so `verify --fetch` can run here.
+- Docs updated: `docs/wp/wp103-stories.md`, this file, `docs/plans/publish-guide/PLAN.md`, `CLAUDE.md`.
+- Gotchas: `--fetch` was documented as not runnable in a cloud session. It is, with `NODE_USE_ENV_PROXY=1`. The `a11y-check` skill named in `CLAUDE.md` is not in `.claude/skills/`, so the skill names it by its `CLAUDE.md` reference.
+- Next: a placeholder pilot run of the skill on "mastering Claude Code", on a branch that is never merged (S6).
+

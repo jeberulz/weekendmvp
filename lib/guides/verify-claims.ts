@@ -12,6 +12,9 @@ import { EXTERNAL_CLAIM_KINDS, type ResearchRecord } from "./research-record.ts"
  * Plain Node can load this file.
  */
 
+/** Words that mark first-hand evidence as a stand-in the owner has not supplied yet. */
+export const EVIDENCE_PLACEHOLDER_RE = /\b(?:TODO|TBD|FIXME|PLACEHOLDER|lorem ipsum|to be supplied|owner to supply)\b/i;
+
 const collapse = (value: string) => value.replace(/\s+/g, " ").trim();
 const figureKey = (value: string) => value.toLowerCase().replace(/[\s,]/g, "");
 
@@ -52,6 +55,18 @@ export function checkRecordConsistency(record: ResearchRecord): Finding[] {
     }
     if (claim.kind === "quote" && !claim.speaker) {
       add("claim-speaker-missing", "error", "a quote needs the speaker named", at);
+    }
+  }
+  // First-hand evidence is the owner's own. A stand-in lets the pipeline run, but it can never back a published claim.
+  for (const evidence of record.evidence) {
+    const words = [evidence.label, evidence.verify.type === "owner-statement" ? evidence.verify.statement : ""];
+    if (words.some((word) => EVIDENCE_PLACEHOLDER_RE.test(word))) {
+      add("evidence-placeholder", "error", `evidence "${evidence.id}" is a stand-in the owner has not supplied, so the guide cannot publish`, `evidence:${evidence.id}`);
+    }
+  }
+  for (const claim of record.claims) {
+    if (claim.kind === "first-hand" && EVIDENCE_PLACEHOLDER_RE.test(claim.text)) {
+      add("evidence-placeholder", "error", `claim "${claim.id}" states a stand-in, so the guide cannot publish`, `claim:${claim.id}`);
     }
   }
   for (const source of record.sources) {

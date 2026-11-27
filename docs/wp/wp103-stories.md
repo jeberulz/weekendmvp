@@ -83,8 +83,20 @@ Definition of done: `npm run typecheck` green, `npm run lint` with 0 errors, `np
     - Each rule has a failing test, and the core behaviours were mutation-checked.
   - Verification: `npm run typecheck`, `npx eslint` on changed files, `npm run test:home`, `npm run test:security`, a dry run of `verify` on the real repo's evidence.
   - Not in S4: fetching pages through a proxy (`--fetch` uses Node's own fetch), a record for the 5-to-9 guide (it has none, so its claims are not checked), the skill that calls the gate (S5).
-- [ ] `WP103-S5` - `.claude/skills/publish-guide/SKILL.md`
-- [ ] `WP103-S6` - Pilot guide two (mastering Claude Code), needs the owner's evidence file
+- [x] `WP103-S5` - `.claude/skills/publish-guide/SKILL.md`
+  - Branch: `claude/wp103-s5-publish-guide-skill`, cut from the S4 re-land branch (PR 340) because the skill calls the S4 gate.
+  - Note: PR 339 merged into the stale switch branch, not `main`. PR 340 re-lands the same S4 commit on `main`. Merge it before this one.
+  - Scope: `.claude/skills/publish-guide/SKILL.md` (new), `lib/guides/verify-claims.ts` (stand-in evidence rule), `tests/home/guide-research.test.ts`, `CLAUDE.md`, plan and WP docs.
+  - Acceptance criteria:
+    - The skill walks plan steps 0 to 10 with the owner gates (brief, thesis and outline, evidence, sign-off) stopping the run.
+    - It names the real commands: `guide:source-review draft|verify|seal|check`, `audit:guide` (static and `--live`), `typecheck`, `eslint`, `test:home`, `build`, and the `a11y-check` skill.
+    - The Source Critic review is done by a fresh agent that sees only the record and the cited pages, never the writer's draft.
+    - It never deploys, seeds, merges to `main` or asks for publication. A candidate is reviewed from a local build.
+    - It never invents first-hand evidence. A placeholder mode lets a test run continue to the draft, and a mechanical rule makes the result unpublishable: evidence or a first-hand claim that is a stand-in fails `verify` and the audit with `evidence-placeholder`, a reviewer cannot confirm it, and placeholder text in copy fails `placeholder-text`.
+    - It says each guide still needs its own `_sections.tsx` that composes shared blocks, and that anything missing from the template is a stop, not a new component.
+  - Verification: `npm run typecheck`, `npx eslint` on `lib/guides` and the new test, `npm run test:home`, `npm run test:security`, the new rule fails on the old code, and the skill is listed by the harness.
+  - Not in S5: a scaffold command for a new guide folder, a `skill-ladder` archetype in code (the template has one archetype today), Tier B research providers, the re-check command (S7).
+- [ ] `WP103-S6` - Pilot guide two (mastering Claude Code). Owner chose placeholders for the first run (2026-11-27), to test the skill before real evidence exists. A placeholder run cannot pass the audit or publish by design.
   - Owner-provided evidence (2026-11-27): weekendmvp.app itself, built solo with Claude Code. The design, the research of over 200 startup ideas, and more features coming. This is first-hand evidence and goes in the research record as `first-hand` claims.
   - What the repo can already prove (checked 2026-11-27 with `guide:source-review verify`): 231 idea pages in `content/ideas`, 101 articles in `content/articles`. "Built solo" is an `owner-statement` that a reviewer must confirm. The pull-request and commit counts need full git history, which a shallow clone (this cloud session, and CI's default checkout) does not have, so they stay unverifiable until history is fetched in full.
   - Still needed from the owner: which specific things built with Claude Code to feature (screens, features, the Idea Engine, the audit tooling), with the real numbers behind each, and which screenshots.
