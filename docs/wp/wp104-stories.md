@@ -46,3 +46,9 @@
 - Move phase copy and editorial sections into the `live-48-hours` singleton. Preserve the existing layout and render state for open, live, replay and ended.
 - Keep the session title, date, agenda timing, platform, sketches, proof availability, Luma/YouTube URLs and register bar wiring in code.
 - Compare the four clocks at both widths and the production section tree, links and JSON-LD. Exercise both missing and configured registration and replay URLs without contacting those services.
+
+## PR 8 · Build-Along
+
+- Move editorial sections and FAQ wording into the Build-Along singleton. Keep prices, seat and session rules, Stripe checkout, the recording notice and legal promises in code.
+- Baseline the available historical render states from main before switching the copy. Pristine main's open checkout throws because it expects a provider absent from the route. Repair that separately and verify the signed-out redirect, checkout request and error behaviour against loopback fixtures.
+- Keep the checkout API and attribution flow in place. Verify the fixed ticket anchor, sold-out and ended layouts, charge and inventory rules, and confirmation copy.

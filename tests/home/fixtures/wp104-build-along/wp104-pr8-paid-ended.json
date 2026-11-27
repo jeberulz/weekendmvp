@@ -1,0 +1,49 @@
+{
+  "sections": [
+    {
+      "tag": "H1",
+      "id": "",
+      "text": "This build-along has ended.",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "text": "Ticket holders: your replay is in your email, and it doesn't expire. Can't find it? Email iseghohi.john@gmail.com.",
+      "links": [
+        [
+          "mailto:iseghohi.john@gmail.com",
+          "iseghohi.john@gmail.com"
+        ]
+      ],
+      "buttons": []
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "text": "Next build-along: Sat 5 Dec 2026, 15:00 GMT, on Zoom.",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "text": "Get the free Starter Kit→Browse free ideas",
+      "links": [
+        [
+          "/starter-kit",
+          "Get the free Starter Kit→"
+        ],
+        [
+          "/startup-ideas?utm_campaign=live-p1",
+          "Browse free ideas"
+        ]
+      ],
+      "buttons": []
+    }
+  ],
+  "jsonLd": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"Person\",\"@id\":\"https://www.weekendmvp.app/john-iseghohi\",\"name\":\"John Iseghohi\",\"jobTitle\":\"Founder, Weekend MVP\",\"url\":\"https://www.weekendmvp.app/john-iseghohi\",\"image\":\"https://www.weekendmvp.app/image/john-portrait.jpg\",\"sameAs\":[\"https://twitter.com/weekendmvp\",\"https://cal.com/switchtoux\"],\"worksFor\":{\"@id\":\"https://www.weekendmvp.app/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://www.weekendmvp.app/#organization\",\"name\":\"Weekend MVP\",\"url\":\"https://www.weekendmvp.app/\",\"logo\":\"https://www.weekendmvp.app/image/weekendmvp-logo.svg\",\"founder\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"},\"sameAs\":[\"https://twitter.com/weekendmvp\"]},{\"@type\":\"BreadcrumbList\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":{\"@id\":\"https://www.weekendmvp.app/\",\"name\":\"Home\"}},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"Live\",\"item\":{\"@id\":\"https://www.weekendmvp.app/live\",\"name\":\"Live\"}},{\"@type\":\"ListItem\",\"position\":3,\"name\":\"Build-Along\",\"item\":{\"@id\":\"https://www.weekendmvp.app/live/build-along\",\"name\":\"Build-Along\"}}]},{\"@type\":\"EducationEvent\",\"name\":\"Weekend MVP Build-Along\",\"description\":\"A 2-hour live build-along on Zoom. Sat 14 Nov 2026, 15:00 GMT. You build your MVP while I build mine. $29. 20 seats. Replay included.\",\"startDate\":\"2026-11-14T15:00:00.000Z\",\"endDate\":\"2026-11-14T17:00:00.000Z\",\"eventAttendanceMode\":\"https://schema.org/OnlineEventAttendanceMode\",\"eventStatus\":\"https://schema.org/EventScheduled\",\"isAccessibleForFree\":false,\"location\":{\"@type\":\"VirtualLocation\",\"url\":\"https://www.weekendmvp.app/live/build-along\"},\"organizer\":{\"@id\":\"https://www.weekendmvp.app/#organization\"},\"offers\":{\"@type\":\"Offer\",\"priceCurrency\":\"USD\",\"price\":\"29\",\"availability\":\"https://schema.org/InStock\",\"url\":\"https://www.weekendmvp.app/live/build-along#ticket\"}}]}"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "sections": [
+    {
+      "tag": "P",
+      "id": "",
+      "text": "You're in",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "H1",
+      "id": "",
+      "text": "You're in. See you Sat 14 Nov.",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "text": "Weekend MVP Build-Along · Build it Saturday, ship it Sunday.",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "text": "15:00–17:00 GMT on Zoom. Your receipt is on its way from Stripe. The Zoom link and a reminder come by email before the session.",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "H2",
+      "id": "",
+      "text": "Before Saturday, do three things:",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "OL",
+      "id": "",
+      "text": "Add it to your calendar. The confirmation email has the invite.Open the Ship Sheet when it arrives and make your own copy.Set up a free account on the tool named in your prep email and pick an idea, or a couple to choose from. Browse free ideas.",
+      "links": [
+        [
+          "/startup-ideas?utm_campaign=live-p1",
+          "Browse free ideas"
+        ]
+      ],
+      "buttons": []
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "text": "Can't make it live? You'll get the replay, and it doesn't expire. Changed your mind? Full refund within 30 days of purchase, no reason needed. Just email us. A refund ends your replay access. Read the refund policy.",
+      "links": [
+        [
+          "/refund-policy#live-workshop-tickets",
+          "Read the refund policy"
+        ]
+      ],
+      "buttons": []
+    }
+  ],
+  "jsonLd": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"Person\",\"@id\":\"https://www.weekendmvp.app/john-iseghohi\",\"name\":\"John Iseghohi\",\"jobTitle\":\"Founder, Weekend MVP\",\"url\":\"https://www.weekendmvp.app/john-iseghohi\",\"image\":\"https://www.weekendmvp.app/image/john-portrait.jpg\",\"sameAs\":[\"https://twitter.com/weekendmvp\",\"https://cal.com/switchtoux\"],\"worksFor\":{\"@id\":\"https://www.weekendmvp.app/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://www.weekendmvp.app/#organization\",\"name\":\"Weekend MVP\",\"url\":\"https://www.weekendmvp.app/\",\"logo\":\"https://www.weekendmvp.app/image/weekendmvp-logo.svg\",\"founder\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"},\"sameAs\":[\"https://twitter.com/weekendmvp\"]},{\"@type\":\"BreadcrumbList\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":{\"@id\":\"https://www.weekendmvp.app/\",\"name\":\"Home\"}},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"Live\",\"item\":{\"@id\":\"https://www.weekendmvp.app/live\",\"name\":\"Live\"}},{\"@type\":\"ListItem\",\"position\":3,\"name\":\"Build-Along\",\"item\":{\"@id\":\"https://www.weekendmvp.app/live/build-along\",\"name\":\"Build-Along\"}}]},{\"@type\":\"EducationEvent\",\"name\":\"Weekend MVP Build-Along\",\"description\":\"A 2-hour live build-along on Zoom. Sat 14 Nov 2026, 15:00 GMT. You build your MVP while I build mine. $29. 20 seats. Replay included.\",\"startDate\":\"2026-11-14T15:00:00.000Z\",\"endDate\":\"2026-11-14T17:00:00.000Z\",\"eventAttendanceMode\":\"https://schema.org/OnlineEventAttendanceMode\",\"eventStatus\":\"https://schema.org/EventScheduled\",\"isAccessibleForFree\":false,\"location\":{\"@type\":\"VirtualLocation\",\"url\":\"https://www.weekendmvp.app/live/build-along\"},\"organizer\":{\"@id\":\"https://www.weekendmvp.app/#organization\"},\"offers\":{\"@type\":\"Offer\",\"priceCurrency\":\"USD\",\"price\":\"29\",\"availability\":\"https://schema.org/InStock\",\"url\":\"https://www.weekendmvp.app/live/build-along#ticket\"}}]}"
+  ]
+}

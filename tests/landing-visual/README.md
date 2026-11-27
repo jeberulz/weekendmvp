@@ -54,3 +54,7 @@ The twelve images in `live-hub-baseline/` come from a clean production build of 
 ## Free webinar reference
 
 The eight images in `free-webinar-baseline/` come from a clean production build of main at `692b7b3f`. They cover the open, live, replay and ended phases. Point `LANDING_VISUAL_APP` at that build and run `npm run test:visual -- --record --route=/live/48-hours` to reproduce them. The HTML fixtures also record each phase with synthetic Luma and YouTube URLs supplied at server startup.
+
+## Build-Along reference
+
+The ten images in `build-along-baseline/` come from clean main at `692b7b3f`. They cover ended, pre-sale and the three sold-out clocks. The HTML fixtures also include the historical confirmation view. On pristine main an available standard-price ticket crashes during hydration because the button calls the Convex auth hook without an auth provider. Capture the safe states from that revision and exercise the repaired available-ticket flow independently.

@@ -1,0 +1,119 @@
+{
+  "sections": [
+    {
+      "tag": "DIV",
+      "id": "",
+      "text": "Live on ZoomSat 14 Nov 2026·15:00–17:00 GMT· 10:00–12:00 New York · 07:00–09:00 LA·Sold out · Next: Sat 5 Dec, 15:00 GMT·Replay included·Sold out",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "Weekend MVP Build-Along · Live on ZoomBuild it Saturday. Ship it Sunday.A 2-hour live build-along on Sat 14 Nov, 15:00 GMT. You build your MVP while I build mine, and you can ask questions as you go.Sold outSat 14 Nov · Sold out · Next: Sat 5 Dec, 15:00 GMT10:00–12:00 New York · 07:00–09:00 Los AngelesWeekend MVP Build-Along · 20 seatsSat 14 Nov is full.All 20 seats are taken. The next build-along is Sat 5 Dec 2026, 15:00 GMT, on Zoom. Same 2 hours, same price rules, 20 seats.This session is recorded and may be reused in a paid Weekend MVP self-paced course. Your name, camera and chat messages are blurred or cut unless you tell us you're happy to be shown.Get the free Starter Kit",
+      "links": [
+        [
+          "/starter-kit",
+          "Get the free Starter Kit"
+        ]
+      ],
+      "buttons": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "The dealYou leave with your MVP's first version built, and the steps to put it live the same day.You needA laptopNot a phone or tablet. You'll be building.You needOne ideaOr none, and we'll pick one from the library in the first half hour.You needA free tool accountSet up before we start. The prep email shows you how.What you don't need: code, a co-founder or a design file.",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "what-youll-do",
+      "text": "What you'll doThree moves, then two finishing steps0–10 MINOpenWhat we're doing today. Everyone opens the Ship Sheet.15:00 GMT10–30 MINMove 1: Your sharpest ideaRun your idea through the weekend test. Post your one-liner in the chat and I'll react to as many as time allows.15:1030–55 MINMove 2: The weekend cutCut it to three screens and one action. We kill features out loud.15:3055–95 MINMove 3: Build and deployI build an example live. You build yours at the same time and paste your link in the chat when it's up.15:5595–105 MINShip it safelyThree checks before you share the link: nothing private shows in view-source, your keys aren't in the repo, and the login actually protects the data.16:35105–110 MINFirst usersPick one channel, write the first post, and decide which 10 people you'll show it to on Sunday.16:45110–120 MINQ&AYour questions, and links in the chat.16:50There's a visible timer for each block, and I'll have a pre-built fallback ready in case something breaks on my side.",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "What's included✓2 hours live on Zoom with John✓The Ship Sheet: your 48-hour plan, as a doc you can copy✓The copy-paste prompts used in the session✓The replay, with no expiry✓A prep email before the session, so you arrive ready to build",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "This is for you if✓You're a designer who wants to ship something real with AI, and keep your taste in it.✓You're a non-technical founder with a day job and no co-founder.✓You've watched enough tutorials and want to actually build one.✓You'd rather have someone to ask when it breaks.It's not for you if×You want a coding course.×You want a six-month program.×You want to sit back and watch. You'll build during the session, so this isn't a watch-only webinar. (The free webinar on 31 Oct is the watch-only one.)",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "Why a designer is running thisJohn IseghohiStaff product designer and founder of Weekend MVP.I build Weekend MVP around a full-time job, on evenings and Saturdays, so this session is designed for people who have the same amount of time. Every idea on the site is researched, sized for a weekend and paired with prompts. In this session we use that method on your idea.",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "PriceOne ticket. Everything included.Weekend MVP Build-AlongSat 14 Nov is full.Next: Sat 5 Dec 2026, 15:00 GMT, on Zoom.This session is recorded and may be reused in a paid Weekend MVP self-paced course. Your name, camera and chat messages are blurred or cut unless you tell us you're happy to be shown.",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "Refunds30 days to change your mind.“Full refund within 30 days of purchase, no reason needed. Just email us. A refund ends your replay access.”That's the whole guarantee. If the build-along isn't what you hoped, email within 30 days of buying your ticket and I'll refund you in full. You don't need to explain.If the session doesn't runWe'll email you if we cancel. Reply within 48 hours if you'd rather move to the next date. Otherwise we refund you in full, automatically. If we cancel and you move to a later date, your 30 days start again from the day we cancel. The next date is Sat 5 Dec 2026, 15:00 GMT, on Zoom.HowEmail iseghohi.john@gmail.com from the address you bought with, within 30 days of purchase. Refunds go back to the card you paid with. Banks usually take 5 to 10 working days to show them.This adds to your rights under consumer law. It doesn't replace them.Read the refund policy →",
+      "links": [
+        [
+          "mailto:iseghohi.john@gmail.com",
+          "iseghohi.john@gmail.com"
+        ],
+        [
+          "/refund-policy#live-workshop-tickets",
+          "Read the refund policy →"
+        ]
+      ],
+      "buttons": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "P.S. The session is Sat 14 Nov at 15:00 GMT, and the replay is yours to keep if you can't make it live.",
+      "links": [],
+      "buttons": []
+    },
+    {
+      "tag": "DIV",
+      "id": "faq",
+      "text": "QuestionsDo I need to code?+–No. We build with AI tools and copy-paste prompts. If you can follow steps and paste text, you can follow along. Knowing some code helps, but you don't need it.What if my idea isn't ready, or I don't have one?+–That's fine. In Move 1 we run ideas through the weekend test. If yours doesn't fit, or you don't have one, you'll pick one from the library and build that.I can't make it live. Should I still buy?+–You can. Your ticket includes the replay, with no expiry, plus the Ship Sheet and prompts. You'll miss asking questions live, so if that's what you want, come live.How many seats are there?+–20. When they're gone, tickets close and the next build-along is Sat 5 Dec 2026, 15:00 GMT, on Zoom.What time is it for me?+–Sat 14 Nov, 15:00–17:00 GMT. That's 10:00–12:00 in New York and 07:00–09:00 in Los Angeles.Where does it happen?+–On Zoom. The join link comes by email after you buy, and again in the reminders before the session.Is this the same as the free webinar?+–No. The free webinar on 31 Oct is an hour of watching: the method and one idea taken to a first screen. This is two hours of building your own, with me building alongside you. If you came to the free one, this is the next step. If you didn't, the build-along still starts from the beginning.Can I get a refund?+–Yes. Full refund within 30 days of purchase, no reason needed. Just email us. A refund ends your replay access. Email iseghohi.john@gmail.com from the address you bought with. Read the refund policy.What if the session is cancelled?+–We'll email you if we cancel. Reply within 48 hours if you'd rather move to the next date. Otherwise we refund you in full, automatically. If we cancel and you move to a later date, your 30 days start again from the day we cancel. The next date is Sat 5 Dec 2026, 15:00 GMT, on Zoom.What currency is the price in?+–US dollars: $29. Price shown in USD. Any tax is shown at checkout.",
+      "links": [
+        [
+          "mailto:iseghohi.john@gmail.com",
+          "iseghohi.john@gmail.com"
+        ],
+        [
+          "/refund-policy#live-workshop-tickets",
+          "Read the refund policy"
+        ]
+      ],
+      "buttons": []
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "text": "Build it Saturday. Ship it Sunday.Weekend MVP Build-Along · 20 seatsSat 14 Nov · Sold out · Next: Sat 5 Dec, 15:00 GMTGet the free Starter Kit→",
+      "links": [
+        [
+          "/starter-kit",
+          "Get the free Starter Kit→"
+        ]
+      ],
+      "buttons": []
+    }
+  ],
+  "jsonLd": [
+    "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"Person\",\"@id\":\"https://www.weekendmvp.app/john-iseghohi\",\"name\":\"John Iseghohi\",\"jobTitle\":\"Founder, Weekend MVP\",\"url\":\"https://www.weekendmvp.app/john-iseghohi\",\"image\":\"https://www.weekendmvp.app/image/john-portrait.jpg\",\"sameAs\":[\"https://twitter.com/weekendmvp\",\"https://cal.com/switchtoux\"],\"worksFor\":{\"@id\":\"https://www.weekendmvp.app/#organization\"}},{\"@type\":\"Organization\",\"@id\":\"https://www.weekendmvp.app/#organization\",\"name\":\"Weekend MVP\",\"url\":\"https://www.weekendmvp.app/\",\"logo\":\"https://www.weekendmvp.app/image/weekendmvp-logo.svg\",\"founder\":{\"@id\":\"https://www.weekendmvp.app/john-iseghohi\"},\"sameAs\":[\"https://twitter.com/weekendmvp\"]},{\"@type\":\"BreadcrumbList\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":{\"@id\":\"https://www.weekendmvp.app/\",\"name\":\"Home\"}},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"Live\",\"item\":{\"@id\":\"https://www.weekendmvp.app/live\",\"name\":\"Live\"}},{\"@type\":\"ListItem\",\"position\":3,\"name\":\"Build-Along\",\"item\":{\"@id\":\"https://www.weekendmvp.app/live/build-along\",\"name\":\"Build-Along\"}}]},{\"@type\":\"EducationEvent\",\"name\":\"Weekend MVP Build-Along\",\"description\":\"A 2-hour live build-along on Zoom. Sat 14 Nov 2026, 15:00 GMT. You build your MVP while I build mine. $29. 20 seats. Replay included.\",\"startDate\":\"2026-11-14T15:00:00.000Z\",\"endDate\":\"2026-11-14T17:00:00.000Z\",\"eventAttendanceMode\":\"https://schema.org/OnlineEventAttendanceMode\",\"eventStatus\":\"https://schema.org/EventScheduled\",\"isAccessibleForFree\":false,\"location\":{\"@type\":\"VirtualLocation\",\"url\":\"https://www.weekendmvp.app/live/build-along\"},\"organizer\":{\"@id\":\"https://www.weekendmvp.app/#organization\"},\"offers\":{\"@type\":\"Offer\",\"priceCurrency\":\"USD\",\"price\":\"29\",\"availability\":\"https://schema.org/InStock\",\"url\":\"https://www.weekendmvp.app/live/build-along#ticket\"}}]}"
+  ]
+}
