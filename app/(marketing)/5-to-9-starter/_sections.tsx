@@ -6,11 +6,12 @@ import { Seal } from "@/components/Seal";
 import { BeehiivSubscribeForm } from "@/components/forms/BeehiivSubscribeForm";
 import { Container, Em, Eyebrow } from "@/components/home/ui";
 import { GUIDE_AUTOMATION_ID } from "@/lib/beehiiv-client";
+import { BUILD_ALONG } from "@/lib/live/config";
 import { cn } from "@/lib/utils";
 
 import styles from "./starter.module.css";
 
-export const BUILD_ALONG_PRICE = "$29";
+export const BUILD_ALONG_PRICE = `$${BUILD_ALONG.standardUsd}`;
 
 const LABEL = "font-mono text-[11px] font-medium uppercase leading-[1.3] tracking-[0.08em]";
 const HEADING = "text-balance font-editorial text-[clamp(34px,4.4vw,54px)] font-normal leading-[1.05] tracking-[-0.02em]";
@@ -289,7 +290,8 @@ const FAQS: { question: string; answer: ReactNode }[] = [
         You get the daily list: one researched idea a day, who it&apos;s for, what it costs, the honest catch, and a verdict.
         Day 5 ends with your first small paid offer. When you&apos;re ready to build it, the next step is the{" "}
         <Link href="/live/build-along" className={LINK}>{`Build-Along sprint (${BUILD_ALONG_PRICE})`}</Link>: two hours live on Zoom,
-        building your MVP while John builds his.
+        building your MVP while John builds his. You can revisit the method in{" "}
+        <Link href="/guides/5-to-9-builder" className={LINK}>The 5-to-9 Builder</Link>.
       </>
     ),
   },

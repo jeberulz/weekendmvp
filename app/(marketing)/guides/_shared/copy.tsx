@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { GuideDeck } from "./types";
 
 // The deck uses only links, emphasis, lists and block quotes in its prose slots.
-function renderInlineCopy(text: string) {
+export function renderInlineCopy(text: string) {
   const parts = text.split(/(\[[^\]]+\]\(\/[^)]+\)|\*\*[^*]+\*\*|\*[^*]+\*)/);
   return parts.map((part, index) => {
     const link = part.match(/^\[([^\]]+)\]\((\/[^)]+)\)$/);

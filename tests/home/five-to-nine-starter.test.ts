@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -22,6 +23,8 @@ vi.mock("@/lib/fonts", () => ({
 import manifestJson from "../../ideas/manifest.json";
 import { BUILD_ALONG_PRICE } from "../../app/(marketing)/5-to-9-starter/_sections";
 import FiveToNineStarterPage, { metadata } from "../../app/(marketing)/5-to-9-starter/page";
+import StarterKitPage from "../../app/(marketing)/starter-kit/page";
+import { START_HERE } from "../../components/home/content";
 import { GUIDE_AUTOMATION_ID, subscribeViaApi } from "../../lib/beehiiv-client";
 import { liveIdeas } from "../../lib/home/library";
 import type { ManifestIdea } from "../../lib/home/types";
@@ -35,11 +38,39 @@ afterEach(() => {
 });
 
 describe("5-to-9 Starter landing page", () => {
-  test("has its own canonical route and exact title", () => {
+  test("has its canonical route, exact title and social metadata", () => {
     expect(metadata.alternates?.canonical).toBe("/5-to-9-starter");
+    const title = "The 5-to-9 Starter: a free 5-day email guide | Weekend MVP";
     expect(metadata.title).toEqual({
-      absolute: "The 5-to-9 Starter: a free 5-day email guide | Weekend MVP",
+      absolute: title,
     });
+    expect(title.length).toBeLessThanOrEqual(60);
+    expect(metadata.description).toBe(
+      "A free 5-day email guide for people with day jobs. One short email and one 10-minute action each evening, ending Friday with a tested idea.",
+    );
+    expect(metadata.description?.length).toBeLessThanOrEqual(155);
+    expect(metadata.openGraph?.siteName).toBe("Weekend MVP");
+    expect(metadata.twitter?.site).toBe("@weekendmvp");
+  });
+
+  test("links to the Builder from the Starter FAQ", () => {
+    expect(renderPage()).toContain('href="/guides/5-to-9-builder"');
+  });
+
+  test("links to both pages from the homepage, footer and Starter Kit", () => {
+    const kit = renderToStaticMarkup(createElement(StarterKitPage));
+    const footer = readFileSync("components/layout/SiteFooter.tsx", "utf8");
+    const homepageHrefs = START_HERE.map(({ href }) => href);
+    for (const href of ["/5-to-9-starter", "/guides/5-to-9-builder"]) {
+      expect(homepageHrefs).toContain(href);
+      expect(footer).toContain(`href="${href}"`);
+      expect(kit).toContain(`href="${href}"`);
+    }
+  });
+
+  test("lists the Starter in the sitemap with a content date", () => {
+    expect(readFileSync("app/sitemap.ts", "utf8"))
+      .toMatch(/entry\("\/5-to-9-starter", \{[^}]*lastModified: new Date\(STARTER_DATE_MODIFIED\)/);
   });
 
   test("shows the live idea count in the byline", () => {

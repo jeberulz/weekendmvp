@@ -8,6 +8,7 @@ import { Eyebrow } from "@/components/home/ui";
 import { GUIDE_AUTOMATION_ID, subscribeViaApi } from "@/lib/beehiiv-client";
 import { trackEvent } from "@/lib/track";
 
+import { renderInlineCopy } from "./copy";
 import type { GuideGateConfig, GuideNavSection } from "./types";
 
 export function GuideGate({ config, utmCampaign, finePrint }: { config: GuideGateConfig; utmCampaign: string; finePrint: string }) {
@@ -72,7 +73,7 @@ export function GuideGate({ config, utmCampaign, finePrint }: { config: GuideGat
         <div className="guide-faces">
           <div className="guide-locked-face">
             <h2>{config.heading}</h2>
-            <p className="text-home-ink-2">{config.body}</p>
+            <p className="text-home-ink-2 [&_a]:underline [&_a]:underline-offset-4">{renderInlineCopy(config.body)}</p>
             <ul aria-label="What unlocks" className="guide-chips">
               {config.unlocks.map((label) => <li key={label}>{label}</li>)}
             </ul>
@@ -98,7 +99,7 @@ export function GuideGate({ config, utmCampaign, finePrint }: { config: GuideGat
               inputClassName="h-[52px] rounded-full border-home-ink-3 bg-home-card px-4 text-[17px] text-home-ink placeholder:text-home-ink-3 focus:ring-home-orange-ink"
               buttonClassName="h-[52px] rounded-full bg-home-ink px-5 text-base text-home-paper hover:bg-home-ink-2 focus:ring-home-orange-ink"
             />
-            <p data-copy-slot="Gate · Fine print">{finePrint}</p>
+            <p data-copy-slot="Gate · Fine print" className="[&_a]:underline [&_a]:underline-offset-4">{renderInlineCopy(finePrint)}</p>
           </div>
           <div className="guide-open-face">
             <Eyebrow>Unlocked</Eyebrow>

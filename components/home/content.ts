@@ -72,6 +72,8 @@ export const START_HERE = [
     label: "Prompt regression tests for AI builders",
   },
   { href: "/starter-kit", label: "Get the free Starter Kit" },
+  { href: "/5-to-9-starter", label: "The 5-to-9 Starter" },
+  { href: "/guides/5-to-9-builder", label: "The 5-to-9 Builder" },
   { href: "/ideas-for/non-technical", label: "Ideas for non-technical founders" },
 ] as const;
 

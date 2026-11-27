@@ -1,11 +1,12 @@
-// Data only, no value imports: `npm run audit:guide` loads this file under plain Node.
+// Data only: `npm run audit:guide` loads this file under plain Node.
 import type { GuideSpec } from "../_shared/types";
+import { BUILDER_DATE_MODIFIED, BUILDER_DATE_PUBLISHED } from "./dates.ts";
 
 const TITLE = "The 5-to-9 Builder";
 const HEADLINE_EMPHASIS = "Knowing what to build is the job now.";
 const HEADLINE = `AI made building free. ${HEADLINE_EMPHASIS}`;
 const DESCRIPTION =
-  "AI made building free. Knowing what to build is the job now. A free guide for 9-to-5ers: find an idea worth your evenings and prove someone will pay for it before you build it.";
+  "AI made building free. Knowing what to build is the job now. A free guide for 9-to-5ers to find an idea and prove someone will pay before you build.";
 
 /** Data for the 5-to-9 Builder guide. Prose lives in `guideCopy.ts`, layout in `../_shared`. */
 export const guideSpec: GuideSpec = {
@@ -15,7 +16,9 @@ export const guideSpec: GuideSpec = {
   headline: HEADLINE,
   headlineEmphasis: HEADLINE_EMPHASIS,
   description: DESCRIPTION,
-  metaTitle: `${TITLE} — Turn Your 9-to-5 Expertise Into a Tested Side Income | WeekendMVP`,
+  metaTitle: `${TITLE}: a tested side income | Weekend MVP`,
+  datePublished: BUILDER_DATE_PUBLISHED,
+  dateModified: BUILDER_DATE_MODIFIED,
   ogImagePath: "/image/5-to-9-builder-og.png",
   lang: "en-GB",
   authorName: "John Iseghohi",
@@ -36,7 +39,7 @@ export const guideSpec: GuideSpec = {
     { id: "s11", title: "FAQ", summary: "Five common questions." },
   ],
   hero: {
-    eyebrow: "Free guide · WeekendMVP",
+    eyebrow: "Free guide · Weekend MVP",
     lede: "Turn your 9-to-5 expertise into a tested side income: one tested idea, then one first sale.",
     meta: [
       ["Free", "guide"],
@@ -50,7 +53,7 @@ export const guideSpec: GuideSpec = {
     subscribedNote: "The whole guide is open on this device.",
     image: {
       src: "/image/john-portrait.webp",
-      alt: "John Iseghohi, founder of WeekendMVP, working at his desk",
+      alt: "John Iseghohi, founder of Weekend MVP, working at his desk",
       width: 1000,
       height: 1250,
       sizes: "(min-width: 1024px) 458px, 100vw",
@@ -63,7 +66,7 @@ export const guideSpec: GuideSpec = {
     stubEyebrow: "Free · Sections 02–11",
     stubNote: "One email · No download",
     heading: "The rest of the guide is free. One email opens it.",
-    body: "It opens right here, on this page. The same email starts the 5-to-9 Starter: five daily emails, one action a day.",
+    body: "It opens right here, on this page. The same email starts the [5-to-9 Starter](/5-to-9-starter): five daily emails, one action a day.",
     unlocks: ["The Method", "The 6 Skills", "The Catch", "30-Day Plan", "Idea Bank", "First Sale", "Self-Check", "The prompt"],
     nextHref: "#s02",
     nextLabel: "Start with 02 · The Method ↓",
