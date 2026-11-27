@@ -67,3 +67,11 @@ Local branch `codex/wp104-starter-cms` stacks on the verified builder guide migr
 The Starter reads a JSON singleton through Keystatic and still prerenders. The trace contains the singleton. Editors can update the fixed opening and final signup copy, arrange the four middle sections and edit the five emails in sequence. Form placement, automation IDs, subscription callbacks, live idea count and offer routing come from code. Build-Along link labels contain a validated price token and render the standard USD price from live configuration.
 
 Both final screenshots match pixel for pixel. The actual production HTML matches the published section and JSON-LD fixtures. Restoring the original adjacent text grouping resolved small raster differences in the first candidate. The editor browser test round-tripped the Starter JSON, and the full suite passed 7,196 tests. Lint, both typechecks and trace checks passed.
+
+## PR 3 · Starter Kit migration
+
+Local branch `codex/wp104-starter-kit-cms` stacks on the Starter. The pristine main build at `692b7b3f` supplied the two page screenshots, rendered section tree, sidebar links, JSON-LD and the 12 original prompt bodies.
+
+The Starter Kit now reads its JSON singleton through Keystatic and still prerenders. The server trace includes the singleton. Its teaching sequence stays fixed. Editors can reorder the three resource groups while their links retain the original anchors and the sidebar follows the displayed order. Copy and clipboard content come from the editor. Booking, subscription controls and the schema graph remain code-owned.
+
+Both screenshots matched pixel for pixel. The actual production HTML matched the published section tree, links and JSON-LD. All 12 real copy buttons passed the exact clipboard payload comparison. A local editor save and reload preserved the full singleton. The full suite passed 7,199 tests. The app and Convex typechecks, lint, production build, production dependency audit at the high threshold and trace checks passed.
