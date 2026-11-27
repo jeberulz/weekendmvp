@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { BeehiivSubscribeForm } from "@/components/forms/BeehiivSubscribeForm";
 import { Container, Em, Eyebrow, TextLink } from "@/components/home/ui";
 import { Icon } from "@/components/home/icons";
+import { PROOF_OF_WORK_AUTOMATION_ID } from "@/lib/beehiiv-client";
 import { cn } from "@/lib/utils";
 
 import { ProofHero } from "./HeroVideo";
@@ -23,19 +24,15 @@ const STICKY =
 const BODY = "max-w-[62ch] leading-[1.6] text-home-ink-3";
 
 /**
- * TODO-PROOF-AUTOMATION: the Proof of Work Beehiiv automation does not exist
- * yet. This form deliberately passes NO automationId, so the subscribe API
- * falls back to the default Weekend MVP welcome flow — never the 5-to-9
- * guide automation. Before launch: create the Proof of Work automation, add
- * its id to lib/beehiiv-client.ts (PROOF_OF_WORK_AUTOMATION_ID) and to
- * ALLOWED_AUTOMATIONS in app/api/subscribe/route.ts, then pass it here as
- * automationId and update the success copy + modal with the download link.
+ * Enrolls the subscriber in the Proof of Work download automation
+ * (PROOF_OF_WORK_AUTOMATION_ID), which sends the file's download link.
  * The form only confirms after the API answers; it never fakes a success.
  */
 function ProofForm({ placement }: { placement: "capture" | "closing" }) {
   return (
     <div className="grid w-full max-w-[520px] gap-2 text-left">
       <BeehiivSubscribeForm
+        automationId={PROOF_OF_WORK_AUTOMATION_ID}
         utmCampaign="proof-of-work"
         successHref="/proof-of-work?subscribed=true"
         showFirstName={false}
