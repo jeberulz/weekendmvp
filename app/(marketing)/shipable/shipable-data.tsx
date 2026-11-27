@@ -1,21 +1,22 @@
-/**
- * Static data for /shipable (page.tsx hoists this so the page file stays
- * slim and is primarily section composition). Pure data and JSX fragments
- * only — no client state, no hooks.
- */
-
-import * as React from "react";
 import { ArrowRight } from "lucide-react";
-
 import {
-  faqPageSchema,
   breadcrumbSchema,
   buildGraph,
-  personSchema,
+  faqPageSchema,
   organizationSchema,
-  type FaqEntry,
+  personSchema,
 } from "@/lib/seo";
-
+import {
+  BONUS_VALUE_USD,
+  BUILDERS,
+  DURATION_MINUTES,
+  IDEAS,
+  NEXT_DATE_STATUS,
+  includes,
+  shipableText,
+  usd,
+} from "@/lib/landing/shipable-offer";
+import type { ShipableBlock, ShipableCopy } from "@/lib/landing/read-shipable";
 import type { WorkshopStatItem } from "@/components/marketing/workshop/WorkshopStats";
 import type { WorkshopTldrItem } from "@/components/marketing/workshop/WorkshopTldr";
 import type { WorkshopMoveItem } from "@/components/marketing/workshop/WorkshopMoves";
@@ -26,285 +27,111 @@ import type {
 } from "@/components/marketing/workshop/WorkshopTicket";
 import type { WorkshopTimezoneRow } from "@/components/marketing/workshop/WorkshopTimezones";
 
-/** Placeholder ISO for sticky-bar prop API; statusLabel overrides the countdown. */
-export const WORKSHOP_DEADLINE = "2099-01-01T00:00:00+00:00";
+// Seats are paused, so the graph has no Event or Offer.
+export function shipableSchema(faq: ShipableCopy["faq"]) {
+  return buildGraph(
+    personSchema(),
+    organizationSchema(),
+    faqPageSchema(faq.map(({ question, answer }) => ({
+      question: shipableText(question),
+      answer: shipableText(answer),
+    }))),
+    breadcrumbSchema([
+      { label: "Home", href: "/" },
+      { label: "ship·able Workshop", href: "/shipable" },
+    ]),
+  );
+}
 
-/* JSON-LD: Person + Organization + FAQPage + Breadcrumb (SEO + AEO).
-   Event + Offer omitted while seats are paused — no past InStock event. */
+export function shipableStats(copy: ShipableBlock<"stats">): WorkshopStatItem[] {
+  return [
+    { value: "10", suffix: " shipped", label: copy.shipped },
+    { value: String(BUILDERS), suffix: "+", label: copy.builders },
+    { value: "8", suffix: " hrs", label: copy.speed },
+    { value: String(IDEAS), suffix: " ideas", label: copy.ideas },
+  ];
+}
 
-export const FAQS: FaqEntry[] = [
-  {
-    question: "What is the ship·able workshop?",
-    answer:
-      "ship·able is a 90-minute live workshop where you turn the idea you've been sitting on into a real, deployed MVP with a live URL by the end of the call. Live on Zoom, full replay included. Next date coming soon.",
-  },
-  {
-    question: "When is the ship·able workshop?",
-    answer:
-      "Next date coming soon. Seats are paused until the next session is announced. Grab the free Weekend MVP Starter Kit on this page to get ready, and check back here for the date.",
-  },
-  {
-    question: "How much does the workshop cost?",
-    answer:
-      "When seats reopen, admission is $9 one-time. Includes the 90-minute live build, lifetime replay, the Ship Sheet worksheet, the 48-Hour Build Plan, and (live-only) the AI MVP Builder plus the Weekend MVP Starter Kit. Total stack value: $738. Seat sales are paused until the next date.",
-  },
-  {
-    question: "Do I need to know how to code to attend?",
-    answer:
-      "No. The workshop is built for non-technical founders. We use AI tools to build and deploy the MVP live on the call, so you walk out with a real shareable URL even if you've never written code.",
-  },
-  {
-    question: "What do I walk away with at the end?",
-    answer:
-      "A live, shareable URL for your MVP, a finished 48-hour build plan you can complete that weekend, and a way to capture your first users. Past attendees have shipped MVPs in 90 minutes and gotten paying users within days.",
-  },
-  {
-    question: "What if I can't attend live on Zoom?",
-    answer:
-      "You get the full lifetime replay. Note: the two bonuses (AI MVP Builder and Weekend MVP Starter Kit) are live-only, so attending live is recommended.",
-  },
-  {
-    question: "Who is hosting the workshop?",
-    answer:
-      "John Iseghohi, founder of Weekend MVP. He runs a community of 400+ weekend builders and has broken down 78 startup ideas on weekendmvp.app.",
-  },
-];
+export function shipableSummary(copy: ShipableBlock<"tldr">): WorkshopTldrItem[] {
+  return [
+    ...copy.points.map(({ lead, body }) => ({ lead: shipableText(lead), rest: shipableText(body) })),
+    {
+      lead: copy.bonusLead,
+      rest: (
+        <>
+          {copy.bonusBody}{" "}
+          <strong className="font-semibold text-[#1a1a1a]">{usd(BONUS_VALUE_USD)}</strong>.
+        </>
+      ),
+    },
+  ];
+}
 
-export const SCHEMA = buildGraph(
-  personSchema(),
-  organizationSchema(),
-  faqPageSchema(FAQS),
-  breadcrumbSchema([
-    { label: "Home", href: "/" },
-    { label: "ship·able Workshop", href: "/shipable" },
-  ]),
-);
-
-export const STATS: WorkshopStatItem[] = [
-  { value: "10", suffix: " shipped", label: "MVPs launched by builders" },
-  { value: "400", suffix: "+", label: "Weekend builders" },
-  { value: "8", suffix: " hrs", label: "Average idea → live" },
-  { value: "78", suffix: " ideas", label: "Broken down on the site" },
-];
-
-export const TLDR_ITEMS: WorkshopTldrItem[] = [
-  {
-    lead: <>It&apos;s $9.</>,
-    rest: (
-      <>
-        One-time. Less than your weekend coffee run, and you walk out with a live
-        MVP.
-      </>
-    ),
-  },
-  {
-    lead: <>It&apos;s a 90-minute live workshop</>,
-    rest: (
-      <>
-        on Zoom when the next date opens. Can&apos;t make it live? You get the
-        full replay.
-      </>
-    ),
-  },
-  {
-    lead: <>It&apos;s for anyone with an idea they haven&apos;t shipped.</>,
-    rest: (
-      <>Non-technical totally welcome. We build with AI tools, no code required.</>
-    ),
-  },
-  {
-    lead: <>You walk out with a live, shareable URL</>,
-    rest: <>plus a locked 48-hour build plan you can finish this weekend.</>,
-  },
-  {
-    lead: <>It works for any idea:</>,
-    rest: (
-      <>
-        SaaS, a tool, a marketplace, a side project. We&apos;ve broken down 78 of
-        them.
-      </>
-    ),
-  },
-  {
-    lead: <>Live attendees get 2 bonuses:</>,
-    rest: (
-      <>
-        the AI MVP Builder + the Weekend MVP Starter Kit. Combined value{" "}
-        <strong className="font-semibold text-[#1a1a1a]">$348</strong>.
-      </>
-    ),
-  },
-];
-
-export const MOVES: WorkshopMoveItem[] = [
-  {
-    glyph: "01",
+export function shipableMoves(copy: ShipableBlock<"moves">): WorkshopMoveItem[] {
+  return ([
+    [copy.sharpest, "01", "~25 min"],
+    [copy.weekend, "02", "~30 min"],
+    [copy.live, "03", "~35 min"],
+  ] as const).map(([move, glyph, time]) => ({
+    glyph,
     glyphColorClass: "text-neutral-200",
     heading: (
       <>
         Your{" "}
-        <span className="accent-italic text-[#CC5500] font-normal">sharpest</span>{" "}
-        idea
+        <span className="accent-italic text-[#CC5500] font-normal">{move.emphasis}</span>{" "}
+        {move.ending}
       </>
     ),
-    body: (
-      <>
-        One buyer, one painful problem. We cut your idea down from &quot;cool
-        concept&quot; to the one specific thing one specific person will use on
-        day one.
-      </>
-    ),
-    time: "~25 min",
+    body: move.body,
+    time,
     timeColorClass: "text-neutral-700",
-  },
-  {
-    glyph: "02",
-    glyphColorClass: "text-neutral-200",
-    heading: (
-      <>
-        Your{" "}
-        <span className="accent-italic text-[#CC5500] font-normal">weekend</span>{" "}
-        cut
-      </>
-    ),
-    body: (
-      <>
-        The smallest version you can actually ship by Sunday. Not the dream app.
-        The one screen that proves it. We scope it so it fits in a weekend, not
-        a quarter.
-      </>
-    ),
-    time: "~30 min",
-    timeColorClass: "text-neutral-700",
-  },
-  {
-    glyph: "03",
-    glyphColorClass: "text-neutral-200",
-    heading: (
-      <>
-        Your{" "}
-        <span className="accent-italic text-[#CC5500] font-normal">live</span>{" "}
-        launch page
-      </>
-    ),
-    body: (
-      <>
-        Built live with AI: a deployed page with a real URL and a way to capture
-        your first users, so you&apos;re validating demand before you sink a
-        weekend into building.
-      </>
-    ),
-    time: "~35 min",
-    timeColorClass: "text-neutral-700",
-  },
-];
+  }));
+}
 
-export const VALUE_STACK: WorkshopValueItem[] = [
-  {
-    number: "01",
-    title: (
-      <h3 className="text-lg font-semibold text-[#0a0a0a]">
-        90-minute live build workshop
-      </h3>
-    ),
-    body: "Working session with John on Zoom. Bring your laptop and the Ship Sheet.",
-    value: "$97 value",
-    border: true,
-  },
-  {
-    number: "02",
-    title: (
-      <h3 className="text-lg font-semibold text-[#0a0a0a]">
-        Ship Sheet{" "}
-        <span className="accent-italic text-neutral-700 font-normal">
-          worksheet
-        </span>
-      </h3>
-    ),
-    body: "Fill it in live. By the end of the 90 minutes you walk out with a finished build plan.",
-    value: "$47 value",
-    border: true,
-  },
-  {
-    number: "03",
-    title: <h3 className="text-lg font-semibold text-[#0a0a0a]">Lifetime replay</h3>,
-    body: "Can't make it live? Full recording, yours forever. Rewatch the parts you need.",
-    value: "$47 value",
-    border: true,
-  },
-  {
-    number: "04",
-    title: (
-      <h3 className="text-lg font-semibold text-[#0a0a0a]">48-Hour Build Plan</h3>
-    ),
-    body: "Your exact idea, scoped and sequenced to ship by Sunday night.",
-    value: "$199 value",
-    border: true,
-  },
-  {
-    number: "05",
-    title: (
-      <h3 className="text-lg font-semibold text-[#0a0a0a]">
-        AI{" "}
-        <span className="accent-italic text-neutral-700 font-normal">
-          MVP Builder
-        </span>
-      </h3>
-    ),
-    body: "Drop in your idea. The prompt pack scaffolds your build instantly, so you've got a v1 to refine.",
-    value: "$199 value",
-    bonus: true,
-    creamRow: true,
-    border: true,
-  },
-  {
-    number: "06",
-    title: (
-      <h3 className="text-lg font-semibold text-[#0a0a0a]">
-        Weekend MVP{" "}
-        <span className="accent-italic text-neutral-700 font-normal">
-          Starter Kit
-        </span>
-      </h3>
-    ),
-    body: "The full 48-hour plan, templates & AI prompts. A worked playbook, not a blank page.",
-    value: "$149 value",
-    bonus: true,
-    creamRow: true,
-    border: false,
-  },
-];
+export function shipableValueStack(copy: ShipableBlock<"valueStack">): WorkshopValueItem[] {
+  return includes.map(({ key, usd: amount, bonus }, index) => {
+    const { title, body, emphasis } = copy[key];
+    return {
+      number: String(index + 1).padStart(2, "0"),
+      title: (
+        <h3 className="text-lg font-semibold text-[#0a0a0a]">
+          {shipableText(title)}
+          {emphasis && (
+            <>
+              {" "}
+              <span className="accent-italic text-neutral-700 font-normal">{emphasis}</span>
+            </>
+          )}
+        </h3>
+      ),
+      body: shipableText(body),
+      value: `${usd(amount)} value`,
+      bonus,
+      creamRow: bonus,
+      border: index < includes.length - 1,
+    };
+  });
+}
 
-export const TICKET_DETAILS: WorkshopTicketDetail[] = [
-  { label: "Date", value: "Coming soon" },
-  {
-    label: "Start",
-    value: (
-      <>
-        TBA <span className="accent-italic text-neutral-700">timezone</span>
-      </>
-    ),
-  },
-  { label: "Length", value: <>90 min + Q&amp;A</> },
-  { label: "Format", value: "Live on Zoom" },
-];
+export function shipableTicketDetails(copy: ShipableCopy["ticket"]): WorkshopTicketDetail[] {
+  return [
+    { label: copy.dateLabel, value: "Coming soon" },
+    {
+      label: copy.startLabel,
+      value: <>TBA <span className="accent-italic text-neutral-700">timezone</span></>,
+    },
+    { label: copy.lengthLabel, value: `${DURATION_MINUTES} min + Q&A` },
+    { label: copy.formatLabel, value: "Live on Zoom" },
+  ];
+}
 
-export const TICKET_LINES: WorkshopTicketLine[] = [
-  { label: "Live workshop", value: "$97" },
-  { label: "Ship Sheet worksheet", value: "$47" },
-  { label: "Lifetime replay", value: "$47" },
-  { label: "48-Hour Build Plan", value: "$199" },
-  {
-    label: "Bonus · AI MVP Builder",
-    value: "$199",
-    rowColorClass: "text-[#A03D00]",
-  },
-  {
-    label: "Bonus · Starter Kit",
-    value: "$149",
-    rowColorClass: "text-[#A03D00]",
-  },
-];
+export function shipableTicketLines(copy: ShipableBlock<"valueStack">): WorkshopTicketLine[] {
+  return includes.map(({ key, usd: amount, bonus }) => ({
+    label: copy[key].ticketLabel,
+    value: usd(amount),
+    rowColorClass: bonus ? "text-[#A03D00]" : undefined,
+  }));
+}
 
 export const TIMEZONES: WorkshopTimezoneRow[] = [
   { city: "New York", date: "Next date · EDT", time: "TBA" },
@@ -313,19 +140,7 @@ export const TIMEZONES: WorkshopTimezoneRow[] = [
   { city: "Los Angeles", date: "Next date · PDT", time: "TBA" },
 ];
 
-export const TEACHER_CHIPS: React.ReactNode[] = [
-  "400+ builders",
-  "78 ideas broken down",
-  "New ideas daily at weekendmvp.app",
-];
-
-/* ============================================================
- * Page-specific section JSX (hero, deliverable teaser, proof,
- * teacher portrait). Kept here so the page composition file
- * stays focused on section ordering, not raw markup.
- * ============================================================ */
-
-export function ShipableHero() {
+export function ShipableHero({ copy }: { copy: ShipableCopy["hero"] }) {
   return (
     <section className="relative overflow-hidden isolate bg-[#0a0a0a]">
       <picture>
@@ -372,7 +187,7 @@ export function ShipableHero() {
               aria-hidden="true"
             ></span>
             <span className="font-mono-eyebrow text-[11px] uppercase text-white/80">
-              Next date coming soon
+              {NEXT_DATE_STATUS}
             </span>
           </div>
 
@@ -382,23 +197,22 @@ export function ShipableHero() {
           </h1>
 
           <p className="mt-8 max-w-xl text-xl md:text-2xl leading-snug text-white/85">
-            In this 90-minute live workshop you&apos;ll turn the idea you&apos;ve
-            been sitting on into{" "}
+            {shipableText(copy.intro)}{" "}
             <span className="accent-italic text-[#e9a06a]">
-              a real MVP people can actually use,
+              {copy.emphasis}
             </span>{" "}
-            before the weekend&apos;s over.
+            {copy.ending}
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <p className="text-base font-medium text-white/80">
-              Next date coming soon
+              {NEXT_DATE_STATUS}
             </p>
             <a
               href="#seat"
               className="group inline-flex items-center gap-3 rounded-2xl bg-white pl-7 pr-5 py-4 text-base font-semibold text-[#1a1a1a] hover:bg-neutral-100 transition-all focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] active:scale-[0.98] shadow-2xl"
             >
-              <span>Get the free Starter Kit</span>
+              <span>{copy.cta}</span>
               <ArrowRight
                 size={18}
                 className="transition-transform group-hover:translate-x-0.5"
@@ -412,13 +226,13 @@ export function ShipableHero() {
   );
 }
 
-export function ShipableNextDateCard() {
+export function ShipableNextDateCard({ copy }: { copy: ShipableCopy["nextDateCard"] }) {
   return (
     <section className="px-5 pt-12 pb-16 md:pt-16 md:pb-20 max-w-5xl mx-auto">
       <div className="rounded-3xl bg-[#1a1a1a] text-white p-8 md:p-10 max-w-2xl">
         <div className="flex items-center justify-between mb-6">
           <span className="font-mono-eyebrow text-[10px] uppercase text-neutral-300">
-            Workshop schedule
+            {copy.eyebrow}
           </span>
           <span className="font-mono-eyebrow text-[10px] uppercase text-neutral-300">
             TBA
@@ -429,17 +243,16 @@ export function ShipableNextDateCard() {
           <span className="accent-italic text-[#e9a06a]">coming soon</span>
         </p>
         <p className="mt-2 text-sm text-neutral-300">
-          90 minutes live · Q&amp;A after · Lifetime replay
+          {shipableText(copy.intro)}
         </p>
         <p className="mt-6 text-sm text-neutral-400">
-          Seat sales are paused. Get the free Starter Kit below — we&apos;ll
-          announce the next session here.
+          {copy.body}
         </p>
         <a
           href="#seat"
           className="mt-8 inline-flex items-center gap-2 rounded-xl bg-[#e9a06a] text-[#1a1a1a] px-5 py-3 text-sm font-semibold hover:bg-[#f0b380] transition-all focus:outline-none focus:ring-2 focus:ring-white/40"
         >
-          Get the free Starter Kit
+          {copy.cta}
           <ArrowRight size={16} aria-hidden="true" />
         </a>
       </div>
@@ -447,7 +260,7 @@ export function ShipableNextDateCard() {
   );
 }
 
-export function ShipableDeliverableTeaser() {
+export function ShipableDeliverableTeaser({ copy }: { copy: ShipableBlock<"deliverableTeaser"> }) {
   return (
     <section className="px-5 py-12 max-w-5xl mx-auto reveal">
       <div className="rounded-3xl border border-black/10 bg-white p-8 md:p-10 flex flex-col md:flex-row items-start gap-8">
@@ -464,14 +277,13 @@ export function ShipableDeliverableTeaser() {
         </div>
         <div>
           <span className="font-mono-eyebrow text-[11px] uppercase text-[#A03D00]">
-            The Ship Sheet
+            {copy.eyebrow}
           </span>
           <h2 className="mt-3 text-3xl md:text-4xl font-bold tracking-tight text-[#0a0a0a]">
-            You fill it in live.
+            {copy.title}
           </h2>
           <p className="mt-3 text-lg text-neutral-700 max-w-xl">
-            It becomes your finished 48-hour build plan, plus a live URL, by the
-            end of the call.
+            {copy.body}
           </p>
         </div>
       </div>
@@ -479,123 +291,86 @@ export function ShipableDeliverableTeaser() {
   );
 }
 
-export function ShipableProblemBody() {
+export function ShipableProblemBody({ copy }: { copy: ShipableBlock<"problem"> }) {
   return (
     <>
       <p>
-        I&apos;ve watched thousands of would-be builders, and the #1 thing
-        keeping them stuck isn&apos;t talent or time. It&apos;s that they never
-        ship.
+        {copy.intro}
       </p>
-      <p>They usually fall into one of two camps:</p>
+      <p>{copy.setup}</p>
       <ul className="space-y-4">
-        <li className="flex gap-4">
-          <span
-            className="mt-3 h-px w-6 bg-[#CC5500] shrink-0"
-            aria-hidden="true"
-          ></span>
-          <span>
-            <strong className="font-semibold">
-              They&apos;ve got a &quot;someday&quot; idea
-            </strong>{" "}
-            they keep researching, tweaking, and talking about, but never build.
-          </span>
-        </li>
-        <li className="flex gap-4">
-          <span
-            className="mt-3 h-px w-6 bg-[#CC5500] shrink-0"
-            aria-hidden="true"
-          ></span>
-          <span>
-            <strong className="font-semibold">
-              They&apos;ve got a half-built project
-            </strong>{" "}
-            rotting in a folder because they scoped it way too big to ever
-            finish.
-          </span>
-        </li>
+        {copy.examples.map(({ lead, body }, index) => (
+          <li key={index} className="flex gap-4">
+            <span
+              className="mt-3 h-px w-6 bg-[#CC5500] shrink-0"
+              aria-hidden="true"
+            ></span>
+            <span>
+              <strong className="font-semibold">{lead}</strong>{" "}
+              {body}
+            </span>
+          </li>
+        ))}
       </ul>
       <p className="text-neutral-700">
-        Either way, real people have never touched it.
+        {copy.conclusion}
       </p>
       <p>
-        All you need to change that is{" "}
+        {copy.pitchLead}{" "}
         <span className="accent-italic text-[#1a1a1a]">
-          one small thing, live, that someone can actually use this weekend.
+          {copy.pitchAccent}
         </span>{" "}
-        That&apos;s what we build in ship·able.
+        {copy.pitchEnd}
       </p>
     </>
   );
 }
 
-export function ShipableProof() {
+export function ShipableProof({ copy }: { copy: ShipableBlock<"proof"> }) {
   return (
     <section className="px-5 py-20 md:py-28 max-w-4xl mx-auto">
       <h2 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.02] mb-12 text-[#0a0a0a]">
-        Different ideas.{" "}
+        {copy.title}{" "}
         <span className="accent-italic text-[#CC5500] font-normal">
-          Different builders.
+          {copy.accent}
         </span>{" "}
-        Same result.
+        {copy.ending}
       </h2>
 
       <div className="rounded-3xl bg-[#1a1a1a] text-white p-8 md:p-10 mb-6 reveal">
         <span className="font-mono-eyebrow text-[10px] uppercase text-neutral-300">
-          Featured win
+          {copy.featuredLabel}
         </span>
         <p className="mt-4 text-5xl md:text-6xl font-semibold tracking-tight">
-          14 signups in 48 hours
+          {copy.featured.result}
         </p>
         <p className="accent-italic text-[#e9a06a] text-xl mt-1">
-          from a Notes-app idea I&apos;d sat on for 9 months.
+          {copy.featured.context}
         </p>
         <p className="mt-6 text-neutral-300 leading-relaxed max-w-2xl">
-          Walked in with a vague idea and walked out with a live URL. By Monday
-          morning I had 14 real signups from people who actually wanted what
-          I&apos;d been describing to friends for almost a year.
+          {copy.featured.quote}
         </p>
         <div className="mt-8 flex items-center gap-3 pt-6 border-t border-white/10">
           <div
             className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold text-white/70"
             aria-hidden="true"
           >
-            HR
+            {copy.featured.name.trim().split(/\s+/).map((name) => name[0]).slice(0, 2).join("").toUpperCase()}
           </div>
-          <p className="font-semibold text-sm">Hannah Reyes</p>
+          <p className="font-semibold text-sm">{copy.featured.name}</p>
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-6">
-        <blockquote className="rounded-3xl bg-white border border-black/10 p-8 reveal">
-          <p className="text-3xl font-semibold tracking-tight text-[#0a0a0a]">
-            Shipped in 90 minutes
-          </p>
-          <p className="accent-italic text-[#A03D00] mb-4">
-            after 3 months of overthinking.
-          </p>
-          <p className="text-neutral-700 italic">
-            &quot;The Ship Sheet did what every productivity book hadn&apos;t. I
-            stopped polishing and just shipped the one screen that mattered.&quot;
-          </p>
-          <footer className="mt-4 font-mono-eyebrow text-[10px] uppercase text-neutral-700">
-            Marcus Hale
-          </footer>
-        </blockquote>
-        <blockquote className="rounded-3xl bg-white border border-black/10 p-8 reveal">
-          <p className="text-3xl font-semibold tracking-tight text-[#0a0a0a]">
-            First paying user in 6 days
-          </p>
-          <p className="accent-italic text-[#A03D00] mb-4">
-            from a tool I almost didn&apos;t build.
-          </p>
-          <p className="text-neutral-700 italic">
-            &quot;Scoped down to one tiny thing I could actually finish. Posted
-            the URL on Sunday, first paying user emailed by Wednesday.&quot;
-          </p>
-          <footer className="mt-4 font-mono-eyebrow text-[10px] uppercase text-neutral-700">
-            Priya Shah
-          </footer>
-        </blockquote>
+        {[copy.second, copy.third].map(({ result, context, quote, name }, index) => (
+          <blockquote key={index} className="rounded-3xl bg-white border border-black/10 p-8 reveal">
+            <p className="text-3xl font-semibold tracking-tight text-[#0a0a0a]">{result}</p>
+            <p className="accent-italic text-[#A03D00] mb-4">{context}</p>
+            <p className="text-neutral-700 italic">{quote}</p>
+            <footer className="mt-4 font-mono-eyebrow text-[10px] uppercase text-neutral-700">
+              {name}
+            </footer>
+          </blockquote>
+        ))}
       </div>
     </section>
   );
@@ -614,16 +389,4 @@ export const TEACHER_PICTURE = (
       height={1250}
     />
   </picture>
-);
-
-export const TEACHER_BODY = (
-  <>
-    <p>
-      I&apos;ve watched people who were sure they needed more time, a
-      co-founder, or to &quot;learn to code first&quot; come in, change almost
-      nothing, scope one tiny version of what they already had, and ship it in a
-      weekend. Then get their first real users for the first time ever.
-    </p>
-    <p>The workshop is the 90-minute version of how we start that.</p>
-  </>
 );

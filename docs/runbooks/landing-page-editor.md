@@ -26,6 +26,14 @@ Select **Starter Kit** to edit the opening, rules, build steps, resources and cl
 
 Keep `{count}` in the idea and prompt headings and contents labels. The displayed count comes from the corresponding list. Prompt bodies go straight to the clipboard, so preserve intended line breaks and placeholders. Signup automation and the booking destination come from code.
 
+## Editing Shipable
+
+Open **Shipable** to edit copy, metadata, testimonials and the FAQ used in structured data. Keep one of each editorial section and drag them into reading order. The opening, schedule, ticket, timezones, teacher and free signup stay in their existing positions.
+
+- Ticket details expose the Date, Start, Length and Format labels. Their values, including the 90-minute duration and TBA state, come from code.
+- Ticket line labels live with the matching items in **What is included**. Their six dollar amounts, the total value, the two bonuses, and the displayed seat price come from code.
+- Keep `{price}` in the ticket heading and `{stackValue}` in the value stack heading. Use these tokens for monetary amounts in offer prose. The editor has fields for copy on the free form. Its signup automation, the date and timezone values, and the seat status come from code.
+
 ## GitHub setup for the owner
 
 1. Protect `main` on GitHub. Require a pull request and passing CI. Apply the rule to the owner and GitHub App, including administrator bypass settings. Keystatic opens the repository default branch. Saving there prompts for a content branch before sending a commit. GitHub enforces branch protection independently for every client.

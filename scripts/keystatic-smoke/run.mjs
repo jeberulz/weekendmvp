@@ -19,8 +19,8 @@ const appPort = 44074;
 const convexPort = 44075;
 const origin = `http://127.0.0.1:${appPort}`;
 const singleton = process.argv[3] ?? "guide-5-to-9-builder";
-assert(singleton === "guide-5-to-9-builder" || (mode === "dev-local" && ["starter-5-to-9", "starter-kit"].includes(singleton)),
-  "The optional Starter and Starter Kit singletons are supported in dev-local mode");
+assert(singleton === "guide-5-to-9-builder" || (mode === "dev-local" && ["starter-5-to-9", "starter-kit", "shipable"].includes(singleton)),
+  "The optional Starter, Starter Kit and Shipable singletons are supported in dev-local mode");
 const fixtureFile = `content/landing-pages/${singleton}/index.json`;
 const github = mode.includes("github") || mode === "build";
 const iat = Math.floor(Date.now() / 1000);

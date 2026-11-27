@@ -5,7 +5,11 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { BeehiivSubscribeForm } from "@/components/forms/BeehiivSubscribeForm";
+import type { ShipableCopy } from "@/lib/landing/read-shipable";
+import { NEXT_DATE_STATUS } from "@/lib/landing/shipable-offer";
 import "@/lib/track";
+
+type SeatProps = { copy: ShipableCopy["seat"] };
 
 /**
  * The #seat section. Seats are paused until a new workshop date is set —
@@ -14,7 +18,7 @@ import "@/lib/track";
  * confirmation for anyone who already purchased a prior seat.
  */
 
-function SeatDefault() {
+function SeatDefault({ copy }: SeatProps) {
   return (
     <>
       <div className="inline-flex items-center gap-2 mb-6">
@@ -23,31 +27,29 @@ function SeatDefault() {
           aria-hidden="true"
         ></span>
         <span className="font-mono-eyebrow text-[11px] uppercase text-neutral-300">
-          Next date coming soon
+          {NEXT_DATE_STATUS}
         </span>
       </div>
       <h2 className="text-4xl md:text-5xl font-semibold tracking-tight">
-        Seats are paused.{" "}
+        {copy.title}{" "}
         <span className="accent-italic text-[#e9a06a] font-normal">
-          Get the free kit meanwhile.
+          {copy.accent}
         </span>
       </h2>
       <p className="mt-4 text-neutral-300">
-        The last ship·able session has ended. We&apos;ll announce the next date
-        here — grab the free Weekend MVP Starter Kit so you&apos;re ready when
-        seats reopen.
+        {copy.body}
       </p>
       <div className="mt-8 text-left">
         <BeehiivSubscribeForm
           utmCampaign="shipable-next-date"
           showFirstName={false}
-          submitLabel="Get the Starter Kit"
+          submitLabel={copy.cta}
           className="flex flex-col sm:flex-row gap-3 space-y-0 [&>div]:flex-1"
           inputClassName="bg-white/10 border-white/20 px-5 py-4 placeholder:text-neutral-400 focus:ring-white/40 focus:border-white/40"
           buttonClassName="w-full sm:w-auto px-7 py-4 rounded-full bg-white text-[#1a1a1a] hover:bg-neutral-200 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-[#1a1a1a]"
         />
         <p className="mt-4 text-xs text-neutral-400">
-          Free. Unsubscribe anytime. No payment — Starter Kit only.
+          {copy.finePrint}
         </p>
       </div>
     </>
@@ -129,15 +131,15 @@ function SeatPaid() {
   );
 }
 
-function SeatSwitch() {
+function SeatSwitch({ copy }: SeatProps) {
   const searchParams = useSearchParams();
   // Capture once on mount: stripping ?paid via history.replaceState updates
   // useSearchParams in Next, and the confirmation must not flip back.
   const [paid] = useState(() => searchParams.get("paid") === "1");
-  return paid ? <SeatPaid /> : <SeatDefault />;
+  return paid ? <SeatPaid /> : <SeatDefault copy={copy} />;
 }
 
-export function ShipableSeat() {
+export function ShipableSeat({ copy }: SeatProps) {
   return (
     <section
       id="seat"
@@ -147,8 +149,8 @@ export function ShipableSeat() {
         {/* useSearchParams needs a Suspense boundary under Cache Components;
             the fallback is the full default seat content so crawlers and the
             static shell always see the form copy. */}
-        <Suspense fallback={<SeatDefault />}>
-          <SeatSwitch />
+        <Suspense fallback={<SeatDefault copy={copy} />}>
+          <SeatSwitch copy={copy} />
         </Suspense>
       </div>
     </section>

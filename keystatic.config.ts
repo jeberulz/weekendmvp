@@ -1,4 +1,5 @@
 import { config, singleton } from "@keystatic/core";
+import { shipableFields } from "@/lib/landing/shipable-fields";
 import { starterKitFields } from "@/lib/landing/starter-kit-fields";
 import { starterFields } from "@/lib/landing/starter-fields";
 import { builderGuideFields } from "@/lib/landing/builder-guide-fields";
@@ -17,6 +18,12 @@ export function landingEditorConfig(mode: StorageMode) {
       : { kind: "local" },
     ui: { brand: { name: "Weekend MVP" } },
     singletons: {
+      shipable: singleton({
+        label: "Shipable",
+        path: prefix + "shipable/",
+        format: "json",
+        schema: shipableFields,
+      }),
       "starter-kit": singleton({
         label: "Starter Kit",
         path: prefix + "starter-kit/",

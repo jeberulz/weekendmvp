@@ -1,0 +1,254 @@
+{
+  "seoTitle": "ship·able | Build & Ship Your MVP Live in {duration} Minutes (Workshop)",
+  "seoDescription": "Build and ship a real MVP in {duration} minutes. Live workshop with John Iseghohi for non-technical founders using AI tools. Walk out with a deployed URL, a 48-hour build plan, and your first users. Next date coming soon · Live on Zoom · Lifetime replay.",
+  "seoKeywords": "MVP workshop, build MVP in a weekend, non-technical founder MVP, ship MVP live, AI MVP builder, {duration} minute MVP, weekend MVP workshop",
+  "socialTitle": "ship·able · Build your MVP live in {duration} minutes",
+  "socialDescription": "Turn the idea you've been sitting on into a real, live MVP. {duration} minutes, live on Zoom. Next date coming soon. Replay included.",
+  "twitterDescription": "Live workshop. Turn an idea you've been sitting on into a deployed MVP in {duration} minutes. Next date coming soon.",
+  "hero": {
+    "intro": "In this {duration}-minute live workshop you'll turn the idea you've been sitting on into",
+    "emphasis": "a real MVP people can actually use,",
+    "ending": "before the weekend's over.",
+    "cta": "Get the free Starter Kit"
+  },
+  "nextDateCard": {
+    "eyebrow": "Workshop schedule",
+    "intro": "{duration} minutes live · Q&A after · Lifetime replay",
+    "body": "Seat sales are paused. Get the free Starter Kit below — we'll announce the next session here.",
+    "cta": "Get the free Starter Kit"
+  },
+  "sections": [
+    {
+      "discriminant": "deliverableTeaser",
+      "value": {
+        "eyebrow": "The Ship Sheet",
+        "title": "You fill it in live.",
+        "body": "It becomes your finished 48-hour build plan, plus a live URL, by the end of the call."
+      }
+    },
+    {
+      "discriminant": "stats",
+      "value": {
+        "eyebrow": "Why listen to me",
+        "shipped": "MVPs launched by builders",
+        "builders": "Weekend builders",
+        "speed": "Average idea → live",
+        "ideas": "Broken down on the site"
+      }
+    },
+    {
+      "discriminant": "problem",
+      "value": {
+        "title": "Your idea's still in your head…",
+        "accent": "and that's exactly why it's worth nothing.",
+        "intro": "I've watched thousands of would-be builders, and the #1 thing keeping them stuck isn't talent or time. It's that they never ship.",
+        "setup": "They usually fall into one of two camps:",
+        "examples": [
+          {
+            "lead": "They've got a \"someday\" idea",
+            "body": "they keep researching, tweaking, and talking about, but never build."
+          },
+          {
+            "lead": "They've got a half-built project",
+            "body": "rotting in a folder because they scoped it way too big to ever finish."
+          }
+        ],
+        "conclusion": "Either way, real people have never touched it.",
+        "pitchLead": "All you need to change that is",
+        "pitchAccent": "one small thing, live, that someone can actually use this weekend.",
+        "pitchEnd": "That's what we build in ship·able."
+      }
+    },
+    {
+      "discriminant": "tldr",
+      "value": {
+        "title": "Everything you need to know,",
+        "accent": "in ten seconds.",
+        "points": [
+          {
+            "lead": "It's {price}.",
+            "body": "One-time. Less than your weekend coffee run, and you walk out with a live MVP."
+          },
+          {
+            "lead": "It's a {duration}-minute live workshop",
+            "body": "on Zoom when the next date opens. Can't make it live? You get the full replay."
+          },
+          {
+            "lead": "It's for anyone with an idea they haven't shipped.",
+            "body": "Non-technical totally welcome. We build with AI tools, no code required."
+          },
+          {
+            "lead": "You walk out with a live, shareable URL",
+            "body": "plus a locked 48-hour build plan you can finish this weekend."
+          },
+          {
+            "lead": "It works for any idea:",
+            "body": "SaaS, a tool, a marketplace, a side project. We've broken down {ideas} of them."
+          }
+        ],
+        "bonusLead": "Live attendees get 2 bonuses:",
+        "bonusBody": "the AI MVP Builder + the Weekend MVP Starter Kit. Combined value"
+      }
+    },
+    {
+      "discriminant": "moves",
+      "value": {
+        "title": "Three moves.",
+        "accent": "Shipped on the call.",
+        "sharpest": {
+          "emphasis": "sharpest",
+          "ending": "idea",
+          "body": "One buyer, one painful problem. We cut your idea down from \"cool concept\" to the one specific thing one specific person will use on day one."
+        },
+        "weekend": {
+          "emphasis": "weekend",
+          "ending": "cut",
+          "body": "The smallest version you can actually ship by Sunday. Not the dream app. The one screen that proves it. We scope it so it fits in a weekend, not a quarter."
+        },
+        "live": {
+          "emphasis": "live",
+          "ending": "launch page",
+          "body": "Built live with AI: a deployed page with a real URL and a way to capture your first users, so you're validating demand before you sink a weekend into building."
+        }
+      }
+    },
+    {
+      "discriminant": "valueStack",
+      "value": {
+        "eyebrow": "What's included",
+        "title": "Six things in your seat.",
+        "accent": "{stackValue} of value.",
+        "cta": "Next date coming soon",
+        "workshop": {
+          "title": "{duration}-minute live build workshop",
+          "body": "Working session with John on Zoom. Bring your laptop and the Ship Sheet.",
+          "ticketLabel": "Live workshop"
+        },
+        "sheet": {
+          "title": "Ship Sheet",
+          "body": "Fill it in live. By the end of the {duration} minutes you walk out with a finished build plan.",
+          "ticketLabel": "Ship Sheet worksheet",
+          "emphasis": "worksheet"
+        },
+        "replay": {
+          "title": "Lifetime replay",
+          "body": "Can't make it live? Full recording, yours forever. Rewatch the parts you need.",
+          "ticketLabel": "Lifetime replay"
+        },
+        "plan": {
+          "title": "48-Hour Build Plan",
+          "body": "Your exact idea, scoped and sequenced to ship by Sunday night.",
+          "ticketLabel": "48-Hour Build Plan"
+        },
+        "builder": {
+          "title": "AI",
+          "body": "Drop in your idea. The prompt pack scaffolds your build instantly, so you've got a v1 to refine.",
+          "ticketLabel": "Bonus · AI MVP Builder",
+          "emphasis": "MVP Builder"
+        },
+        "kit": {
+          "title": "Weekend MVP",
+          "body": "The full 48-hour plan, templates & AI prompts. A worked playbook, not a blank page.",
+          "ticketLabel": "Bonus · Starter Kit",
+          "emphasis": "Starter Kit"
+        }
+      }
+    },
+    {
+      "discriminant": "proof",
+      "value": {
+        "title": "Different ideas.",
+        "accent": "Different builders.",
+        "ending": "Same result.",
+        "featuredLabel": "Featured win",
+        "featured": {
+          "result": "14 signups in 48 hours",
+          "context": "from a Notes-app idea I'd sat on for 9 months.",
+          "quote": "Walked in with a vague idea and walked out with a live URL. By Monday morning I had 14 real signups from people who actually wanted what I'd been describing to friends for almost a year.",
+          "name": "Hannah Reyes"
+        },
+        "second": {
+          "result": "Shipped in 90 minutes",
+          "context": "after 3 months of overthinking.",
+          "quote": "\"The Ship Sheet did what every productivity book hadn't. I stopped polishing and just shipped the one screen that mattered.\"",
+          "name": "Marcus Hale"
+        },
+        "third": {
+          "result": "First paying user in 6 days",
+          "context": "from a tool I almost didn't build.",
+          "quote": "\"Scoped down to one tiny thing I could actually finish. Posted the URL on Sunday, first paying user emailed by Wednesday.\"",
+          "name": "Priya Shah"
+        }
+      }
+    }
+  ],
+  "ticket": {
+    "eyebrow": "Here's your ticket",
+    "title": "{duration} minutes.",
+    "accent": "{price} when seats reopen.",
+    "ending": "Walk out shipped.",
+    "intro": "A {duration}-minute working session with John Iseghohi.",
+    "introAccent": "Build your MVP, live.",
+    "dateLabel": "Date",
+    "startLabel": "Start",
+    "lengthLabel": "Length",
+    "formatLabel": "Format",
+    "cta": "Next date coming soon"
+  },
+  "timezones": {
+    "title": "Timezones when the next date",
+    "accent": "lands.",
+    "intro": "Next date coming soon. Local start times will be posted with the announcement — typical slots below for planning."
+  },
+  "teacher": {
+    "name": "John Iseghohi.",
+    "role": "Founder · Weekend MVP",
+    "paragraphs": [
+      "I've watched people who were sure they needed more time, a co-founder, or to \"learn to code first\" come in, change almost nothing, scope one tiny version of what they already had, and ship it in a weekend. Then get their first real users for the first time ever.",
+      "The workshop is the {duration}-minute version of how we start that."
+    ],
+    "buildersChip": "{builders}+ builders",
+    "ideasChip": "{ideas} ideas broken down",
+    "siteChip": "New ideas daily at weekendmvp.app"
+  },
+  "seat": {
+    "title": "Seats are paused.",
+    "accent": "Get the free kit meanwhile.",
+    "body": "The last ship·able session has ended. We'll announce the next date here — grab the free Weekend MVP Starter Kit so you're ready when seats reopen.",
+    "cta": "Get the Starter Kit",
+    "finePrint": "Free. Unsubscribe anytime. No payment — Starter Kit only."
+  },
+  "stickyBar": {
+    "cta": "Get the free kit"
+  },
+  "faq": [
+    {
+      "question": "What is the ship·able workshop?",
+      "answer": "ship·able is a {duration}-minute live workshop where you turn the idea you've been sitting on into a real, deployed MVP with a live URL by the end of the call. Live on Zoom, full replay included. Next date coming soon."
+    },
+    {
+      "question": "When is the ship·able workshop?",
+      "answer": "Next date coming soon. Seats are paused until the next session is announced. Grab the free Weekend MVP Starter Kit on this page to get ready, and check back here for the date."
+    },
+    {
+      "question": "How much does the workshop cost?",
+      "answer": "When seats reopen, admission is {price} one-time. Includes the {duration}-minute live build, lifetime replay, the Ship Sheet worksheet, the 48-Hour Build Plan, and (live-only) the AI MVP Builder plus the Weekend MVP Starter Kit. Total stack value: {stackValue}. Seat sales are paused until the next date."
+    },
+    {
+      "question": "Do I need to know how to code to attend?",
+      "answer": "No. The workshop is built for non-technical founders. We use AI tools to build and deploy the MVP live on the call, so you walk out with a real shareable URL even if you've never written code."
+    },
+    {
+      "question": "What do I walk away with at the end?",
+      "answer": "A live, shareable URL for your MVP, a finished 48-hour build plan you can complete that weekend, and a way to capture your first users. Past attendees have shipped MVPs in {duration} minutes and gotten paying users within days."
+    },
+    {
+      "question": "What if I can't attend live on Zoom?",
+      "answer": "You get the full lifetime replay. Note: the two bonuses (AI MVP Builder and Weekend MVP Starter Kit) are live-only, so attending live is recommended."
+    },
+    {
+      "question": "Who is hosting the workshop?",
+      "answer": "John Iseghohi, founder of Weekend MVP. He runs a community of {builders}+ weekend builders and has broken down {ideas} startup ideas on weekendmvp.app."
+    }
+  ]
+}
