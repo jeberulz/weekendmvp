@@ -50,7 +50,7 @@ test("every existing copy button hands the exact original prompt to the clipboar
   const prompts = copy.resources.find((resource) => resource.discriminant === "prompts");
   if (!prompts) throw new Error("Starter Kit build prompts missing");
   const saved = Object.getOwnPropertyDescriptor(navigator, "clipboard");
-  const writeText = vi.fn(async (_text: string) => {});
+  const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
   try {
     const spec = render(createElement(Step2Spec, { copy: copy.spec }));
