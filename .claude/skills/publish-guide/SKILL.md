@@ -75,7 +75,7 @@ Write a short brief and stop. Do not research yet.
 - Audience, in one line, and the single outcome they leave with.
 - Working title and slug.
 - Gate mode (default `after-section-1`).
-- Offer shortlist (see Offers below), or "no offer fits".
+- Offer shortlist (see Offers below), or "no offer fits". A gated guide still needs one offer listed, so say which one would stand in.
 - First-hand evidence the owner would need to supply (builds, numbers, screenshots). If none exists, say the guide will have no authority claim.
 - Any existing guide or page this overlaps, from `app/(marketing)/guides/`, `content/articles/` and `app/solve|build-with|ideas-for/`.
 
@@ -174,7 +174,7 @@ Draft only from the sealed record and the evidence. In placeholder mode, draft f
 npm run audit:guide -- --slug={slug}
 ```
 
-It checks: spec schema and section ids, every required slot present and not empty, placeholder wording, internal labels, one currency, the hero asset (approved, a real file, honest alt text), upsell rules (offer exists and is open or switched off, at most two cards, links resolve, price from config), and, because a record exists, the research rules: a sealed PASS on exactly this record, no stale source, every figure in the copy traces to a claim.
+It checks: spec schema and section ids, every required slot present and not empty, placeholder wording, internal labels, one currency, the hero asset (approved, a real file, honest alt text), upsell rules (at least one and at most two cards, each offer exists and is open or switched off, links resolve, price from config), and, because a record exists, the research rules: a sealed PASS on exactly this record, no stale source, every figure in the copy traces to a claim.
 
 An error stops the run. Fix the cause. Never set a rule to a lower severity and never delete a check. A warning is reported to the owner.
 
@@ -224,7 +224,7 @@ The registry is `lib/guides/offers.ts`. `rankOffers({ topics, audiences })` rank
 - Read the registry, rank by topic and audience, and suggest the top two with one sentence each on why they fit. An elevating pick (the natural next step above the guide's outcome) is allowed.
 - At most two cards, one per placement (`mid`, `close`). The owner approves the choice.
 - A waitlist offer cannot state a price or seat count. A paid offer reads its price from config. Urgency needs a backing data source.
-- If no offer fits, or the only fitting one is switched off, say so. The guide ships with no upsell and the audit warns `upsell-none-shown`. That is the owner's call.
+- A gated guide must list at least one upsell. With none listed, the audit fails with `upsell-missing`. If no offer fits well, say so and list the closest one that is switched off. Its card stays hidden and the audit only warns `upsell-none-shown`. Tell the owner it is a stand-in choice, or ask for a waitlist offer to be added to the registry. That is the owner's call.
 - Do not write offer copy the owner has not approved. Bullets and the "not for" line stay empty until then, and the audit reports a thin offer as a warning.
 
 ---
@@ -236,6 +236,7 @@ The registry is `lib/guides/offers.ts`. `rankOffers({ topics, audiences })` rank
 - `verify` reports `evidence-placeholder`: expected in placeholder mode. Otherwise the owner has not supplied the evidence. Ask.
 - `seal` refuses a stale review: the record changed. Run `draft --force` and have the reviewer judge again.
 - `check` fails: read each reason. Stale hash, a false check, a source older than 120 days. Re-research or re-review. Do not draft.
+- `audit:guide` fails with `upsell-missing`: list an offer (see Offers). The audit does not accept a gated guide with none.
 - `audit:guide` fails: fix the cause (Step 6). `research-none` is information, not an error. It means the guide has no record yet, which is the case for the 5-to-9 guide only.
 - A guide needs a block the template does not have: stop and tell the owner. Do not write a component or CSS inside a guide folder.
 - Playwright is missing for `--live`: report that the live check did not run. It is not a pass.
