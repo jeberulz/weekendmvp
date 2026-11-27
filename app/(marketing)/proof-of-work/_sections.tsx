@@ -172,7 +172,7 @@ export function ProofCapture() {
   return (
     <section
       aria-labelledby="proof-capture-title"
-      className={cn(styles.section, styles.tight)}
+      className={styles.section}
       id="get"
     >
       <Container className="grid justify-items-center gap-5 text-center">
@@ -652,7 +652,7 @@ export function ClosingCapture() {
   return (
     <section
       aria-labelledby="proof-closing-title"
-      className={cn(styles.section, styles.tight)}
+      className={styles.section}
     >
       <Container className={styles.wrap}>
         <div

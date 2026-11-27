@@ -158,6 +158,9 @@ read the response as text before parsing JSON.
   a guide whose offer is closed. An offer can sit behind an on/off switch in `lib/live/config.ts`; the Build-Along
   cards, and the sprint line in the 5-to-9 founder note, follow `BUILD_ALONG_GUIDE_CARDS_ENABLED` (off while the sprint
   is not on sale). Check a flip first with `npm run audit:guide -- --slug=5-to-9-builder --offers-on`.
+  Guides are written with the `/publish-guide` skill (`.claude/skills/publish-guide/SKILL.md`): brief, thesis, research,
+  an independent Source Critic, owner evidence, draft, audit, local build. It never deploys or publishes, and it never
+  invents first-hand evidence. A placeholder run is allowed for testing and cannot pass the audit.
   Claims are backed by a research record in `guides/records/{slug}.json` (`lib/guides/research-record.ts`) and a sealed
   Source Critic review next to it. `npm run guide:source-review -- draft|verify|seal|check --record=...` drives it:
   `verify` re-fetches cited pages with `--fetch` and reproduces first-hand evidence from this repo, and `check` is the
