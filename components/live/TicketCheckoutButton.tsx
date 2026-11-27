@@ -1,6 +1,5 @@
 "use client";
 
-import { useConvexAuth } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { LiveButton } from "@/components/live/LiveButton";
@@ -18,7 +17,8 @@ function newIdempotencyKey(): string {
 
 /**
  * Auth-gated Stripe Checkout for the Build-Along.
- * Signed-out → existing magic-link / Google signup with safe returnTo + src.
+ * The checkout endpoint verifies the session. A signed-out visitor goes
+ * to the existing signup flow with the checkout return path.
  */
 export function TicketCheckoutButton({
   label,
@@ -33,7 +33,6 @@ export function TicketCheckoutButton({
   variant?: "primary" | "secondary";
   fullWidth?: boolean;
 }) {
-  const { isAuthenticated, isLoading } = useConvexAuth();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -46,11 +45,6 @@ export function TicketCheckoutButton({
 
   function onClick() {
     setError(null);
-    if (isLoading) return;
-    if (!isAuthenticated) {
-      signInFirst();
-      return;
-    }
     startTransition(async () => {
       try {
         const res = await fetch("/api/live/checkout", {
@@ -98,13 +92,9 @@ export function TicketCheckoutButton({
         variant={variant}
         onClick={onClick}
         className={className}
-        disabled={pending || isLoading}
+        disabled={pending}
       >
-        {pending
-          ? "Taking you to checkout…"
-          : !isAuthenticated && !isLoading
-            ? label
-            : label}
+        {pending ? "Taking you to checkout…" : label}
       </LiveButton>
       <p className="mt-2 text-center font-mono text-xs text-[#6B6457]">
         No VAT added: Rulz&amp;Co is not VAT-registered.
