@@ -39,7 +39,6 @@ const tokens: Readonly<Record<string, string>> = {
   "{hours}": String(BUILD_ALONG.durationMin / 60),
   "{sessionStart}": `${hubSchedule.paidDate}, ${hubSchedule.paidTime} GMT`,
   "{sessionStartWithAt}": `${hubSchedule.paidDate} at ${hubSchedule.paidTime} GMT`,
-  "{earlyPrice}": `$${BUILD_ALONG.earlyBirdUsd}`,
   "{earlyCutoff}": `${timeLabel(EARLY_BIRD_ENDS_AT)} GMT on ${earlyDate}`,
   "{seatsTotal}": String(SEATS_TOTAL),
   "{timezoneSummary}":

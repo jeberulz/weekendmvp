@@ -416,6 +416,7 @@ export default async function BuildAlongPage({
   const copy = await getBuildAlongCopy();
   const includedItems = copy.included.items.map(buildAlongText);
   const { hero, deal, agenda, included, forNotFor, ticket, guarantee, personalNote, faq, finalCta } = copy;
+  const [earlyBirdLead, earlyBirdEnding] = ticket.earlyBirdNote.split("{earlyPrice}");
   const hostBody = (
     <>
       {LIVE_ASSETS.hostEveningsConfirmed
@@ -707,7 +708,7 @@ export default async function BuildAlongPage({
           </h2>
           {price.earlyBird && !soldOut ? (
             <p className="mt-3.5 text-[#6B6457]">
-              {buildAlongText(ticket.earlyBirdNote)}
+              {buildAlongText(earlyBirdLead)}{price.amountLabel}{buildAlongText(earlyBirdEnding)}
             </p>
           ) : null}
         </div>
