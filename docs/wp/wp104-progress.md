@@ -33,3 +33,11 @@ The locked install applied the versioned patch. A clean production build and ser
 `npm test` passed locally with 7,116 passing tests and two skipped checks. Both application and Convex typechecks passed. A temporary Bash 5 installation ran the guide audit on macOS. The browser checks used synthetic sessions.
 
 Lint passed with 45 warnings and zero errors. All 14 prompt versions matched the base lock and all 231 idea tags validated. The local PR 0 gate passed. Hosted CI and the owner's review remain pending.
+
+## Verification against updated main
+
+The spike was updated through main at `69baeb5d`. The main-branch CI run failed the Convex module path check on the new ingestion test's filename. Commit `b8c8c7b8` renames the test to follow the existing Convex convention and preserves all its assertions. The deployment path check and the ingestion tests pass.
+
+The updated branch passed 7,186 tests, both typechecks, lint, the production build and artifact trace checks. The built guide passed its HTML test, and its JSON-LD was byte-identical to the file captured from pristine main. The latest visual replay passed all 44 references, with the existing rounding allowance used on two mobile checkout images. An earlier replay differed at two mobile Shipable pixels. The final replay matched them exactly with the same reference and comparison rules.
+
+The owner-run hosted PR 0 check remains the entry gate for page migrations.
