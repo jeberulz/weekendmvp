@@ -10,184 +10,184 @@
       "claimId": "tf-what",
       "kind": "tool-fact",
       "checks": {
-        "excerptMatchesPage": false,
-        "topical": false,
+        "excerptMatchesPage": true,
+        "topical": true,
         "figureMatchesExcerpt": null,
-        "sourceCredible": false,
-        "asOfStated": false,
+        "sourceCredible": true,
+        "asOfStated": true,
         "wholeStatementInContext": null,
         "speakerNamed": null,
         "reproducible": null,
         "ownerConfirmed": null
       },
-      "notes": ""
+      "notes": "Re-fetched https://code.claude.com/docs/en/overview (200, same URL). The excerpt is on the page word for word (opening line and page description), and the claim text equals the excerpt. Anthropic's own documentation of its product: vendor documentation, the primary source. asOf 2026-11-27 stated."
     },
     {
       "claimId": "tf-claudemd",
       "kind": "tool-fact",
       "checks": {
-        "excerptMatchesPage": false,
-        "topical": false,
+        "excerptMatchesPage": true,
+        "topical": true,
         "figureMatchesExcerpt": null,
-        "sourceCredible": false,
-        "asOfStated": false,
+        "sourceCredible": true,
+        "asOfStated": true,
         "wholeStatementInContext": null,
         "speakerNamed": null,
         "reproducible": null,
         "ownerConfirmed": null
       },
-      "notes": ""
+      "notes": "Re-fetched https://code.claude.com/docs/en/memory. The excerpt is on the page word for word. The claim narrows it to a project file and does not exceed it. Vendor documentation, primary source. Caution for the writer: the same page says files in subdirectories load on demand rather than at launch, so do not generalise to every CLAUDE.md in a repo. A project-root file, as in the claim, loads at launch."
     },
     {
       "claimId": "tf-plan",
       "kind": "tool-fact",
       "checks": {
-        "excerptMatchesPage": false,
-        "topical": false,
+        "excerptMatchesPage": true,
+        "topical": true,
         "figureMatchesExcerpt": null,
-        "sourceCredible": false,
-        "asOfStated": false,
+        "sourceCredible": true,
+        "asOfStated": true,
         "wholeStatementInContext": null,
         "speakerNamed": null,
         "reproducible": null,
         "ownerConfirmed": null
       },
-      "notes": ""
+      "notes": "Re-fetched https://code.claude.com/docs/en/common-workflows. The excerpt is on the page word for word, under 'Plan before editing', which names plan mode. The claim adds only 'In plan mode,' and does not exceed the excerpt. Vendor documentation, primary source. asOf stated."
     },
     {
       "claimId": "tf-skills",
       "kind": "tool-fact",
       "checks": {
-        "excerptMatchesPage": false,
-        "topical": false,
+        "excerptMatchesPage": true,
+        "topical": true,
         "figureMatchesExcerpt": null,
-        "sourceCredible": false,
-        "asOfStated": false,
+        "sourceCredible": true,
+        "asOfStated": true,
         "wholeStatementInContext": null,
         "speakerNamed": null,
         "reproducible": null,
         "ownerConfirmed": null
       },
-      "notes": ""
+      "notes": "Re-fetched https://code.claude.com/docs/en/skills. The excerpt is on the page word for word in the opening paragraph. Vendor documentation, primary source. Caution: this is the page's one-line summary. The page's own steps say a skill is a SKILL.md with YAML frontmatter and markdown instructions, saved in a skill directory such as ~/.claude/skills/<name>/SKILL.md. Copy must not imply a bare file anywhere will do."
     },
     {
       "claimId": "tf-hooks",
       "kind": "tool-fact",
       "checks": {
-        "excerptMatchesPage": false,
-        "topical": false,
+        "excerptMatchesPage": true,
+        "topical": true,
         "figureMatchesExcerpt": null,
-        "sourceCredible": false,
-        "asOfStated": false,
+        "sourceCredible": true,
+        "asOfStated": true,
         "wholeStatementInContext": null,
         "speakerNamed": null,
         "reproducible": null,
         "ownerConfirmed": null
       },
-      "notes": ""
+      "notes": "Re-fetched https://code.claude.com/docs/en/hooks-guide. The excerpt is on the page word for word in the opening paragraph, and the claim does not exceed it. Vendor documentation, primary source. Caution: the page's lead sentence calls hooks shell commands, but the page also lists other hook types (http, mcp_tool, prompt, agent). The claim does not say 'only', so it passes. Do not add 'only' in the copy."
     },
     {
       "claimId": "tf-subagents",
       "kind": "tool-fact",
       "checks": {
-        "excerptMatchesPage": false,
-        "topical": false,
+        "excerptMatchesPage": true,
+        "topical": true,
         "figureMatchesExcerpt": null,
-        "sourceCredible": false,
-        "asOfStated": false,
+        "sourceCredible": true,
+        "asOfStated": true,
         "wholeStatementInContext": null,
         "speakerNamed": null,
         "reproducible": null,
         "ownerConfirmed": null
       },
-      "notes": ""
+      "notes": "Re-fetched https://code.claude.com/docs/en/sub-agents and checked the new wording. The claim now uses the page's own 'specialized AI assistants that handle specific types of tasks' (plural), which removes the earlier one-type problem. The excerpt is on the page word for word but stops at 'file contents'; the page continues 'you won't reference again: the subagent does that work in its own context and returns only the summary'. The claim's second half is a little looser than the full sentence, but the same page says elsewhere that subagents help you 'Preserve context by keeping exploration and implementation out of your main conversation' and are for 'isolating operations that produce large amounts of output', so the claim is supported. Tidy-up: extend the excerpt and claim to include 'you won't reference again'. Vendor documentation, primary source. asOf stated."
     },
     {
       "claimId": "tf-verify",
       "kind": "tool-fact",
       "checks": {
-        "excerptMatchesPage": false,
-        "topical": false,
+        "excerptMatchesPage": true,
+        "topical": true,
         "figureMatchesExcerpt": null,
-        "sourceCredible": false,
-        "asOfStated": false,
+        "sourceCredible": true,
+        "asOfStated": true,
         "wholeStatementInContext": null,
         "speakerNamed": null,
         "reproducible": null,
         "ownerConfirmed": null
       },
-      "notes": ""
+      "notes": "Re-fetched https://code.claude.com/docs/en/best-practices and checked the new wording. The hedge is now kept ('it isn't quite' matches the page's 'it wasn't quite'). The excerpt is on the page word for word, in the list under 'When a session doesn't go the way you expected, it's almost always one of these'. The claim attributes the statement to Anthropic's best practices page, which is correct (the page is titled 'Best practices for Claude Code'), and 'the usual cause' matches 'usually because'. This is vendor guidance with no data behind the causal claim; the attribution in the claim text handles that. Vendor documentation, primary source for how Anthropic advises using its own tool. asOf stated."
     },
     {
       "claimId": "tf-clear",
       "kind": "tool-fact",
       "checks": {
-        "excerptMatchesPage": false,
-        "topical": false,
+        "excerptMatchesPage": true,
+        "topical": true,
         "figureMatchesExcerpt": null,
-        "sourceCredible": false,
-        "asOfStated": false,
+        "sourceCredible": true,
+        "asOfStated": true,
         "wholeStatementInContext": null,
         "speakerNamed": null,
         "reproducible": null,
         "ownerConfirmed": null
       },
-      "notes": ""
+      "notes": "Re-fetched https://code.claude.com/docs/en/best-practices and checked the new wording. The excerpt is on the page word for word, in the 'What you can stop doing' table, where the row says aggressive context management is old advice but /clear between tasks is still worth doing. The claim is now attributed to Anthropic's best practices page and matches the excerpt (only 'gets you better answers' became 'gets better answers'). 'Better answers and costs less' is the vendor's assertion with no numbers, which the attribution covers. Vendor documentation, primary source. asOf stated."
     },
     {
       "claimId": "tf-permissions",
       "kind": "tool-fact",
       "checks": {
-        "excerptMatchesPage": false,
-        "topical": false,
+        "excerptMatchesPage": true,
+        "topical": true,
         "figureMatchesExcerpt": null,
-        "sourceCredible": false,
-        "asOfStated": false,
+        "sourceCredible": true,
+        "asOfStated": true,
         "wholeStatementInContext": null,
         "speakerNamed": null,
         "reproducible": null,
         "ownerConfirmed": null
       },
-      "notes": ""
+      "notes": "Re-fetched https://code.claude.com/docs/en/permissions. The excerpt is on the page word for word in the opening paragraph. The claim is a plain paraphrase and does not exceed it. Vendor documentation, primary source. asOf stated."
     },
     {
       "claimId": "fh-solo",
       "kind": "first-hand",
       "checks": {
         "excerptMatchesPage": null,
-        "topical": false,
+        "topical": true,
         "figureMatchesExcerpt": null,
         "sourceCredible": null,
         "asOfStated": null,
         "wholeStatementInContext": null,
         "speakerNamed": null,
         "reproducible": null,
-        "ownerConfirmed": false
+        "ownerConfirmed": true
       },
-      "notes": ""
+      "notes": "Judged only against the owner's words of 2026-11-27: 'Claude code evidence is weekendmvp.app itself all built solo, design, startup research over 200 ideas and many more features coming soon'. The record's ev-solo statement now contains that quote exactly (checked by string match). The owner said the site is the Claude Code evidence and that it was all built solo, so 'on his own with Claude Code' does not claim more. Notes: (1) the owner's message does not name himself; the record's 'John' is the link (the repo's Person schema is /john-iseghohi per CLAUDE.md), which I could not confirm from the quote alone. (2) This is an owner attestation, not a repo-verified fact; the visible git history shows one human author account (jeberulz) plus Claude, which is consistent but does not prove it. (3) Do not stretch it to say Claude Code was the only AI tool: CLAUDE.md also mentions a codex/wp44-audit-fixes branch."
     },
     {
       "claimId": "fh-ideas",
       "kind": "first-hand",
       "checks": {
         "excerptMatchesPage": null,
-        "topical": false,
+        "topical": true,
         "figureMatchesExcerpt": null,
         "sourceCredible": null,
         "asOfStated": null,
         "wholeStatementInContext": null,
         "speakerNamed": null,
-        "reproducible": false,
+        "reproducible": true,
         "ownerConfirmed": null
       },
-      "notes": ""
+      "notes": "Re-ran 'ls content/ideas/*.mdx | wc -l' in /home/user/weekendmvp on 2026-11-27: 231, which is more than 200 (earlier cross-check: ideas/manifest.json also has 231 entries and every MDX file has a manifest slug). The claim counts idea pages in the repository, which matches what the evidence counts. It says 'live in the repository', not 'published'; CLAUDE.md says new engine ideas stay on a private editorial path, so do not write 'published' or 'on the site' without checking. The count can drift."
     },
     {
       "claimId": "fh-rungs",
       "kind": "first-hand",
       "checks": {
         "excerptMatchesPage": null,
-        "topical": false,
+        "topical": true,
         "figureMatchesExcerpt": null,
         "sourceCredible": null,
         "asOfStated": null,
@@ -196,14 +196,14 @@
         "reproducible": null,
         "ownerConfirmed": false
       },
-      "notes": ""
+      "notes": "PLACEHOLDER stand-in. The owner has not supplied this evidence: no real example per rung and no screenshots. The subject is the right one, so topical is true, but ownerConfirmed stays false. The guide cannot present this as first-hand until the owner supplies it."
     },
     {
       "claimId": "fh-build",
       "kind": "first-hand",
       "checks": {
         "excerptMatchesPage": null,
-        "topical": false,
+        "topical": true,
         "figureMatchesExcerpt": null,
         "sourceCredible": null,
         "asOfStated": null,
@@ -212,14 +212,14 @@
         "reproducible": null,
         "ownerConfirmed": false
       },
-      "notes": ""
+      "notes": "PLACEHOLDER stand-in. The owner has not supplied this evidence: no account of the Idea Engine, audit tooling or guide template, and no real numbers. The owner's message of 2026-11-27 says only that the site was built solo, with over 200 ideas and more features coming. Subject is right, so topical is true, but ownerConfirmed stays false."
     },
     {
       "claimId": "fh-weeks",
       "kind": "first-hand",
       "checks": {
         "excerptMatchesPage": null,
-        "topical": false,
+        "topical": true,
         "figureMatchesExcerpt": null,
         "sourceCredible": null,
         "asOfStated": null,
@@ -228,11 +228,13 @@
         "reproducible": null,
         "ownerConfirmed": false
       },
-      "notes": ""
+      "notes": "PLACEHOLDER stand-in. The owner has not confirmed what a reader should ship in each of the four weeks, nor tested it against his own routine. Subject is right, so topical is true, but ownerConfirmed stays false."
     }
   ],
   "failures": [
-    "draft: no claim has been judged yet"
+    "claim \"fh-rungs\": ownerConfirmed is false",
+    "claim \"fh-build\": ownerConfirmed is false",
+    "claim \"fh-weeks\": ownerConfirmed is false"
   ],
-  "seal": "1cbb0d2673651ae20063e0b3d41dc7a674295c4bb8acde4b439c2cf002201b9e"
+  "seal": "68675ee2c61542e767dd3667995aa6d6153558b22a9c2bc7fd9f41fcd472368c"
 }
