@@ -69,3 +69,11 @@ Local branch `codex/wp104-starter-kit-cms` stacks on the Starter. The pristine m
 The Starter Kit now reads its JSON singleton through Keystatic and still prerenders. The server trace includes the singleton. Its teaching sequence stays fixed. Editors can reorder the three resource groups while their links retain the original anchors and the sidebar follows the displayed order. Copy and clipboard content come from the editor. Booking, subscription controls and the schema graph remain code-owned.
 
 Both screenshots matched pixel for pixel. The actual production HTML matched the published section tree, links and JSON-LD. All 12 real copy buttons passed the exact clipboard payload comparison. A local editor save and reload preserved the full singleton. The full suite passed 7,199 tests. The app and Convex typechecks, lint, production build, production dependency audit at the high threshold and trace checks passed.
+
+## PR 4 · Shipable migration
+
+Local branch `codex/wp104-shipable-cms` stacks on the Starter Kit. The two screenshots, rendered section tree, sticky action and JSON-LD were recorded from main at `692b7b3f` before the reader switch.
+
+Shipable now reads its JSON singleton through Keystatic and still prerenders. The server trace contains the singleton. Editors can reorder the seven middle sections and update the fixed sections, metadata and FAQ. Ticket detail and line labels come from the editor. Amounts, schedule, timezones, seat status, form routing and historical paid confirmation come from code. The next-date page continues to show the free Starter Kit form.
+
+Both screenshots matched pixel for pixel. The built page matched the published section tree, links and JSON-LD. Search and social metadata matched the reference. A local operator saved and reloaded the singleton in the browser and the smoke harness restored the original file. The full suite passed 7,201 tests. The app and Convex typechecks, lint, production build, production dependency audit at the high threshold, prompt version check, idea tags and trace checks passed.
