@@ -88,7 +88,17 @@ export function isOperatorPath(pathname: string): boolean {
 }
 
 function operatorPrefix(pathname: string): boolean {
-  return pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/admin.");
+  return isOperatorPath(pathname) || pathname.startsWith("/admin.");
+}
+
+/** File-backed editor access always needs the live operator, even in local-demo mode. */
+export function isLandingEditorRequestPath(pathname: string): boolean {
+  try {
+    const path = decodeURIComponent(pathname);
+    return underPrefix(path, "/admin/pages") || path.startsWith("/admin/pages.");
+  } catch {
+    return false;
+  }
 }
 
 /**

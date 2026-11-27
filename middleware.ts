@@ -18,7 +18,7 @@ import {
   isSensitiveAuthPath,
 } from "./lib/auth-return";
 import { SESSION_HINT_COOKIE } from "./lib/auth-session-cookie";
-import { isOperatorRequestPath } from "./lib/private-paths";
+import { isLandingEditorRequestPath, isOperatorRequestPath } from "./lib/private-paths";
 import { isKnownIdeaSlug } from "./lib/idea-slugs.generated";
 import { isIdeaCollectionSlug } from "./lib/idea-collection-slugs";
 import { isEngineDraftSlug } from "./lib/engine-drafts";
@@ -291,7 +291,15 @@ export function applyOperatorResponseHeaders(pathname: string, response: Respons
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
     response.headers.set("Referrer-Policy", "no-referrer");
     response.headers.set("X-Frame-Options", "DENY");
-    response.headers.set("Content-Security-Policy", "frame-ancestors 'none'");
+    // Editor documents handle the GitHub session. Only first-party scripts
+    // may run there, including on direct visits from a marketing page.
+    const editorScripts = process.env.NODE_ENV === "development"
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+      : "script-src 'self' 'unsafe-inline'";
+    response.headers.set("Content-Security-Policy", isLandingEditorRequestPath(pathname)
+      ? "frame-ancestors 'none'; " + editorScripts
+      : "frame-ancestors 'none'");
+
   }
   return response;
 }
@@ -309,8 +317,8 @@ function editorialLocalDemo() {
 export const EDITORIAL_GATE_TIMEOUT_MS = 3_000;
 
 /** Only the bound super-admin passes; anything the backend cannot confirm, or not in time, is refused. */
-export async function editorialAccessAllowed(token: string | undefined): Promise<boolean> {
-  if (editorialLocalDemo()) return true;
+export async function editorialAccessAllowed(token: string | undefined, allowFixture = true): Promise<boolean> {
+  if (allowFixture && editorialLocalDemo()) return true;
   if (!token) return false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -404,7 +412,7 @@ const platformAuthMiddleware = convexAuthNextjsMiddleware(
     // WP46-E4e. Pages, RSC and segment requests and server actions anywhere
     // under /admin pass this gate; the pages and actions check again.
     if (isOperatorRequestPath(pathname)) {
-      return (await editorialAccessAllowed(await convexAuth.getToken()))
+      return (await editorialAccessAllowed(await convexAuth.getToken(), !isLandingEditorRequestPath(pathname)))
         ? NextResponse.next({ request: { headers: request.headers } })
         : editorialNotFound(request);
     }
@@ -619,6 +627,7 @@ export const config = {
     // skip the editorial gate and its headers.
     "/admin",
     "/admin/:path*",
+    "/api/keystatic/:path*",
     // Dynamic idea/build routes may have extension-like slugs. They must still
     // hit the request-time 404 gate before a PPR shell can stream.
     "/ideas/:path*",

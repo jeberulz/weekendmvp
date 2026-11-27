@@ -159,3 +159,15 @@ Owner authorized implementation and UX recommendations on PR #81. Lane: Program/
 | R-gate | Independent review and orchestration | Typecheck, lint, full tests, production build, production/full audits, trace inventory, actual local schema/codegen and browser journeys where environment permits. Record unavailable credential-backed gates honestly; do not deploy to production. |
 
 No production mutation, paid activation, publishing activation, merge or deployment. Existing data preserved. Legacy adapters remain through frontend rollback and retire only in a later gated cleanup. Subscription implementation remains a separate WP. Workers may not broaden shared file boundaries.
+
+## WP104 · Landing-page editor migration
+
+Base 43721c0f includes the nine routes inventoried at a3ae45f6. The additional proof-of-work page is outside this migration. Copy is currently coupled to layouts, offers, clocks, subscription gates and structured data. Moving these behaviours into editable fields would break their existing contracts.
+
+| Wave | Scope | Gate |
+| --- | --- | --- |
+| 0 | Isolated Keystatic spike, bound operator access, JSON singletons, GitHub branch workflow and full-page visual baselines from main | Prove routing, local saving, GitHub sign-in surface, production refusal without configuration, reproducible screenshots and repository checks. Record any incompatible mount or unverified mode before migrating. |
+| 1–9 | Guide, 5-to-9 starter, starter kit, Shipable, Dare on owner opt-in, live hub, 48 hours, Build-Along, home. One review per page. | Reader/section parity, exact visual and JSON-LD comparison, existing behaviour and full quality checks on each step. |
+| A–C | After the first migrated guide, review the separate AI proposal UI, generation and approved branch writes in three steps. | Validate schema and locked values, owner-only access, cost and rate controls, no persistence before approval, branch-only writes. |
+
+The operator controls merges, repository branch protection and deployment credentials. Production filesystem writes would contradict the storage rule, so the production-without-GitHub case must demonstrate refusal. A standalone integration test can separately exercise upstream local storage under an optimized build.

@@ -66,7 +66,9 @@
     "retag:idea-tags": "node scripts/retag-idea-tags.mjs",
     "retag:idea-tags:apply": "node scripts/retag-idea-tags.mjs --apply",
     "gsc:submit-sitemap": "node scripts/gsc-submit-sitemap.mjs",
-    "gsc:inspect-indexing": "node scripts/gsc-inspect-indexing.mjs"
+    "gsc:inspect-indexing": "node scripts/gsc-inspect-indexing.mjs",
+    "test:visual": "node scripts/landing-visual/run.mjs",
+    "postinstall": "patch-package --error-on-fail"
   },
   "keywords": [],
   "author": "",
@@ -103,6 +105,9 @@
     "@convex-dev/workflow": "^0.4.4",
     "@convex-dev/workpool": "^0.4.15",
     "@hookform/resolvers": "^5.4.0",
+    "@keystatic/core": "0.6.10",
+    "@keystatic/next": "5.0.5",
+    "@markdoc/markdoc": "0.5.14",
     "@phosphor-icons/react": "^2.1.10",
     "@resvg/resvg-js": "^2.6.2",
     "@vercel/global-config": "^1.5.1",
@@ -117,6 +122,7 @@
     "next": "^16.4.5",
     "next-mdx-remote-client": "^2.1.11",
     "next-themes": "^0.4.6",
+    "patch-package": "8.0.1",
     "radix-ui": "^1.5.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
