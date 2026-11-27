@@ -35,6 +35,8 @@ export const guideSpecSchema = z.object({
   description: text.max(300),
   /** Full `<title>` text. */
   metaTitle: text,
+  datePublished: z.iso.datetime().optional(),
+  dateModified: z.iso.date().optional(),
   ogImagePath: z.string().startsWith("/"),
   lang: z.string().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/),
   authorName: text,

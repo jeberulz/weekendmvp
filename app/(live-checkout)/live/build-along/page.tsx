@@ -47,14 +47,13 @@ import {
   PAID_FOR_YOU,
   PAID_INCLUDED,
   PAID_NOT_FOR_YOU,
-  PERSONAL_NOTE_PS_EARLY,
   PERSONAL_NOTE_PS_STANDARD,
   paidFaqItems,
 } from "./paid-data";
 
 const TITLE = "Weekend MVP Build-Along — Build it Saturday, ship it Sunday";
 const DESCRIPTION =
-  "A 2-hour live build-along on Zoom. Sat 14 Nov 2026, 15:00 GMT. You build your MVP while I build mine. $19 until 23:59 GMT Sun 8 Nov, then $29. 20 seats. Replay included.";
+  `A 2-hour live build-along on Zoom. Sat 14 Nov 2026, 15:00 GMT. You build your MVP while I build mine. $${BUILD_ALONG.standardUsd}. 20 seats. Replay included.`;
 
 export const instant = false;
 
@@ -114,7 +113,7 @@ const SCHEMA = buildGraph(
     offers: {
       "@type": "Offer",
       priceCurrency: "USD",
-      price: String(BUILD_ALONG.earlyBirdUsd),
+      price: String(BUILD_ALONG.standardUsd),
       availability: "https://schema.org/InStock",
       url: `${SITE}/live/build-along#ticket`,
     },
@@ -236,7 +235,7 @@ function TicketCard({
           <p className="mt-2.5 text-sm text-home-ink">{seatsLine(seats)}</p>
           {price.earlyBird ? (
             <p className="mt-1.5 font-mono text-xs text-[#6B6457]">
-              Switches to $29 at 23:59 GMT Sun 8 Nov, in step with Stripe
+              Switches to {`$${BUILD_ALONG.standardUsd}`} at 23:59 GMT Sun 8 Nov, in step with Stripe
             </p>
           ) : null}
           <div
@@ -705,7 +704,7 @@ export default async function BuildAlongPage({
           </h2>
           {price.earlyBird && !soldOut ? (
             <p className="mt-3.5 text-[#6B6457]">
-              The $19 price ends at 23:59 GMT on Sun 8 Nov and I don&apos;t extend it.
+              The {price.amountLabel} price ends at 23:59 GMT on Sun 8 Nov and I don&apos;t extend it.
             </p>
           ) : null}
         </div>
@@ -858,7 +857,8 @@ export default async function BuildAlongPage({
         ) : null}
         <p className="mt-4 text-[15px] leading-relaxed text-[#4A453C]">
           <strong>P.S.</strong>{" "}
-          {price.earlyBird ? PERSONAL_NOTE_PS_EARLY : PERSONAL_NOTE_PS_STANDARD}
+          {price.earlyBird ? `It's ${price.priceLine}. ` : null}
+          {PERSONAL_NOTE_PS_STANDARD}
         </p>
       </section>
 

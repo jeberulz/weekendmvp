@@ -161,6 +161,12 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/5-to-9-starter" className={FOOTER_LINK}>5-to-9 Starter</Link>
+              </li>
+              <li>
+                <Link href="/guides/5-to-9-builder" className={FOOTER_LINK}>5-to-9 Builder</Link>
+              </li>
+              <li>
                 <Link
                   href="/articles"
                   className={FOOTER_LINK}

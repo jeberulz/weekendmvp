@@ -89,9 +89,6 @@ export const DEAL_FALLBACK =
 export const DEAL_DRY_RUN =
   "You leave with a live URL. Not notes.";
 
-export const PERSONAL_NOTE_PS_EARLY =
-  "It's $19 until 23:59 GMT Sun 8 Nov, then $29. The session is Sat 14 Nov at 15:00 GMT, and the replay is yours to keep if you can't make it live.";
-
 export const PERSONAL_NOTE_PS_STANDARD =
   "The session is Sat 14 Nov at 15:00 GMT, and the replay is yours to keep if you can't make it live.";
 

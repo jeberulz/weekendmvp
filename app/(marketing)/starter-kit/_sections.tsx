@@ -1,4 +1,5 @@
 import { CheckCircle2, X } from "lucide-react";
+import Link from "next/link";
 
 import { CopyPromptButton } from "./CopyPromptButton";
 
@@ -132,6 +133,12 @@ export function KitHero() {
           collect emails
         </span>{" "}
         for.
+      </p>
+      <p className="mb-10 text-neutral-600">
+        Still testing an idea? Try{" "}
+        <Link href="/5-to-9-starter" className="font-medium text-black underline underline-offset-4">The 5-to-9 Starter</Link>
+        {" "}or read{" "}
+        <Link href="/guides/5-to-9-builder" className="font-medium text-black underline underline-offset-4">The 5-to-9 Builder</Link>.
       </p>
 
       <div className="bg-black text-white rounded-[2rem] p-8 md:p-10">

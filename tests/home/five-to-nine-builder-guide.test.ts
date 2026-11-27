@@ -84,9 +84,12 @@ function expectGuideCopy(html: string) {
   expect(guide.textContent).not.toContain("almost any idea without a team or a budget");
   expect(guide.textContent).not.toContain("Most people skip that step");
   expect(guide.textContent).not.toContain("The method proves someone will pay");
-  expect(guide.querySelector('[data-copy-slot="Gate · Fine print"]')?.textContent).toBe(
+  const finePrint = guide.querySelector('[data-copy-slot="Gate · Fine print"]');
+  expect(finePrint?.textContent).toBe(
     "Free. Unsubscribe anytime. We'll send the 5-day Starter.",
   );
+  expect(finePrint?.querySelector("a")?.getAttribute("href")).toBe("/5-to-9-starter");
+  expect(guide.textContent).not.toContain("WeekendMVP");
   const follow = guide.querySelector('[data-copy-slot="Sign-off · Follow destination"]');
   expect(follow?.textContent).toMatch(/@weekendmvp/);
   expect(follow?.textContent).toMatch(/Instagram/);
@@ -145,6 +148,20 @@ afterEach(() => {
 });
 
 describe("5-to-9 Builder guide", () => {
+  test("has a concise title and description and uses the site social metadata", () => {
+    const title = "The 5-to-9 Builder: a tested side income | Weekend MVP";
+    expect(metadata.title).toEqual({ absolute: title });
+    expect(title.length).toBeLessThanOrEqual(60);
+    expect(title).toContain("Weekend MVP");
+    expect(title).not.toContain("WeekendMVP");
+    expect(metadata.description).toBe(
+      "AI made building free. Knowing what to build is the job now. A free guide for 9-to-5ers to find an idea and prove someone will pay before you build.",
+    );
+    expect(metadata.description?.length).toBeLessThanOrEqual(155);
+    expect(metadata.openGraph?.siteName).toBe("Weekend MVP");
+    expect(metadata.twitter?.site).toBe("@weekendmvp");
+  });
+
   test("renders the deck with no visible TODO or COPY TO WRITE in server markup", () => {
     expectGuideCopy(renderToStaticMarkup(createElement(FiveToNineBuilderGuidePage)));
   });
@@ -161,8 +178,10 @@ describe("5-to-9 Builder guide", () => {
     const rest = guide.querySelector(".guide-rest");
 
     expect(metadata.alternates?.canonical).toBe("/guides/5-to-9-builder");
-    expect(metadata.title).toEqual({ absolute: expect.stringContaining("5-to-9 Builder") });
     expect(guide.querySelector("h1")?.textContent).toBe("AI made building free. Knowing what to build is the job now.");
+    expect(guide.querySelector('img[alt="John Iseghohi, founder of Weekend MVP, working at his desk"]')).toBeTruthy();
+    expect(guide.querySelector('#gate .guide-locked-face p a[href="/5-to-9-starter"]')?.textContent).toBe("5-to-9 Starter");
+    expect(guide.querySelectorAll('.guide-day-one a[href="/5-to-9-starter"]')).toHaveLength(3);
     expect(guide.querySelector("#s01")?.closest(".guide-rest")).toBeNull();
     for (let section = 2; section <= 11; section++) {
       expect(rest?.querySelector(`#s${String(section).padStart(2, "0")}`)).toBeTruthy();
@@ -172,6 +191,9 @@ describe("5-to-9 Builder guide", () => {
     expect(guide.querySelectorAll("form")).toHaveLength(1);
     expect(JSON.parse(guide.querySelector('script[type="application/ld+json"]')!.textContent!)["@graph"])
       .toContainEqual(expect.objectContaining({
+        "@type": "Article",
+        datePublished: "2026-11-26T07:53:49Z",
+        dateModified: "2026-11-27",
         isAccessibleForFree: false,
         hasPart: expect.objectContaining({ cssSelector: ".guide-rest", isAccessibleForFree: false }),
       }));
@@ -373,7 +395,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("lists the guide in the sitemap and is indexable, and allows its campaign", () => {
     expect(readFileSync("app/sitemap.ts", "utf8"))
-      .toContain('entry("/guides/5-to-9-builder", { priority: 0.85, changeFrequency: "monthly" })');
+      .toMatch(/entry\("\/guides\/5-to-9-builder", \{[^}]*lastModified: new Date\(BUILDER_DATE_MODIFIED\)/);
     expect(metadata.robots).toBeUndefined();
     expect(readFileSync("app/api/subscribe/route.ts", "utf8"))
       .toMatch(/ALLOWED_UTM_CAMPAIGNS = new Set\(\[[^\]]*"5-to-9-builder"/);

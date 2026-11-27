@@ -8,12 +8,12 @@ import { offerById } from "@/lib/guides/offers";
 const sprintOn = isOfferEnabled(offerById("build-along"));
 
 const founderNote = sprintOn
-  ? `I run WeekendMVP, and I run the Build-Along sprint live. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.
+  ? `I run Weekend MVP, and I run the Build-Along sprint live. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.
 
 So the guide is built around the second one. It's slow where it needs to be and honest about what can go wrong. Run the five steps on your own evenings. If an idea fails, good: that's the test doing its job.
 
 If you'd rather do it with company, the live sprint is [here](/live/build-along). Either way, I'd like to hear what you test.`
-  : `I run WeekendMVP. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.
+  : `I run Weekend MVP. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.
 
 So the guide is built around the second one. It's slow where it needs to be and honest about what can go wrong. Run the five steps on your own evenings. If an idea fails, good: that's the test doing its job.
 
@@ -184,7 +184,7 @@ Keep it short and plain. Do not tell me it's a great idea unless the evidence I'
   "FAQ · Do I need to code?": "Not to start. The method tests whether someone will pay before you build. Section 5 has a starting point for non-technical readers.",
   "FAQ · What if nobody buys?": "Then the test worked. You found out in a week, not a quarter. Section 8 covers what to do next.",
   "FAQ · What does the 5-day email add?": "The same method at a guided pace: one action a day for five days. The guide is the depth. The email is the pace. There's no second form. It goes to the email you unlocked with.",
-  "Gate · Fine print": "Free. Unsubscribe anytime. We'll send the 5-day Starter.",
+  "Gate · Fine print": "Free. Unsubscribe anytime. We'll send the [5-day Starter](/5-to-9-starter).",
   "Sign-off · Follow destination": "Follow @weekendmvp on Instagram: https://www.instagram.com/weekendmvp/",
 } as const;
 
