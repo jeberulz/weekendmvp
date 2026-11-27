@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import FiveToNineBuilderGuidePage, { metadata } from "@/app/(marketing)/guides/5-to-9-builder/page";
 import { formatPrice, resolvePrice } from "@/lib/guides/offer-live";
+import { BUILD_ALONG_GUIDE_CARDS_ENABLED } from "@/lib/live/config";
 import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
 import { guideLiveIdeaCount } from "@/app/(marketing)/guides/5-to-9-builder/ideaCount";
 import { BUILD_ALONG } from "@/lib/live/config";
@@ -103,6 +104,11 @@ function expectGuideCopy(html: string) {
   expect(buildAlongPrice).toBe(`$${BUILD_ALONG.standardUsd}`);
   expect(buildAlongPrice).toBe("$29");
   expect(guide.textContent).toContain("$29");
+  // The Build-Along switch in lib/live/config.ts decides whether the sprint shows anywhere in the guide:
+  // both cards, the founder-note sprint line and the link to its page. A switched-off sprint leaves no trace.
+  expect(guide.textContent?.includes("Build-Along")).toBe(BUILD_ALONG_GUIDE_CARDS_ENABLED);
+  expect(guide.querySelector('a[href="/live/build-along"]') !== null).toBe(BUILD_ALONG_GUIDE_CARDS_ENABLED);
+  expect(guide.querySelectorAll('aside[aria-label="Build-Along sprint"]')).toHaveLength(BUILD_ALONG_GUIDE_CARDS_ENABLED ? 2 : 0);
   expect(guide.textContent).not.toContain("$47");
 }
 

@@ -1,4 +1,24 @@
 // Copy deck: /workspace/wmvp-design/5-to-9-builder/source/copy.md
+import { isOfferEnabled } from "@/lib/guides/offer-live";
+import { offerById } from "@/lib/guides/offers";
+
+// The sprint lines in the founder note follow the Build-Along switch in lib/live/config.ts. With the switch on,
+// the note reads exactly as written. With it off, only the two sprint clauses are dropped, so the guide never
+// links to a sprint that is not on sale. Both versions fill the same slot.
+const sprintOn = isOfferEnabled(offerById("build-along"));
+
+const founderNote = sprintOn
+  ? `I run WeekendMVP, and I run the Build-Along sprint live. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.
+
+So the guide is built around the second one. It's slow where it needs to be and honest about what can go wrong. Run the five steps on your own evenings. If an idea fails, good: that's the test doing its job.
+
+If you'd rather do it with company, the live sprint is [here](/live/build-along). Either way, I'd like to hear what you test.`
+  : `I run WeekendMVP. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.
+
+So the guide is built around the second one. It's slow where it needs to be and honest about what can go wrong. Run the five steps on your own evenings. If an idea fails, good: that's the test doing its job.
+
+I'd like to hear what you test.`;
+
 export const guideCopy = {
   "The Shift · Lede": "Finding something worth building starts with a problem you can check.",
   "The Shift · Validation paragraph": "Before you spend an evening building, talk to someone who has the problem. Ask how they deal with it now and what it costs them. Then see whether they'll pay for a fix.",
@@ -158,11 +178,7 @@ Please do the following, in order:
 
 Keep it short and plain. Do not tell me it's a great idea unless the evidence I've given supports it.`,
   "The Prompt · Honest catch": "The model only knows what you tell it. It can't speak to your customers, and it may sound more certain than it should. Use it to prepare for your three conversations, not to stand in for them.",
-  "Founder note · Body": `I run WeekendMVP, and I run the Build-Along sprint live. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.
-
-So the guide is built around the second one. It's slow where it needs to be and honest about what can go wrong. Run the five steps on your own evenings. If an idea fails, good: that's the test doing its job.
-
-If you'd rather do it with company, the live sprint is [here](/live/build-along). Either way, I'd like to hear what you test.`,
+  "Founder note · Body": founderNote,
   "FAQ · Who is this for?": "9-to-5ers who are building, or want to build, in their 5-to-9. Designers too. They're one of the four starting points in Section 5.",
   "FAQ · I have no idea yet. Where do I start?": "At step 1, Find it: spot problems in your own week. Or start from one of the {ideaCount} researched ideas in the Idea Bank (Section 7).",
   "FAQ · Do I need to code?": "Not to start. The method tests whether someone will pay before you build. Section 5 has a starting point for non-technical readers.",

@@ -1,7 +1,13 @@
-import { BUILD_ALONG, NEXT_BUILD_ALONG, NEXT_SESSION_CHECKOUT_ENABLED, SALES_OPEN_AT } from "@/lib/live/config";
+import {
+  BUILD_ALONG,
+  BUILD_ALONG_GUIDE_CARDS_ENABLED,
+  NEXT_BUILD_ALONG,
+  NEXT_SESSION_CHECKOUT_ENABLED,
+  SALES_OPEN_AT,
+} from "@/lib/live/config";
 import { buildAlongPhase } from "@/lib/live/schedule";
 
-import type { EffectiveStatus, Offer, PriceConfigKey, StatusResolverKey } from "./offers.ts";
+import type { EffectiveStatus, Offer, PriceConfigKey, StatusResolverKey, SwitchKey } from "./offers.ts";
 
 /**
  * Config-backed lookups for offers (WP103-S3): prices and live status come from
@@ -24,6 +30,21 @@ export function resolvePrice(key: PriceConfigKey): number {
 
 export function formatPrice(amount: number): string {
   return `$${amount}`;
+}
+
+const SWITCHES: Record<SwitchKey, () => boolean> = {
+  BUILD_ALONG_GUIDE_CARDS: () => BUILD_ALONG_GUIDE_CARDS_ENABLED,
+};
+
+/** Every switch key must have a reader. Checked by a test, so adding a key without one fails. */
+export const readableSwitchKeys = Object.keys(SWITCHES);
+
+/** Is the offer switched on? An offer with no switch always is. When off, no guide shows it. */
+export function isOfferEnabled(offer: Offer): boolean {
+  if (!offer.switchKey) return true;
+  const read = SWITCHES[offer.switchKey];
+  if (!read) throw new Error(`No switch reader for "${offer.switchKey}"`);
+  return read();
 }
 
 const day = (ms: number) => new Date(ms).toISOString().slice(0, 10);
