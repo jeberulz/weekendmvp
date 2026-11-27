@@ -262,6 +262,20 @@ describe("figures in copy", () => {
     expect(unmapped(pct, ["Pay rose 120% in a year."])).toEqual([]);
   });
 
+  test("evidence that is a stand-in is an error, so a placeholder run can never publish", () => {
+    const placeholder = researchRecordSchema.parse(mutate((r) => {
+      r.evidence[1].verify = { type: "owner-statement", statement: "PLACEHOLDER: John describes how he built it with Claude Code.", statedOn: "2026-11-27" };
+      (r.claims[4] as { text: string }).text = "TBD: the owner's build story goes here.";
+    }));
+    const found = checkRecordConsistency(placeholder).filter((f) => f.rule === "evidence-placeholder");
+    expect(found.map((f) => f.path)).toEqual(["evidence:solo", "claim:solo-1"]);
+    expect(found.every((f) => f.severity === "error")).toBe(true);
+    // Real evidence is not flagged, and neither is an ordinary word like "placeholders" inside a longer word.
+    expect(rules(checkRecordConsistency(record()))).not.toContain("evidence-placeholder");
+    const label = researchRecordSchema.parse(mutate((r) => { r.evidence[0].label = "Idea pages in this repo, to be supplied"; }));
+    expect(checkRecordConsistency(label).some((f) => f.rule === "evidence-placeholder" && f.path === "evidence:ideas")).toBe(true);
+  });
+
   test("a claim whose sentence is not in the copy is a warning", () => {
     const findings = checkCopyAgainstRecord(record(), ["Nothing from the record is here."]);
     expect(findings.filter((f) => f.rule === "claim-unused")).toHaveLength(5);

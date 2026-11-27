@@ -64,7 +64,7 @@ lib/guides/offers.ts                   offers registry (paid, waitlist, free ass
 lib/guides/audit.ts                    audit rules, run by `npm run audit:guide -- --slug={slug}`
 guides/records/{slug}.json             research record (sources, claims, excerpts)
 guides/records/{slug}.source-review.json   sealed Source Critic result
-guides/records/{slug}.evidence.json    John's first-hand evidence (screenshots, numbers, prompts)
+(first-hand evidence lives inside the record, as evidence[] entries: file-count, git-count or owner-statement)
 ```
 
 GuideSpec fields: slug, title, thesis, archetype, audience, lastVerified, outlineStrip, readerRoutes, skills, roles,
@@ -78,11 +78,12 @@ Add a second archetype only after guide two ships.
 0. Brief. Skill drafts audience, outcome, archetype, gate mode and offer shortlist. Gate: John approves.
 1. Thesis and outline. One-line thesis and the outline strip. Gate: John approves.
 2. Research. Claude gathers sources into the record. Every claim has id, text, sourceId, kind, dateChecked, excerpt.
-3. Source Critic (built in WP103-S4: `npm run guide:source-review`, with `verify`, `seal` and `check`). Re-fetch each
+3. Evidence intake, before the Source Critic. Any change to the record after a review is sealed makes the review stale, so
+   the evidence goes in first. John supplies his own builds, numbers, screenshots and prompts. Claude never invents these.
+   If the file is empty the guide is flagged `noFirstHandProof` and cannot publish without John's explicit override.
+4. Source Critic (built in WP103-S4: `npm run guide:source-review`, with `verify`, `seal` and `check`). Re-fetch each
    excerpt and check topicality and context. Seals a PASS bound to the record hash.
    No PASS, no draft. Same fail-closed rule as `lib/engine/source-review.ts`.
-4. Evidence intake. John supplies his own builds, numbers, screenshots and prompts. Claude never invents these.
-   If the file is empty the guide is flagged `noFirstHandProof` and cannot publish without John's explicit override.
 5. Draft. Claude fills the spec and copy deck from the sealed record and the evidence file only.
 6. Audit (fails the run). See rules below.
 7. Build and preview. Typecheck, tests, `a11y-check`, screenshots at phone (390px) and desktop width, taken with the
@@ -181,7 +182,8 @@ draft data-image file is deleted. Receipt labels, currency and the gate preview 
 - S4 Extend Source Critic claim kinds. Today it covers market stats, competitor prices and community quotes. Guides
   need stats, pay or job data, tool facts, dates and quotes. Done when: sealed PASS gates the draft step.
 - S5 Write `.claude/skills/publish-guide/SKILL.md`, following `publish-article` and `publish-idea`.
-  Done when: a dry run walks steps 0 to 7 with the human gates stopping the run.
+  Done when: a dry run walks steps 0 to 7 with the human gates stopping the run. Built (WP103-S5). The skill allows a
+  placeholder mode for owner evidence, and a mechanical rule (`evidence-placeholder`) keeps such a run from publishing.
 - S6 Pilot: guide two (mastering Claude Code). Needs John's evidence file. Done when: private candidate passes audit.
 - S7 Re-check command and cadence. Done when: a stale claim is reported with the old and new excerpt.
 
