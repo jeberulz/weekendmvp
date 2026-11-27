@@ -221,7 +221,8 @@ export function auditGuide(input: AuditInput): AuditResult {
   }
 
   auditUpsells(spec, input, offerList, add);
-  if (input.research) auditResearch(spec, input.research, readerStrings, add);
+  // Inline Receipt amounts are reader-facing figures too, so they must trace to a claim like any other figure.
+  if (input.research) auditResearch(spec, input.research, [...readerStrings, ...amountStrings], add);
 
   return { ok: !findings.some((finding) => finding.severity === "error"), findings, spec };
 }

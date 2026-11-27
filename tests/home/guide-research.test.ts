@@ -209,6 +209,28 @@ describe("figures in copy", () => {
     expect(figuresIn("In 2026 there are 5 steps, 30 days and 18 items in section 9.")).toEqual([]);
   });
 
+  test("a K, M or B amount without a currency symbol is one figure, suffix included", () => {
+    expect(figuresIn("50K users, 1.2M views, 200K downloads and 3B events.")).toEqual(["50K", "1.2M", "200K", "3B"]);
+    expect(figuresIn("About 50k users and 2.5m visits.")).toEqual(["50k", "2.5m"]);
+    expect(figuresIn("$220K stays one figure, and 1,200K too.")).toEqual(["$220K", "1,200K"]);
+    // Plain numbers still need three digits, and a unit word is not a suffix.
+    expect(figuresIn("12 builders and 5 steps in 40 minutes, 8 km.")).toEqual([]);
+  });
+
+  test("a claim for 200 users does not back 200K users, and an unrecorded 50K is caught", () => {
+    const rec = researchRecordSchema.parse(mutate((r) => {
+      r.claims = [{ id: "n1", kind: "first-hand", text: "We have 200 users.", evidenceId: "solo" }];
+      r.evidence = r.evidence.filter((e) => e.id === "solo");
+      r.sources = [];
+    }));
+    const unmapped = (text: string[]) => checkCopyAgainstRecord(rec, text).filter((f) => f.rule === "copy-number-unmapped").map((f) => f.message);
+    expect(unmapped(["We have 200 users."])).toEqual([]);
+    expect(unmapped(["We have 200K users."])).toEqual([expect.stringContaining('"200K"')]);
+    expect(unmapped(["We have 50K users."])).toEqual([expect.stringContaining('"50K"')]);
+    const listed = researchRecordSchema.parse({ ...rec, allowedNumbers: ["50K"] });
+    expect(checkCopyAgainstRecord(listed, ["We have 200 users and 50K views."]).filter((f) => f.rule === "copy-number-unmapped")).toEqual([]);
+  });
+
   test("a figure the record does not back is an error, one it backs or lists as structure is not", () => {
     const rec = record();
     expect(rules(checkCopyAgainstRecord(rec, ["The top posted base pay is $220K.", "More than 200 startup ideas are researched on weekendmvp.app.", "weekendmvp.app was built by one person.", "It is a pair programmer that never tires.", "Claude Code reads a CLAUDE.md file at the start of a session."]))).toEqual([]);
@@ -386,6 +408,16 @@ describe("audit integration", () => {
     const review = passingReview(researchRecordSchema.parse(raw));
     raw.allowedNumbers.push("999");
     expect(audit({ record: raw, review, now: NOW }).findings).toContainEqual(expect.objectContaining({ rule: "research-review", message: expect.stringContaining("recordHash") }));
+  });
+
+  test("an inline Receipt amount must trace to a claim like any other figure", () => {
+    const raw = guideRecord();
+    const sources = [{ file: "guide/_sections.tsx", text: '<Receipt kind="Price" amount="$999" source="A working example">first paid offer.</Receipt>' }];
+    const run = (record: ReturnType<typeof guideRecord>) =>
+      auditGuide({ spec: guideSpec, deck: guideCopy, fileExists: () => true, isOfferEnabled: () => false, research: { record, review: passingReview(researchRecordSchema.parse(record)), now: NOW }, sources });
+    expect(run(raw).findings).toContainEqual(expect.objectContaining({ rule: "copy-number-unmapped", message: expect.stringContaining('"$999"') }));
+    raw.allowedNumbers.push("$999");
+    expect(run(raw).findings.filter((f) => f.rule === "copy-number-unmapped")).toEqual([]);
   });
 
   test("an invalid record, or a record for another guide, is reported", () => {
