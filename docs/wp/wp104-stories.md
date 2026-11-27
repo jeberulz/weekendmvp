@@ -28,3 +28,9 @@
 - Freeze published Shipable content and schema before the switch.
 - Expose offer copy and proof in Keystatic. Keep price, stack values, schedule, attendance status and legacy seat confirmation in code.
 - Verify public output, JSON-LD, static build, and a real editor save.
+
+## PR 5 · Dare draft
+
+- Move the public draft's editorial copy into a Keystatic JSON singleton. Retain the existing placeholder strings, `noindex, nofollow`, and sitemap exclusion.
+- Keep schedule, timezones, numerical claims, valuation amounts, the $29 CTA, structured data and the seat form owned by code.
+- Record the draft on pristine main and compare both viewports, the rendered draft tree, placeholders and structured data before advancing.

@@ -42,3 +42,7 @@ The two Starter Kit images in `starter-kit-baseline/` come from a clean producti
 ## Shipable reference
 
 The two images in `shipable-baseline/` come from a clean production build of main at `692b7b3f`, with seats paused and the free Starter Kit form. Point `LANDING_VISUAL_APP` at that build and run `npm run test:visual -- --record --route=/shipable` to reproduce them.
+
+## Dare draft reference
+
+The two images in `dare-baseline/` come from a clean production build of main at `692b7b3f`, with noindex and the original draft placeholders. Point `LANDING_VISUAL_APP` at that build and run `npm run test:visual -- --record --route=/dare` to reproduce them.
