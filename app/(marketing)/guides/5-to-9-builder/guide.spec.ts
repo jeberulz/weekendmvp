@@ -2,7 +2,8 @@
 import type { GuideSpec } from "../_shared/types";
 
 const TITLE = "The 5-to-9 Builder";
-const HEADLINE = "AI made building free. Knowing what to build is the job now.";
+const HEADLINE_EMPHASIS = "Knowing what to build is the job now.";
+const HEADLINE = `AI made building free. ${HEADLINE_EMPHASIS}`;
 const DESCRIPTION =
   "AI made building free. Knowing what to build is the job now. A free guide for 9-to-5ers: find an idea worth your evenings and prove someone will pay for it before you build it.";
 
@@ -12,6 +13,7 @@ export const guideSpec: GuideSpec = {
   path: "/guides/5-to-9-builder",
   title: TITLE,
   headline: HEADLINE,
+  headlineEmphasis: HEADLINE_EMPHASIS,
   description: DESCRIPTION,
   metaTitle: `${TITLE} — Turn Your 9-to-5 Expertise Into a Tested Side Income | WeekendMVP`,
   ogImagePath: "/image/5-to-9-builder-og.png",

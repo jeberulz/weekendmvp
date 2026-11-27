@@ -49,15 +49,29 @@ describe("guide spec schema", () => {
     expect(guideSpecSchema.safeParse(guideSpec).success).toBe(true);
   });
 
-  test("a bad slug, path, headline and section id are all rejected", () => {
+  test("a bad slug, path, headline emphasis and section id are all rejected", () => {
     const spec = clone(guideSpec) as Record<string, unknown>;
     spec.slug = "Bad Slug";
     spec.path = "/somewhere";
     spec.headline = "No emphasis tail here";
     (spec.sections as { id: string }[])[0].id = "one";
     const paths = auditGuide({ spec, deck: guideCopy, fileExists: everythingExists }).findings.map((f) => f.path);
-    expect(paths).toEqual(expect.arrayContaining(["slug", "path", "headline", "sections.0.id"]));
+    expect(paths).toEqual(expect.arrayContaining(["slug", "path", "headlineEmphasis", "sections.0.id"]));
   });
+
+  test("accepts a headline with an emphasis suffix and no sentence break", () => {
+    const spec = { ...guideSpec, headline: "Build what people will pay for", headlineEmphasis: "people will pay for" };
+    expect(guideSpecSchema.safeParse(spec).success).toBe(true);
+  });
+
+  test.each([undefined, "", "   ", guideSpec.headline, "AI made building free."])(
+    "rejects invalid headline emphasis %j",
+    (headlineEmphasis) => {
+      const parsed = guideSpecSchema.safeParse({ ...guideSpec, headlineEmphasis });
+      expect(parsed.success).toBe(false);
+      expect(parsed.error?.issues).toContainEqual(expect.objectContaining({ path: ["headlineEmphasis"] }));
+    },
+  );
 });
 
 describe("static audit", () => {

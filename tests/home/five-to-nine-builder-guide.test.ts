@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -129,6 +129,16 @@ function activeGuide(container: HTMLElement) {
   return container.querySelector<HTMLElement>(".builder-guide")!;
 }
 
+function gateStatus() {
+  return within(screen.getByRole("region", { name: "Unlock the guide" })).getByRole("status");
+}
+
+function submitDefaultForm() {
+  const input = screen.getByLabelText("Email address");
+  fireEvent.change(input, { target: { value: "starter@example.com" } });
+  fireEvent.submit(input.closest("form")!);
+}
+
 beforeEach(() => {
   vi.useFakeTimers();
   vi.clearAllMocks();
@@ -162,7 +172,10 @@ describe("5-to-9 Builder guide", () => {
 
     expect(metadata.alternates?.canonical).toBe("/guides/5-to-9-builder");
     expect(metadata.title).toEqual({ absolute: expect.stringContaining("5-to-9 Builder") });
-    expect(guide.querySelector("h1")?.textContent).toBe("AI made building free. Knowing what to build is the job now.");
+    const headline = guide.querySelector("h1");
+    expect(headline?.textContent).toBe("AI made building free. Knowing what to build is the job now.");
+    expect(headline?.firstChild?.textContent).toBe("AI made building free. ");
+    expect(headline?.querySelector("em")?.textContent).toBe("Knowing what to build is the job now.");
     expect(guide.querySelector("#s01")?.closest(".guide-rest")).toBeNull();
     for (let section = 2; section <= 11; section++) {
       expect(rest?.querySelector(`#s${String(section).padStart(2, "0")}`)).toBeTruthy();
@@ -241,6 +254,43 @@ describe("5-to-9 Builder guide", () => {
     expect(localStorage.length).toBe(1);
   });
 
+  test("keeps every gate status in the layout and announces only the active message", async () => {
+    subscribeMock.mockReturnValue(new Promise(() => {}));
+    const style = document.createElement("style");
+    style.textContent = guideCss;
+    document.head.append(style);
+    try {
+      render(createElement(FiveToNineBuilderGuidePage));
+      const status = gateStatus();
+      const sizingMessages = [...status.parentElement!.querySelectorAll(':scope > [aria-hidden="true"]')];
+      expect(sizingMessages.map((node) => node.textContent)).toEqual([
+        "Opening the guide…",
+        "Taking a moment. The guide opens in a few seconds either way.",
+        "! That doesn't look like an email address. Check for a typo.",
+        "! Enter your email to unlock the guide.",
+        "! That email didn't go through. Check it and try again.",
+      ]);
+      for (const node of sizingMessages) {
+        expect(getComputedStyle(node).visibility).toBe("hidden");
+        expect(getComputedStyle(node).display).not.toBe("none");
+      }
+      expect(status.textContent).toBe("");
+
+      const input = screen.getByLabelText("Email");
+      fireEvent.submit(input.closest("form")!);
+      expect(status.textContent).toBe("! Enter your email to unlock the guide.");
+      expect(status.querySelector('[aria-hidden="true"]')?.textContent).toBe("! ");
+
+      submitGuide();
+      expect(status.textContent).toBe("Opening the guide…");
+      await act(() => vi.advanceTimersByTimeAsync(3000));
+      expect(status.textContent).toBe("Taking a moment. The guide opens in a few seconds either way.");
+      expect(sizingMessages.every((node) => node.isConnected)).toBe(true);
+    } finally {
+      style.remove();
+    }
+  });
+
   test("confirms an API-first success in place and clears the optimistic timer", async () => {
     const reply = deferredSubscription();
     const { container } = render(createElement(FiveToNineBuilderGuidePage));
@@ -284,10 +334,11 @@ describe("5-to-9 Builder guide", () => {
 
     expect(activeGuide(container).dataset.guide).toBe("locked");
     expect(screen.getByLabelText("Email").getAttribute("aria-invalid")).toBe("true");
-    expect(screen.getByText("That email didn't go through. Check it and try again.")).toBeTruthy();
+    expect(gateStatus().textContent).toBe("! That email didn't go through. Check it and try again.");
     expect(localStorage.getItem("weekendmvp_subscribed")).toBeNull();
     expect(trackEvent).toHaveBeenCalledWith("signup_form_submitted", { method: "api", email_domain: "example.com" });
     expect(trackEvent).toHaveBeenCalledWith("signup_form_error", { error: "address_rejected" });
+    expect(trackEvent).not.toHaveBeenCalledWith("signup_form_success", expect.anything());
     expect(trackEvent).not.toHaveBeenCalledWith("guide_unlocked", expect.anything());
     expect(trackEvent).not.toHaveBeenCalledWith("signup_fallback_fired");
   });
@@ -310,7 +361,7 @@ describe("5-to-9 Builder guide", () => {
     expect(trackEvent).toHaveBeenCalledTimes(4);
     expect(trackEvent).not.toHaveBeenCalledWith("signup_form_error", expect.anything());
     expect(trackEvent).not.toHaveBeenCalledWith(expect.stringMatching(/double_failure|both_methods_failed/));
-    expect(screen.queryByText("That email didn't go through. Check it and try again.")).toBeNull();
+    expect(gateStatus().textContent).toBe("");
 
     const resendReply = deferredSubscription();
     const resend = screen.getByText("Resend", { exact: true });
@@ -354,7 +405,7 @@ describe("5-to-9 Builder guide", () => {
     expect(trackEvent).toHaveBeenCalledWith("signup_fallback_fired");
     expect(trackEvent).not.toHaveBeenCalledWith("api_failed_after_optimistic_success");
     expect(trackEvent).not.toHaveBeenCalledWith("signup_form_error", expect.anything());
-    expect(screen.queryByText("That email didn't go through. Check it and try again.")).toBeNull();
+    expect(gateStatus().textContent).toBe("");
     expect(push).not.toHaveBeenCalled();
   });
 
@@ -384,18 +435,68 @@ test("the shared form waits for the API by default and keeps its legacy redirect
   const reply = deferredSubscription();
   const onSuccess = vi.fn();
   render(createElement(BeehiivSubscribeForm, { onSuccess }));
-  const input = screen.getByLabelText("Email address");
-  fireEvent.change(input, { target: { value: "starter@example.com" } });
-  fireEvent.submit(input.closest("form")!);
+  submitDefaultForm();
   expect(vi.getTimerCount()).toBe(0);
 
   await act(() => vi.advanceTimersByTimeAsync(9000));
   expect(screen.getByText("Sending...")).toBeTruthy();
   expect(localStorage.getItem("weekendmvp_subscribed")).toBeNull();
   expect(push).not.toHaveBeenCalled();
+  expect(trackEvent).not.toHaveBeenCalled();
 
   await reply({ ok: true, message: "Subscribed" });
+  expect(vi.mocked(trackEvent).mock.calls).toEqual([
+    ["signup_form_submitted", { method: "api", email_domain: "example.com" }],
+    ["signup_form_success", { method: "api" }],
+  ]);
   expect(onSuccess).toHaveBeenCalledExactlyOnceWith();
   expect(push).toHaveBeenCalledExactlyOnceWith("/starter-kit?subscribed=true");
   expect(localStorage.getItem("weekendmvp_subscribed")).toBe("true");
+});
+
+test("the default form completes via the embed after one second without tracking a conversion", async () => {
+  const reply = deferredSubscription();
+  const onSuccess = vi.fn();
+  const submitEmbed = vi.spyOn(HTMLFormElement.prototype, "submit").mockImplementation(() => {});
+  render(createElement(BeehiivSubscribeForm, { onSuccess }));
+  submitDefaultForm();
+  await reply({ ok: false, status: 502, message: "Unavailable" });
+
+  expect(submitEmbed).toHaveBeenCalledOnce();
+  const embed = submitEmbed.mock.contexts[0] as HTMLFormElement;
+  expect(embed.target).toBe("beehiiv-hidden-frame");
+  expect(document.getElementById(embed.target)?.tagName).toBe("IFRAME");
+  await act(() => vi.advanceTimersByTimeAsync(999));
+  expect(localStorage.getItem("weekendmvp_subscribed")).toBeNull();
+  expect(onSuccess).not.toHaveBeenCalled();
+  expect(push).not.toHaveBeenCalled();
+  expect(trackEvent).not.toHaveBeenCalled();
+
+  await act(() => vi.advanceTimersByTimeAsync(1));
+  expect(localStorage.getItem("weekendmvp_subscribed")).toBe("true");
+  expect(onSuccess).toHaveBeenCalledExactlyOnceWith();
+  expect(push).toHaveBeenCalledExactlyOnceWith("/starter-kit?subscribed=true");
+  expect(trackEvent).toHaveBeenCalledExactlyOnceWith("signup_form_submitted", {
+    method: "embed_fallback",
+    email_domain: "example.com",
+  });
+});
+
+test("the default form shows an error if the API fails and embed submission throws", async () => {
+  const reply = deferredSubscription();
+  const onSuccess = vi.fn();
+  const submitEmbed = vi.spyOn(HTMLFormElement.prototype, "submit").mockImplementation(() => {
+    throw new Error("Embed submission failed");
+  });
+  render(createElement(BeehiivSubscribeForm, { onSuccess }));
+  submitDefaultForm();
+  await reply({ ok: false, status: 502, message: "Unavailable" });
+  await act(() => vi.advanceTimersByTimeAsync(1000));
+
+  expect(submitEmbed).toHaveBeenCalledOnce();
+  expect(screen.getByRole("button", { name: "Error. Try again?" })).toBeTruthy();
+  expect(localStorage.getItem("weekendmvp_subscribed")).toBeNull();
+  expect(onSuccess).not.toHaveBeenCalled();
+  expect(push).not.toHaveBeenCalled();
+  expect(trackEvent).toHaveBeenCalledExactlyOnceWith("signup_form_error", { error: "both_methods_failed" });
 });

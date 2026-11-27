@@ -49,15 +49,15 @@ export function Receipt({ kind, amount, children, source }: { kind: string; amou
 }
 
 export function GuideHero({ spec }: { spec: GuideSpec }) {
-  const { hero, headline } = spec;
-  const emphasisStart = headline.indexOf(". ") + 2;
+  const { hero, headline, headlineEmphasis } = spec;
+  const romanPrefix = headline.slice(0, -headlineEmphasis.length);
 
   return (
     <section aria-labelledby="builder-hero-title" className="guide-hero">
       <div className="min-w-0">
         <Eyebrow>{hero.eyebrow}</Eyebrow>
         <h1 id="builder-hero-title">
-          {headline.slice(0, emphasisStart)}<Em>{headline.slice(emphasisStart)}</Em>
+          {romanPrefix}<Em>{headlineEmphasis}</Em>
         </h1>
         <p className="guide-lede">{hero.lede}</p>
         <ul className="guide-meta" aria-label={hero.metaLabel}>
