@@ -98,7 +98,7 @@ export function GuideLessons({ ideaCount }: { ideaCount: number }) {
 
         <Section index={6}>
           <GuideCopy slot="The Idea Bank · How to use the library" ideaCount={ideaCount} />
-          <Receipt kind="Live count" amount={ideaCount} source="WeekendMVP idea library, live count">researched startup ideas in the library.</Receipt>
+          <Receipt kind="Live count" amount={ideaCount} source="Weekend MVP idea library, live count">researched startup ideas in the library.</Receipt>
           <h3>One worked validation: Repair Estimate Translator</h3>
           <GuideCopy slot="Repair Estimate Translator · Worked validation" />
           <Link href="/ideas/auto-repair-estimate-translator" className="guide-idea-link rounded-[10px] border border-home-rule bg-home-card">
@@ -147,10 +147,10 @@ export function GuideClose({ ideaCount }: { ideaCount: number }) {
           <Eyebrow dark>{spec.title}</Eyebrow>
           <h2 id="builder-close-title">Turn your 9-to-5 expertise into a tested side income.</h2>
           <p className="guide-lede">One tested idea, then one first sale.</p>
-          <div className="guide-swap guide-day-one">
-            <span className="guide-pending">Day 1 of the 5-to-9 Starter should be in your inbox in a few minutes.</span>
-            <span className="guide-confirmed">Day 1 of the 5-to-9 Starter is on its way.</span>
-            <span className="guide-returning">The 5-to-9 Starter: five daily emails, one action a day.</span>
+          <div className="guide-swap guide-day-one [&_a]:underline [&_a]:underline-offset-4">
+            <span className="guide-pending">Day 1 of the <Link href="/5-to-9-starter">5-to-9 Starter</Link> should be in your inbox in a few minutes.</span>
+            <span className="guide-confirmed">Day 1 of the <Link href="/5-to-9-starter">5-to-9 Starter</Link> is on its way.</span>
+            <span className="guide-returning">The <Link href="/5-to-9-starter">5-to-9 Starter</Link>: five daily emails, one action a day.</span>
           </div>
           <div className="guide-card-grid">
             <UpsellCard spec={spec} placement="close" />

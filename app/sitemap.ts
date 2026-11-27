@@ -3,6 +3,8 @@ import { connection } from "next/server";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 
+import { STARTER_DATE_MODIFIED } from "@/app/(marketing)/5-to-9-starter/dates";
+import { BUILDER_DATE_MODIFIED } from "@/app/(marketing)/guides/5-to-9-builder/dates";
 import { AUDIENCE_SLUGS } from "@/app/ideas-for/[audience]/page";
 import { COLLECTION_SLUGS } from "@/app/ideas/[slug]/collection";
 import { PROBLEM_SLUGS } from "@/app/solve/[problem]/page";
@@ -70,8 +72,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/articles", { priority: 0.9, changeFrequency: "weekly" }),
     entry("/newsletter", { priority: 0.9, changeFrequency: "daily" }),
     entry("/starter-kit", { priority: 0.85, changeFrequency: "monthly" }),
-    entry("/5-to-9-starter", { priority: 0.85, changeFrequency: "monthly" }),
-    entry("/guides/5-to-9-builder", { priority: 0.85, changeFrequency: "monthly" }),
+    entry("/5-to-9-starter", {
+      priority: 0.85,
+      changeFrequency: "monthly",
+      lastModified: new Date(STARTER_DATE_MODIFIED),
+    }),
+    entry("/guides/5-to-9-builder", {
+      priority: 0.85,
+      changeFrequency: "monthly",
+      lastModified: new Date(BUILDER_DATE_MODIFIED),
+    }),
     entry("/proof-of-work", { priority: 0.85, changeFrequency: "monthly" }),
     entry("/shipable", { priority: 0.85, changeFrequency: "weekly" }),
     entry("/live", { priority: 0.85, changeFrequency: "weekly" }),

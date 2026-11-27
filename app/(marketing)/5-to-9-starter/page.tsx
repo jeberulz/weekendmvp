@@ -15,6 +15,7 @@ import {
 import manifestJson from "@/ideas/manifest.json";
 
 import { GuideSubscribedModal } from "./GuideSubscribedModal";
+import { STARTER_DATE_MODIFIED, STARTER_DATE_PUBLISHED } from "./dates";
 import {
   FinalCapture,
   FiveDays,
@@ -28,7 +29,7 @@ import styles from "./starter.module.css";
 
 const TITLE = "The 5-to-9 Starter: a free 5-day email guide | Weekend MVP";
 const DESCRIPTION =
-  "A free 5-day email guide for people with day jobs. One short email and one 10-minute action each evening. By Friday you'll have a tested idea, not a notebook full of untested ones.";
+  "A free 5-day email guide for people with day jobs. One short email and one 10-minute action each evening, ending Friday with a tested idea.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -37,6 +38,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/5-to-9-starter" },
   openGraph: {
     type: "website",
+    siteName: "Weekend MVP",
     url: `${SITE}/5-to-9-starter`,
     title: TITLE,
     description: DESCRIPTION,
@@ -52,6 +54,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@weekendmvp",
     title: TITLE,
     description: DESCRIPTION,
     images: [`${SITE}/image/og-image.png`],
@@ -71,6 +74,8 @@ const FIVE_TO_NINE_STARTER_SCHEMA = buildGraph(
     url: `${SITE}/5-to-9-starter`,
     name: "The 5-to-9 Starter",
     description: DESCRIPTION,
+    datePublished: STARTER_DATE_PUBLISHED,
+    dateModified: STARTER_DATE_MODIFIED,
     isPartOf: { "@id": `${SITE}/#website` },
     about: { "@id": PERSON_ID },
     author: { "@id": PERSON_ID },

@@ -228,7 +228,7 @@ describe("static audit", () => {
 describe("live audit evaluation", () => {
   const ids = guideSpec.sections.map((section) => section.id);
   const state = (overrides: Partial<PageState> = {}): PageState => ({
-    mode: "returning", visibleSections: ids, text: "Plain page about $29.", imageAlts: ["John Iseghohi, founder of WeekendMVP, working at his desk"], ...overrides,
+    mode: "returning", visibleSections: ids, text: "Plain page about $29.", imageAlts: ["John Iseghohi, founder of Weekend MVP, working at his desk"], ...overrides,
   });
   const healthy = (): LiveSnapshot => ({
     url: "https://example.test/guides/5-to-9-builder",
@@ -473,7 +473,7 @@ describe("offer switch", () => {
   const off = () => false;
   // The real founder note links to the sprint only while the switch is on in config. These tests force the offer off
   // whatever config says, so they use a note with no sprint link and never depend on that value.
-  const noSprintLinkDeck = { ...guideCopy, "Founder note · Body": "I run WeekendMVP. I'd like to hear what you test." };
+  const noSprintLinkDeck = { ...guideCopy, "Founder note · Body": "I run Weekend MVP. I'd like to hear what you test." };
 
   test("a switched-off offer is not judged on its sale status or its thin copy, and the audit says so", () => {
     const result = audit({ deck: noSprintLinkDeck, isOfferEnabled: off, now: AFTER_EVENT_ENDS });
