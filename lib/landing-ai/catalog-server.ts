@@ -12,7 +12,11 @@ export async function readLandingSnapshot(page: LandingPageId, root = process.cw
 export async function readPanelCatalog() {
   return Promise.all(landingPageOptions().map(async ({ id, label }) => ({
     id, label,
-    blocks: landingBlocks(id, await readLandingSnapshot(id)).map(({ id, label, kind }) => ({ id, label, kind })),
+    blocks: landingBlocks(id, await readLandingSnapshot(id)).map((block) => ({
+      id: block.id, label: block.label, kind: block.kind,
+      characters: block.kind === "edit" ? block.fields.reduce((sum, field) => sum + field.text.length, 0) : 0,
+      fieldCount: block.kind === "edit" ? block.fields.length : 2,
+    })),
   })));
 }
 

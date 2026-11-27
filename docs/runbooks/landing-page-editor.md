@@ -56,7 +56,7 @@ Select **Homepage** for the eleven sections, search copy, and the questions and 
 
 ## Enhance with AI
 
-Open **Enhance with AI** from the page editor. The section menu is built from the landing content schema. The homepage can also accept a new editorial note or checklist above the closing call. The first implementation verifies the preview with local fixtures. Provider requests and approval are implemented in separate steps.
+Open **Enhance with AI** from the page editor. The section menu is built from the landing content schema. The homepage can also accept a new editorial note or checklist above the closing call. Generate a preview to compare the proposed wording and see reported token usage with an approximate charge. The server uses the existing `ANTHROPIC_API_KEY`. Its absence disables generation. Pre-call estimates are rough and actual billing is calculated by Anthropic. The preview uses Claude Haiku 5.5 and a six-per-minute process-local limiter for the single operator. [Claude Haiku 5.5 model card and pricing](https://platform.claude.com/docs/en/models/haiku-5-5/overview)
 
 ## GitHub setup for the owner
 

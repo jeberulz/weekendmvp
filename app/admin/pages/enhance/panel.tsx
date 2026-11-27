@@ -4,6 +4,7 @@ import { type FormEvent, useState } from "react";
 import type { PanelCatalog } from "@/lib/landing-ai/catalog-server";
 import type { Copy, LandingPageId } from "@/lib/landing-ai/blocks";
 import type { Usage } from "@/lib/landing-ai/proposal";
+import { estimatedUsd, estimateInputTokens, MAX_OUTPUT_TOKENS } from "@/lib/landing-ai/cost";
 
 type Preview = { before: Copy; after: Copy; costEstimate: Usage };
 
@@ -13,6 +14,8 @@ const actionLabels = [
 
 const control = "mt-1 block w-full rounded-lg border border-neutral-300 bg-white p-2.5 font-normal";
 const button = "rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50";
+
+const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 6 });
 
 function copyText(value: string | string[] | undefined) {
   return Array.isArray(value) ? value.join("\n") : value ?? "—";
@@ -32,6 +35,8 @@ export function EnhancePanel({ pages, generationAvailable }: {
 
   const blocks = pages.find(({ id }) => id === page)?.blocks ?? [];
   const selected = blocks.find(({ id }) => id === blockId);
+  const inputEstimate = estimateInputTokens(selected?.characters ?? 0, selected?.fieldCount ?? 0, instruction.length);
+  const maximumEstimate = estimatedUsd(inputEstimate, MAX_OUTPUT_TOKENS);
 
   function choosePage(id: LandingPageId) {
     setPage(id);
@@ -102,7 +107,9 @@ export function EnhancePanel({ pages, generationAvailable }: {
             <textarea className={control} rows={3} value={instruction} maxLength={1500} onChange={(event) => setInstruction(event.target.value)} />
           </label>
           <p id="preview-cost" className="text-sm text-neutral-700">
-            {generationAvailable ? "Usage is estimated in tokens. The preview shows reported usage." : "Generation is unavailable until a provider is configured."}
+            {generationAvailable
+              ? `Estimated usage: about ${inputEstimate} input tokens and up to ${MAX_OUTPUT_TOKENS} output tokens (about ${dollars.format(maximumEstimate)} at that cap).`
+              : "Generation is unavailable until a provider is configured."}
           </p>
           <button className={button} type="submit" disabled={!generationAvailable || !selected} aria-describedby="preview-cost">
             {busy ? "Generating…" : "Generate preview"}
@@ -114,7 +121,7 @@ export function EnhancePanel({ pages, generationAvailable }: {
         <section aria-label="Draft preview" className="mt-6 rounded-xl border border-neutral-200 bg-white p-5 sm:p-6">
           <h2 className="text-xl font-semibold">Review changes</h2>
           <p className="mt-2 text-sm text-neutral-700">
-            {preview.costEstimate.estimated ? "Estimated usage" : "Reported usage"} · {preview.costEstimate.inputTokens} input tokens · {preview.costEstimate.outputTokens} output tokens
+            {preview.costEstimate.estimated ? "Estimated usage" : "Reported usage"} · {preview.costEstimate.inputTokens} input tokens · {preview.costEstimate.outputTokens} output tokens · about {dollars.format(estimatedUsd(preview.costEstimate.inputTokens, preview.costEstimate.outputTokens))}
           </p>
           <dl className="mt-4 divide-y divide-neutral-200">
             {Object.keys(preview.after).map((key) => (

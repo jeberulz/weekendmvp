@@ -7,8 +7,8 @@ import type { PanelCatalog } from "@/lib/landing-ai/catalog-server";
 
 const pages: PanelCatalog = [
   { id: "home", label: "Homepage", blocks: [
-    { id: "hero", label: "Opening", kind: "edit" },
-    { id: "add:checklist", label: "New checklist", kind: "add" },
+    { id: "hero", label: "Opening", kind: "edit", characters: 50, fieldCount: 2 },
+    { id: "add:checklist", label: "New checklist", kind: "add", characters: 0, fieldCount: 2 },
   ] },
 ];
 
