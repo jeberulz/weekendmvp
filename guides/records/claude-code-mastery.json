@@ -2,14 +2,62 @@
   "contractVersion": 1,
   "slug": "claude-code-mastery",
   "sources": [
-    { "id": "docs-overview", "url": "https://code.claude.com/docs/en/overview", "publisher": "Anthropic", "title": "Claude Code overview", "dateChecked": "2026-11-27" },
-    { "id": "docs-memory", "url": "https://code.claude.com/docs/en/memory", "publisher": "Anthropic", "title": "How Claude remembers your project", "dateChecked": "2026-11-27" },
-    { "id": "docs-workflows", "url": "https://code.claude.com/docs/en/common-workflows", "publisher": "Anthropic", "title": "Common workflows", "dateChecked": "2026-11-27" },
-    { "id": "docs-skills", "url": "https://code.claude.com/docs/en/skills", "publisher": "Anthropic", "title": "Extend Claude with skills", "dateChecked": "2026-11-27" },
-    { "id": "docs-hooks", "url": "https://code.claude.com/docs/en/hooks-guide", "publisher": "Anthropic", "title": "Automate workflows with hooks", "dateChecked": "2026-11-27" },
-    { "id": "docs-subagents", "url": "https://code.claude.com/docs/en/sub-agents", "publisher": "Anthropic", "title": "Create custom subagents", "dateChecked": "2026-11-27" },
-    { "id": "docs-permissions", "url": "https://code.claude.com/docs/en/permissions", "publisher": "Anthropic", "title": "Configure permissions", "dateChecked": "2026-11-27" },
-    { "id": "docs-best-practices", "url": "https://code.claude.com/docs/en/best-practices", "publisher": "Anthropic", "title": "Best practices for Claude Code", "dateChecked": "2026-11-27" }
+    {
+      "id": "docs-overview",
+      "url": "https://code.claude.com/docs/en/overview",
+      "publisher": "Anthropic",
+      "title": "Claude Code overview",
+      "dateChecked": "2026-11-27"
+    },
+    {
+      "id": "docs-memory",
+      "url": "https://code.claude.com/docs/en/memory",
+      "publisher": "Anthropic",
+      "title": "How Claude remembers your project",
+      "dateChecked": "2026-11-27"
+    },
+    {
+      "id": "docs-workflows",
+      "url": "https://code.claude.com/docs/en/common-workflows",
+      "publisher": "Anthropic",
+      "title": "Common workflows",
+      "dateChecked": "2026-11-27"
+    },
+    {
+      "id": "docs-skills",
+      "url": "https://code.claude.com/docs/en/skills",
+      "publisher": "Anthropic",
+      "title": "Extend Claude with skills",
+      "dateChecked": "2026-11-27"
+    },
+    {
+      "id": "docs-hooks",
+      "url": "https://code.claude.com/docs/en/hooks-guide",
+      "publisher": "Anthropic",
+      "title": "Automate workflows with hooks",
+      "dateChecked": "2026-11-27"
+    },
+    {
+      "id": "docs-subagents",
+      "url": "https://code.claude.com/docs/en/sub-agents",
+      "publisher": "Anthropic",
+      "title": "Create custom subagents",
+      "dateChecked": "2026-11-27"
+    },
+    {
+      "id": "docs-permissions",
+      "url": "https://code.claude.com/docs/en/permissions",
+      "publisher": "Anthropic",
+      "title": "Configure permissions",
+      "dateChecked": "2026-11-27"
+    },
+    {
+      "id": "docs-best-practices",
+      "url": "https://code.claude.com/docs/en/best-practices",
+      "publisher": "Anthropic",
+      "title": "Best practices for Claude Code",
+      "dateChecked": "2026-11-27"
+    }
   ],
   "evidence": [
     {
@@ -17,19 +65,20 @@
       "label": "weekendmvp.app was built by John on his own with Claude Code",
       "verify": {
         "type": "owner-statement",
-        "statement": "John said, in the session of 2026-11-27: the Claude Code evidence is weekendmvp.app itself, all built solo, covering the design and the research of over 200 startup ideas, with many more features coming.",
+        "statement": "John's words in the session of 2026-11-27: \"Claude code evidence is weekendmvp.app itself all built solo, design, startup research over 200 ideas and many more features coming soon\".",
         "statedOn": "2026-11-27"
       }
     },
     {
       "id": "ev-ideas",
       "label": "Startup idea pages in the weekendmvp.app repository",
-      "verify": { "type": "file-count", "dir": "content/ideas", "ext": ".mdx", "expect": 200, "atLeast": true }
-    },
-    {
-      "id": "ev-articles",
-      "label": "Articles in the weekendmvp.app repository",
-      "verify": { "type": "file-count", "dir": "content/articles", "ext": ".mdx", "expect": 100, "atLeast": true }
+      "verify": {
+        "type": "file-count",
+        "dir": "content/ideas",
+        "ext": ".mdx",
+        "expect": 200,
+        "atLeast": true
+      }
     },
     {
       "id": "ev-ph-rungs",
@@ -103,7 +152,7 @@
     {
       "id": "tf-subagents",
       "kind": "tool-fact",
-      "text": "A subagent is a specialized AI assistant for one type of task, useful when a side task would flood your main conversation.",
+      "text": "Subagents are specialized AI assistants that handle specific types of tasks, and they help when a side task would flood your main conversation with search results, logs, or file contents.",
       "sourceId": "docs-subagents",
       "excerpt": "Subagents are specialized AI assistants that handle specific types of tasks. Use one when a side task would flood your main conversation with search results, logs, or file contents",
       "asOf": "2026-11-27"
@@ -111,7 +160,7 @@
     {
       "id": "tf-verify",
       "kind": "tool-fact",
-      "text": "When Claude says it is done and it is not, the usual cause is that it had no way to check its own work.",
+      "text": "Anthropic's best practices page says that when Claude reports it is done and it isn't quite, the usual cause is that it had no way to check its own work.",
       "sourceId": "docs-best-practices",
       "excerpt": "Claude said it was done and it wasn’t quite, usually because it had no way to check its own work.",
       "asOf": "2026-11-27"
@@ -119,7 +168,7 @@
     {
       "id": "tf-clear",
       "kind": "tool-fact",
-      "text": "Running /clear between tasks is still worth doing, because a focused context gets better answers and costs less.",
+      "text": "Anthropic's best practices page says running /clear between tasks is still worth doing, because a focused context gets better answers and costs less.",
       "sourceId": "docs-best-practices",
       "excerpt": "/clear between tasks is still worth doing, because a focused context gets you better answers and costs less.",
       "asOf": "2026-11-27"
@@ -143,12 +192,6 @@
       "kind": "first-hand",
       "text": "More than 200 startup idea pages live in the weekendmvp.app repository.",
       "evidenceId": "ev-ideas"
-    },
-    {
-      "id": "fh-articles",
-      "kind": "first-hand",
-      "text": "More than 100 articles live in the weekendmvp.app repository.",
-      "evidenceId": "ev-articles"
     },
     {
       "id": "fh-rungs",
