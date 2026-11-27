@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 
 import { LocalTime } from "@/components/live/LocalTime";
 import type { LiveFaqItem } from "@/components/live/LiveFaq";
+import type { LiveHubBlock } from "@/lib/landing/read-live-hub";
+import { liveHubText } from "@/lib/landing/live-hub-schedule";
 import {
   BUILD_ALONG,
   FREE_WEBINAR,
@@ -23,57 +25,20 @@ export const FREE_HUB_HREF = "/live/48-hours";
 export const PAID_HUB_HREF = "/live/build-along";
 export const STARTER_KIT_HREF = "/starter-kit";
 
-export const HUB_META = {
-  title: "Weekend MVP Live — free webinar & build-along",
-  description:
-    "Free and paid live sessions where we take one idea from a page to a live link. Free webinar Sat 31 Oct, build-along Sat 14 Nov. Times in GMT.",
-} as const;
-
-/** Host blurb — evenings sentence only when confirmed. */
-export function hostBody(): string {
-  if (LIVE_ASSETS.hostEveningsConfirmed) {
-    return "I build Weekend MVP around a full-time job, on evenings and Saturdays. I started it to close the gap between “I have an idea” and “here's a live URL”.";
-  }
-  return "I started it to close the gap between “I have an idea” and “here's a live URL”.";
+export function hostBody(text: string): string {
+  return LIVE_ASSETS.hostEveningsConfirmed
+    ? `I build Weekend MVP around a full-time job, on evenings and Saturdays. ${text}`
+    : text;
 }
 
-export function hubFaqItems(): LiveFaqItem[] {
-  return [
-    {
-      question: "Are the sessions really live?",
-      answer:
-        "Yes. The free webinar streams on YouTube Live, and the link is public during the live hour, so anyone can watch. The build-along runs on Zoom so we can actually work together.",
-    },
-    {
-      question: "Do I need to register for the free webinar?",
-      answer:
-        "Not to watch live. Registering gets you reminders and the replay for 7 days.",
-    },
-    {
-      question: "What's the difference between the free and paid sessions?",
-      answer:
-        "In the free webinar you watch: I explain the weekend test and take one idea to its first screen. In the build-along you build: two hours, your own idea, with me building one too.",
-    },
-    {
-      question: "Can I watch the free webinar later?",
-      answer:
-        "Yes. Registrants get the replay for 7 days after the session. After that, an edited version goes up publicly on YouTube.",
-    },
-    {
-      question: "Do I have to do the free one before the paid one?",
-      answer:
-        "No, but it helps. The build-along moves fast and assumes you've seen the weekend test once. If you can't make 31 Oct live, the replay works.",
-    },
-    {
-      question: "What time is that for me?",
-      answer: (
+export function hubFaqItems(copy: LiveHubBlock<"faq">): LiveFaqItem[] {
+  return copy.items.map(({ discriminant, value }) => {
+    const answer = liveHubText(value.answer);
+    return {
+      question: value.question,
+      answer: discriminant === "timezones" ? (
         <>
-          <p>
-            Every time on this page is GMT. The free webinar is Sat 31 Oct at
-            16:00 GMT (12:00 New York, 09:00 Los Angeles). The build-along is Sat
-            14 Nov, 15:00–17:00 GMT (10:00–12:00 New York, 07:00–09:00 Los
-            Angeles).
-          </p>
+          <p>{answer}</p>
           <LocalTime
             startMs={FREE_WEBINAR.startAt}
             className="mt-2 font-mono text-xs text-[#6B6457]"
@@ -84,18 +49,9 @@ export function hubFaqItems(): LiveFaqItem[] {
             className="font-mono text-xs text-[#6B6457]"
           />
         </>
-      ),
-    },
-    {
-      question: "Do I need to code?",
-      answer:
-        "No. Every session uses AI tools and copy-paste prompts. Knowing some code helps, but you don't need it.",
-    },
-    {
-      question: "Will there be more sessions?",
-      answer: `Yes. The next build-along is ${NEXT_BUILD_ALONG.label}. New free webinar dates will be listed here and sent to the newsletter once they're set.`,
-    },
-  ];
+      ) : answer,
+    };
+  });
 }
 
 export type ChipTone = "default" | "live" | "ok" | "warn" | "off";

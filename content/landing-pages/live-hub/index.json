@@ -1,0 +1,165 @@
+{
+  "seoTitle": "Weekend MVP Live — free webinar & build-along",
+  "seoDescription": "Free and paid live sessions where we take one idea from a page to a live link. Free webinar {freeDate}, build-along {paidDate}. Times in GMT.",
+  "hero": {
+    "eyebrow": "Weekend MVP Live",
+    "title": "Weekend MVP",
+    "accent": "Live",
+    "intro": "Free and paid live sessions where we take one idea from a page to a live link. Times in GMT.",
+    "paragraphs": [
+      "Most ideas don't fail because they're bad. They fail because they're too big to start on a Saturday.",
+      "These live sessions are where I show you how to make one small enough, and then build it, start to finish, on screen."
+    ]
+  },
+  "upcoming": {
+    "eyebrow": "Upcoming · in date order"
+  },
+  "sections": [
+    {
+      "discriminant": "howTheyFit",
+      "value": {
+        "eyebrow": "How the two fit together",
+        "title": "Start free. Pay only if you want to",
+        "accent": "build with me.",
+        "paragraphs": [
+          "The free webinar is complete on its own. You'll see the method, watch one idea go from page to first screen, and leave with a plan for your own weekend. You don't have to buy anything.",
+          "The build-along is for people who'd rather not do the build alone. It's {buildAlongDuration} on Zoom where you build your own MVP while I build one too, and you can ask questions as you go.",
+          "If you only come to one, come to the free one first. It'll tell you whether the paid one is for you."
+        ],
+        "free": "Learn the weekend test.",
+        "paid": "Build yours, live.",
+        "weekend": {
+          "title": "Your weekend",
+          "body": "Pick an idea from the free library and keep going."
+        }
+      }
+    },
+    {
+      "discriminant": "replays",
+      "value": {
+        "title": "Can't make it live?",
+        "free": {
+          "label": "Free webinar",
+          "title": "Replay for {replayDays} days",
+          "body": "Register and you'll get the replay for {replayDays} days after the session. After that, an edited version goes up publicly on YouTube."
+        },
+        "paid": {
+          "label": "Build-along",
+          "title": "Yours to keep",
+          "body": "Your ticket includes the replay, and it doesn't expire."
+        },
+        "note": "Both are on Saturdays, so they're meant to fit around a weekday job."
+      }
+    },
+    {
+      "discriminant": "forNotFor",
+      "value": {
+        "forYou": {
+          "title": "For you if",
+          "items": [
+            "You're a designer who wants to ship something real with AI, not just mock it up.",
+            "You're a non-technical founder with a day job and an idea you keep putting off.",
+            "You'd rather build one small thing than plan a big one."
+          ]
+        },
+        "notForYou": {
+          "title": "Not for you if",
+          "items": [
+            "You want a coding course.",
+            "You're looking for a six-month program."
+          ]
+        }
+      }
+    },
+    {
+      "discriminant": "host",
+      "value": {
+        "body": "I started it to close the gap between “I have an idea” and “here's a live URL”."
+      }
+    },
+    {
+      "discriminant": "pastSessions",
+      "value": {
+        "eyebrow": "Past sessions",
+        "emptyMessage": "Nothing here yet…"
+      }
+    },
+    {
+      "discriminant": "freeRightNow",
+      "value": {
+        "eyebrow": "Free right now",
+        "title": "Don't want to wait",
+        "accent": "for a date?",
+        "body": "The idea library is free to browse. Every idea is sized for one weekend and comes with copy-paste prompts."
+      }
+    },
+    {
+      "discriminant": "faq",
+      "value": {
+        "title": "Questions",
+        "items": [
+          {
+            "discriminant": "answer",
+            "value": {
+              "question": "Are the sessions really live?",
+              "answer": "Yes. The free webinar streams on YouTube Live, and the link is public during the live hour, so anyone can watch. The build-along runs on Zoom so we can actually work together."
+            }
+          },
+          {
+            "discriminant": "answer",
+            "value": {
+              "question": "Do I need to register for the free webinar?",
+              "answer": "Not to watch live. Registering gets you reminders and the replay for {replayDays} days."
+            }
+          },
+          {
+            "discriminant": "answer",
+            "value": {
+              "question": "What's the difference between the free and paid sessions?",
+              "answer": "In the free webinar you watch: I explain the weekend test and take one idea to its first screen. In the build-along you build: {buildAlongDuration}, your own idea, with me building one too."
+            }
+          },
+          {
+            "discriminant": "answer",
+            "value": {
+              "question": "Can I watch the free webinar later?",
+              "answer": "Yes. Registrants get the replay for {replayDays} days after the session. After that, an edited version goes up publicly on YouTube."
+            }
+          },
+          {
+            "discriminant": "answer",
+            "value": {
+              "question": "Do I have to do the free one before the paid one?",
+              "answer": "No, but it helps. The build-along moves fast and assumes you've seen the weekend test once. If you can't make {freeDay} live, the replay works."
+            }
+          },
+          {
+            "discriminant": "timezones",
+            "value": {
+              "question": "What time is that for me?",
+              "answer": "Every time on this page is GMT. {sessionTimes}"
+            }
+          },
+          {
+            "discriminant": "answer",
+            "value": {
+              "question": "Do I need to code?",
+              "answer": "No. Every session uses AI tools and copy-paste prompts. Knowing some code helps, but you don't need it."
+            }
+          },
+          {
+            "discriminant": "nextSession",
+            "value": {
+              "question": "Will there be more sessions?",
+              "answer": "Yes. The next build-along is {nextBuildAlongLabel}. New free webinar dates will be listed here and sent to the newsletter once they're set."
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "finalCta": {
+    "title": "Pick your",
+    "accent": "Saturday."
+  }
+}

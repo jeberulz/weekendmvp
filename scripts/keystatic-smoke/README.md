@@ -16,4 +16,4 @@ The local case edits the guide's search title through Chrome, checks the file, r
 
 For a local round-trip of the Starter singleton, run `node scripts/keystatic-smoke/run.mjs dev-local starter-5-to-9` in a disposable checkout.
 
-To round-trip the Starter Kit, Shipable or Dare, pass `starter-kit`, `shipable` or `dare` after `dev-local` in a disposable checkout.
+To round-trip a landing singleton in a disposable checkout, pass `starter-kit`, `shipable`, `dare` or `live-hub` after `dev-local`.
