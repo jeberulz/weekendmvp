@@ -64,9 +64,9 @@ export async function syncBeehiivAccount(email: string, env: Env, transport: typ
           double_opt_override: "off", skip_newsletter_list_auto_subscribe: true,
           custom_fields: customFields, utm_source: "platform_account", utm_medium: "account_creation",
         }] }),
-      }).catch(() => { throw new SyncFailure(true, "awaiting_import"); });
+      }).catch(() => { throw new SyncFailure(true, "import_unavailable"); });
       if (!response.ok) throw new SyncFailure(response.status === 429 || response.status >= 500,
-        response.status >= 500 ? "awaiting_import" : "import_failed");
+        "import_failed");
       throw new SyncFailure(true, "awaiting_import");
     }
     if (silent) return { state: "skipped", result: "held_no_email" };
@@ -235,7 +235,8 @@ export const retryFailed = internalMutation({
   handler: async (ctx, { userId }) => {
     const row = await ctx.db.query("account_beehiiv_sync").withIndex("by_user", (q) => q.eq("userId", userId)).unique();
     if (!row || row.state !== "failed" || !(
-      row.result === "configuration_required" || row.result?.startsWith("lookup_")
+      row.result === "configuration_required" || row.result?.startsWith("lookup_") ||
+      (row.signupOptInAt && ["import_unavailable:retry_limit", "import_failed:retry_limit", "awaiting_import:retry_limit", "segment_refresh_failed:retry_limit"].includes(row.result ?? ""))
     )) return false;
     await ctx.db.patch(row._id, { state: "pending", attempts: 0, result: undefined, updatedAt: Date.now() });
     await ctx.scheduler.runAfter(0, internal.accountBeehiiv.sync, { userId });
