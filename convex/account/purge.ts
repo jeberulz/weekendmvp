@@ -133,6 +133,8 @@ export const ANONYMISED_SUBMITTER_KEY = "deleted";
 
 /** Rows the founder owns outside any business. */
 export const OWNER_DRAINS: readonly OwnerDrain[] = [
+  async (ctx, ownerId, limit) => removeRows(ctx, "member_activity", await ctx.db.query("member_activity")
+    .withIndex("by_ownerId", (q) => q.eq("ownerId", ownerId)).take(limit), limit),
   async (ctx, ownerId, limit) => removeRows(ctx, "wizard_sessions", await ctx.db.query("wizard_sessions")
     .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", ownerId)).take(limit), limit),
   async (ctx, ownerId, limit) => removeRows(ctx, "founder_signals", await ctx.db.query("founder_signals")

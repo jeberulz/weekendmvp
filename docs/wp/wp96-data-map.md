@@ -48,6 +48,7 @@ Prod deployment: `first-squirrel-244`, region eu-west-1 (`convex/editorial/reade
 |---|---|---|---|---|
 | `saved_ideas` | `userId`, `ideaId`, `savedAt` | `userId` | `by_user` | DELETE |
 | `idea_intents` | `ideaId`, `saved`, `interested` | `ownerId` | `by_ownerId_and_ideaId` (prefix) | DELETE |
+| `member_activity` | Visit counts, focused time, last measured activity and up to 20 recent page templates | `ownerId` | `by_ownerId` | DELETE |
 | `user_preferences` | `tools`, `weeklyHours`, `goal`, `dismissed` | `ownerId` | `by_ownerId` | DELETE |
 | `weekend_plans` | `ideaId`, `steps`, `coreFeature` (free text), `liveUrl` | `ownerId` | `by_ownerId_and_ideaId` (prefix) | DELETE |
 | `collections` | `name` (free text) | `ownerId` | `by_ownerId_and_updatedAt` | DELETE (has soft `deletedAt`; physical delete needed) |

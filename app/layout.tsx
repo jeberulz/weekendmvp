@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { ConsentProvider } from "@/components/consent/ConsentProvider";
 import { ConsentBanner } from "@/components/consent/ConsentBanner";
+import { MemberActivity } from "@/components/consent/MemberActivity";
 import { AnalyticsScripts } from "@/components/consent/AnalyticsScripts";
 import { Toaster } from "@/components/ui/sonner";
 import { SITE } from "@/lib/seo";
@@ -42,6 +43,7 @@ export default function RootLayout({
             {children}
             <ConsentBanner />
             <AnalyticsScripts />
+            <MemberActivity />
           </ConsentProvider>
         </ConvexClientProvider>
         <Toaster />

@@ -84,7 +84,7 @@ export function ConsentCustomizeModal({
                 Analytics
               </label>
               <p id={descriptionId} className="text-[13px] leading-[1.5] text-home-ink-2">
-                Help us understand how visitors interact with our site.
+                Measure site usage and link signed-in product page visits and focused time to your account.
               </p>
             </div>
             <span className="relative inline-flex cursor-pointer items-center">

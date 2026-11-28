@@ -308,6 +308,16 @@ export default defineSchema({
     .index("phone", ["phone"])
     .index("by_token", ["tokenIdentifier"]),
 
+  member_activity: defineTable({
+    ownerId: v.id("users"),
+    lastSeen: v.number(),
+    views: v.number(),
+    focusedMs: v.number(),
+    recent: v.array(v.object({
+      key: v.string(), page: v.string(), started: v.number(), focusedMs: v.number(),
+    })),
+  }).index("by_ownerId", ["ownerId"]).index("by_lastSeen", ["lastSeen"]),
+
   saved_ideas: defineTable({
     userId: v.id("users"),
     ideaId: v.id("ideas"),

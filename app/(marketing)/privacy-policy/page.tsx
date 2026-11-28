@@ -84,7 +84,7 @@ export default function PrivacyPolicyPage() {
       <main id="main">
         <PageHeader
           title="Privacy Policy"
-          meta={["Last updated: 29 Oct 2026"]}
+          meta={["Last updated: 28 Nov 2026"]}
           size="md"
           className="pb-10 lg:pb-12"
         />
@@ -106,7 +106,11 @@ export default function PrivacyPolicyPage() {
             When you consent to analytics, we collect anonymized usage data
             including page views, time on site, and interaction events. This
             data is processed by Google Analytics and is subject to
-            Google&apos;s privacy policy.
+            Google&apos;s privacy policy. With analytics enabled, Weekend MVP also
+            stores product page types, visit counts and estimated focused time
+            against your signed-in account in Convex. The site owner can see
+            these alongside your email address and recent product actions.
+            Account deletion removes this page activity.
           </SectionRow>
 
           <SectionRow id="email-collection" heading="Email Collection">
