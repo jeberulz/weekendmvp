@@ -118,10 +118,10 @@ export default function PrivacyPolicyPage() {
             email address and first name through Beehiiv. This information is
             used to deliver the kit and occasional updates. When you create a
             Weekend MVP account, we use your verified email for sign-in and
-            access to the ideas library. We also send it to Beehiiv so you can
-            confirm a separate newsletter subscription and receive onboarding
-            emails. Beehiiv asks new subscribers to confirm before marketing
-            emails begin. You can unsubscribe from those emails without losing
+            access to the ideas library. If you select the newsletter checkbox at signup, we record your choice
+            after sign-in and add your verified address to the Weekend MVP audience
+            in Beehiiv without a separate newsletter confirmation. We also identify
+            existing Beehiiv contacts who have a verified site account. You can unsubscribe from those emails without losing
             your site account or ideas access. A previously unsubscribed
             Beehiiv contact is not reactivated by creating a site account.
           </SectionRow>

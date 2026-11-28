@@ -9,6 +9,7 @@ vi.mock("convex/nextjs", () => ({
   fetchQuery: vi.fn(async (ref, args, options) => {
     expect(options.token).toBe("local-test-session");
     if (getFunctionName(ref) === "admin/members:week") return { signups: 2, active: 1 };
+    if (getFunctionName(ref) === "admin/members:totals") return { total: 2, totalLimited: false };
     expect(args.cursor).toBeNull();
     return { page: [{
       id: "example", name: "Example Member", email: "member@example.test", providers: ["google"],
@@ -23,6 +24,6 @@ test("owner overview renders signups, member identity, activity details and the 
   const stream = await renderToReadableStream(<AdminPage searchParams={Promise.resolve({})} />);
   await stream.allReady;
   const html = await new Response(stream).text();
-  for (const value of ["Member directory", "Signups in the last 7 days", "member@example.test", "Google",
+  for (const value of ["Total members", "Member directory", "Signups in the last 7 days", "member@example.test", "Google",
     "12s", "/dashboard/saved", "business.created", "/admin?cursor=next-page"]) expect(html).toContain(value);
 });

@@ -256,6 +256,9 @@ export default defineSchema({
     .index("by_createdAt", ["createdAt"]),
 
   account_beehiiv_sync: defineTable({
+    signupOptInAt: v.optional(v.number()),
+    consentVersion: v.optional(v.literal("signup-newsletter-v1")),
+    importSubmitted: v.optional(v.boolean()),
     userId: v.id("users"),
     email: v.string(),
     state: v.union(

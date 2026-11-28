@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import schema from "./schema";
 import { syncBeehiivAccount } from "./accountBeehiiv";
 
@@ -147,4 +147,36 @@ test("existing-only mode never creates a subscription or requests a journey", as
       expect(result.result).toBe("existing_tagged");
     }
   }
+});
+
+test("verified opt-in imports without messages and waits for provider readback without reimporting", async () => {
+  const config = { ...env, BEEHIIV_ACCOUNT_MODE: "existing_only", BEEHIIV_ACCOUNT_FIELD: "Weekend MVP Account" };
+  const transport = vi.fn().mockResolvedValueOnce(reply(404)).mockResolvedValueOnce(reply(200, { import_id: "test" }));
+  await expect(syncBeehiivAccount("opt@example.test", config, transport, { importSubmitted: false })).rejects.toThrow("awaiting_import");
+  expect(transport.mock.calls[1][0]).toMatch(/\/bulk_subscriptions$/);
+  const [item] = JSON.parse(transport.mock.calls[1][1].body).subscriptions;
+  expect(item).toMatchObject({ reactivate_existing: false, send_welcome_email: false, double_opt_override: "off",
+    skip_newsletter_list_auto_subscribe: true, custom_fields: [{ name: "Weekend MVP Account", value: "true" }] });
+  expect(item.automation_ids).toBeUndefined();
+  const waiting = vi.fn().mockResolvedValueOnce(reply(404));
+  await expect(syncBeehiivAccount("opt@example.test", config, waiting, { importSubmitted: true })).rejects.toThrow("awaiting_import");
+  expect(waiting).toHaveBeenCalledTimes(1);
+});
+
+test("a verified opt-in racing an existing lookup is queued once and audited", async () => {
+  const t = convexTest(schema, modules);
+  const userId = await t.run(async ctx => {
+    const email = "verified@example.test";
+    const userId = await ctx.db.insert("users", { email, emailVerificationTime: 1 });
+    await ctx.db.insert("account_beehiiv_sync", { userId, email, state: "processing", attempts: 1, updatedAt: Date.now() });
+    return userId;
+  });
+  await expect(t.mutation(api.accountBeehiiv.optInAtSignup, {})).rejects.toThrow("Verified account required");
+  const auth = t.withIdentity({ subject: userId + "|session" });
+  await auth.mutation(api.accountBeehiiv.optInAtSignup, {});
+  await t.mutation(internal.accountBeehiiv.finish, { userId, outcome: "skipped", result: "held_no_email" });
+  await auth.mutation(api.accountBeehiiv.optInAtSignup, {});
+  expect(await t.mutation(internal.accountBeehiiv.claim, { userId })).toMatchObject({ optedIn: true, importSubmitted: false });
+  const row = await t.run(ctx => ctx.db.query("account_beehiiv_sync").unique());
+  expect(row).toMatchObject({ consentVersion: "signup-newsletter-v1", attempts: 1 });
 });
