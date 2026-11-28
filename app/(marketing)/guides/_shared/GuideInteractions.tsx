@@ -128,10 +128,10 @@ export function ContentsLinks({ sections, onNavigate }: { sections: readonly Gui
   return (
     <nav aria-label="Guide contents">
       <ol className="guide-mini-nav">
-        {sections.map(({ id, title }) => (
+        {sections.map(({ id, title }, index) => (
           <li key={id}>
             <a href={`#${id}`} onClick={onNavigate}>
-              <span className="font-mono text-xs text-home-orange-ink">{id.slice(1)}</span>{title}
+              <span className="font-mono text-xs text-home-orange-ink">{String(index + 1).padStart(2, "0")}</span>{title}
             </a>
           </li>
         ))}

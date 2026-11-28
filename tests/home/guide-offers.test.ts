@@ -9,7 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { UpsellCard } from "@/app/(marketing)/guides/_shared/blocks";
-import { guideSpec } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
+import { guideSpec } from "./fixtures/wp104-guide/legacy";
 import { BUILD_ALONG, BUILD_ALONG_GUIDE_CARDS_ENABLED, NEXT_BUILD_ALONG, SALES_OPEN_AT } from "@/lib/live/config";
 import { buildAlongPhase } from "@/lib/live/schedule";
 import { effectiveStatus, formatPrice, isOfferEnabled, readableSwitchKeys, resolvablePriceKeys, resolvePrice } from "@/lib/guides/offer-live";

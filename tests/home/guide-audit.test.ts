@@ -2,8 +2,7 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
 
-import { guideSpec } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
-import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
+import { guideSpec, guideCopy } from "./fixtures/wp104-guide/legacy";
 import { auditGuide, currencySymbols, offerReaderStrings, publicSpecStrings, receiptAmounts, receiptSources, type AuditInput } from "@/lib/guides/audit";
 import { evaluateLive, type LiveSnapshot, type PageState } from "@/lib/guides/audit-live";
 import { effectiveStatus, isOfferEnabled, resolvePrice } from "@/lib/guides/offer-live";

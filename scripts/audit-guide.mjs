@@ -81,8 +81,20 @@ const { auditGuide } = await load(path.join(ROOT, "lib", "guides", "audit.ts"));
 const { resolvePrice, effectiveStatus, isOfferEnabled } = await load(path.join(ROOT, "lib", "guides", "offer-live.ts"));
 const { appRouteExists } = await load(path.join(ROOT, "lib", "guides", "routes.ts"));
 const { evaluateLive } = await load(path.join(ROOT, "lib", "guides", "audit-live.ts"));
-const { guideSpec } = await load(path.join(guideDir, "guide.spec.ts"));
-const { guideCopy } = await load(path.join(guideDir, "guideCopy.ts"));
+const migrated = args.slug === "5-to-9-builder";
+let guideSpec;
+let guideCopy;
+let cardCopy;
+if (migrated) {
+  const { readBuilderGuide } = await load(path.join(ROOT, "lib", "landing", "read-builder-guide.ts"));
+  const { spec, deck, cards } = await readBuilderGuide(ROOT);
+  guideSpec = spec;
+  guideCopy = deck;
+  cardCopy = Object.values(cards).flatMap((copy) => Object.values(copy));
+} else {
+  ({ guideSpec } = await load(path.join(guideDir, "guide.spec.ts")));
+  ({ guideCopy } = await load(path.join(guideDir, "guideCopy.ts")));
+}
 
 const sources = fs
   .readdirSync(guideDir)
@@ -101,6 +113,8 @@ const research = fs.existsSync(recordFile)
 const result = auditGuide({
   research,
   spec: guideSpec,
+  allowReorderedSections: migrated,
+  cardCopy,
   deck: guideCopy,
   fileExists: (publicPath) => fs.existsSync(path.join(ROOT, "public", publicPath)),
   sources,

@@ -50,6 +50,9 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 | WP101 | Leo’s private landing page | Work Package | `codex/leo-private-landing` | In progress | Approved blueprint and Brand Kit, a recorded Iris-to-Leo handoff, and a private page with a synthetic test waitlist. See [WP101 stories](wp/wp101-stories.md). |
 | WP102 | 5-to-9 Starter redesign | Work Package | `cursor/5-to-9-starter-redesign` | Implemented | Paper redesign and Starter signup presentation. See [WP102 stories](wp/wp102-stories.md). |
 | WP103 | Guide template and /publish-guide skill | Work Package | `claude/wp103-s1-guide-shared-blocks` (S1) | In progress | Pulls the shared blocks and a per-guide spec out of `/guides/5-to-9-builder` so new guides render from data, then adds the `/publish-guide` skill with a sourced-claims gate. S1 changes no visible output. See [WP103 stories](wp/wp103-stories.md) and `docs/plans/publish-guide/PLAN.md`. |
+| WP104 | Landing page editor | Program / spike | `codex/wp104-keystatic-spike` | Compatibility gate | The operator edits staged page copy in Keystatic. Each public page moves after visual and content parity checks. See [WP104 stories](wp/wp104-stories.md). |
+
+| WP105 | Next.js 16.4.6 security upgrade | Work Package | `codex/wp93-next-security-16-4-6` | See [WP105 progress](wp/wp105-progress.md) | Install Next.js 16.4.6, align the Next.js ESLint package, enable the security upgrade policy, and verify the app. |
 
 ## Launch Workspace Program (WP67)
 

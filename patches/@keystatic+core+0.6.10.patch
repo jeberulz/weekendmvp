@@ -1,0 +1,207 @@
+diff --git a/node_modules/@keystatic/core/dist/index-9cd2e7e2.js b/node_modules/@keystatic/core/dist/index-9cd2e7e2.js
+index b6c0122..e58700d 100644
+--- a/node_modules/@keystatic/core/dist/index-9cd2e7e2.js
++++ b/node_modules/@keystatic/core/dist/index-9cd2e7e2.js
+@@ -72,7 +72,7 @@ function RouterProvider(props) {
+   if ($[1] === Symbol.for("react.memo_cache_sentinel")) {
+     t1 = function navigate(url_0, replace) {
+       const newUrl = new URL(url_0, window.location.href);
+-      if (newUrl.origin !== window.location.origin || !newUrl.pathname.startsWith("/keystatic")) {
++      if (newUrl.origin !== window.location.origin || !newUrl.pathname.startsWith("/admin/pages")) {
+         window.location.assign(newUrl);
+         return;
+       }
+@@ -110,7 +110,7 @@ function RouterProvider(props) {
+   let parsedUrl;
+   if ($[4] !== url) {
+     parsedUrl = new URL(url);
+-    const replaced = parsedUrl.pathname.replace(/^\/keystatic\/?/, "");
++    const replaced = parsedUrl.pathname.replace(/^\/admin\/pages\/?/, "");
+     t4 = replaced === "" ? [] : replaced.split("/").map(decodeURIComponent);
+     $[4] = url;
+     $[5] = t4;
+@@ -1306,7 +1306,7 @@ async function redirectToCloudAuth(from, config) {
+   const url = new URL(`${KEYSTATIC_CLOUD_API_URL}/oauth/authorize`);
+   url.searchParams.set('state', state);
+   url.searchParams.set('client_id', config.cloud.project);
+-  url.searchParams.set('redirect_uri', `${window.location.origin}/keystatic/cloud/oauth/callback`);
++  url.searchParams.set('redirect_uri', `${window.location.origin}/admin/pages/cloud/oauth/callback`);
+   url.searchParams.set('response_type', 'code');
+   url.searchParams.set('code_challenge_method', 'S256');
+   url.searchParams.set('code_challenge', code_challenge);
+@@ -2831,7 +2831,7 @@ function useConfig() {
+ // -----------------------------------------------------------------------------
+ 
+ const AppStateContext = /*#__PURE__*/createContext({
+-  basePath: '/keystatic'
++  basePath: '/admin/pages'
+ });
+ function useAppState() {
+   const appState = useContext(AppStateContext);
+@@ -5055,7 +5055,7 @@ function CollabAddToPathProvider(props) {
+     }
+     const avatars = [];
+     for (const [clientId, val] of awarenessStates) {
+-      if (clientId === yjsInfo.awareness.clientID || !val.user || router.href !== `/keystatic/branch/${val.branch}/${val.location}` || !Array.isArray(val.path) || !areArraysEqual(val.path, props.path)) {
++      if (clientId === yjsInfo.awareness.clientID || !val.user || router.href !== `/admin/pages/branch/${val.branch}/${val.location}` || !Array.isArray(val.path) || !areArraysEqual(val.path, props.path)) {
+         continue;
+       }
+       avatars.push(val.user);
+diff --git a/node_modules/@keystatic/core/dist/index-af84bca7.js b/node_modules/@keystatic/core/dist/index-af84bca7.js
+index 4961e40..d7c2d56 100644
+--- a/node_modules/@keystatic/core/dist/index-af84bca7.js
++++ b/node_modules/@keystatic/core/dist/index-af84bca7.js
+@@ -2421,6 +2421,8 @@ function GitMenu() {
+   const $ = c(84);
+   const branches = useBranches();
+   const currentBranch = useCurrentBranch();
++  const branchPrefix = getBranchPrefix(useConfig());
++  const mayDeleteBranch = !branchPrefix || currentBranch.startsWith(branchPrefix);
+   const repoInfo = useRepoInfo();
+   const prNumber = useAssociatedPullRequest();
+   const stringFormatter = useLocalizedStringFormatter(strings);
+@@ -2558,7 +2560,7 @@ function GitMenu() {
+           } else {
+             t12 = $[36];
+           }
+-          branchSection.push(t12);
++          if (mayDeleteBranch) branchSection.push(t12);
+         } else {
+           const t8 = `${repoURL}/pull/${prNumber}`;
+           const t9 = `Pull Request #${prNumber}`;
+@@ -2793,7 +2795,7 @@ function GitMenu() {
+       primaryActionLabel: "Yes, delete",
+       autoFocusButton: "cancel",
+       onPrimaryAction: async () => {
+-        if (repoInfo) {
++        if (repoInfo && mayDeleteBranch) {
+           await deleteBranch({
+             refId: branches.get(currentBranch).id
+           });
+diff --git a/node_modules/@keystatic/core/dist/keystatic-core-ui.js b/node_modules/@keystatic/core/dist/keystatic-core-ui.js
+index d16d2e0..563c18c 100644
+--- a/node_modules/@keystatic/core/dist/keystatic-core-ui.js
++++ b/node_modules/@keystatic/core/dist/keystatic-core-ui.js
+@@ -1654,7 +1654,7 @@ function PresenceAvatars() {
+   if ($[4] !== router.href || $[5] !== t1) {
+     t2 = /*#__PURE__*/jsx(HStack, {
+       children: t1.map(val => {
+-        if (!val.user || router.href !== `/keystatic/branch/${val.branch}/${val.location}`) {
++        if (!val.user || router.href !== `/admin/pages/branch/${val.branch}/${val.location}`) {
+           return null;
+         }
+         return /*#__PURE__*/jsx(Avatar, {
+@@ -1927,6 +1927,14 @@ function useUpsertItem(args) {
+           branchName: (_override$branch = override === null || override === void 0 ? void 0 : override.branch) !== null && _override$branch !== void 0 ? _override$branch : currentBranch,
+           repositoryNameWithOwner: `${repoInfo.owner}/${repoInfo.name}`
+         };
++        if (args.config.storage.kind === 'github' && args.config.storage.branchPrefix &&
++            !branch.branchName.startsWith(args.config.storage.branchPrefix)) {
++          setState({
++            kind: 'needs-new-branch',
++            reason: 'Save this change on a ' + args.config.storage.branchPrefix + ' branch.'
++          });
++          return false;
++        }
+         const runMutation = expectedHeadOid => mutate({
+           input: {
+             branch,
+@@ -2095,6 +2103,10 @@ function useDeleteItem(args) {
+         if (!repoInfo) {
+           throw new Error('Repo info not loaded');
+         }
++        if (args.storage.kind === 'github' && args.storage.branchPrefix &&
++            !currentBranch.startsWith(args.storage.branchPrefix)) {
++          throw new Error('Select a ' + args.storage.branchPrefix + ' branch to delete this item.');
++        }
+         const {
+           error
+         } = await mutate({
+@@ -3148,7 +3160,7 @@ function ItemPageInner(props) {
+     t19 = updateResult.kind === "needs-new-branch" && /*#__PURE__*/jsx(CreateBranchDuringUpdateDialog, {
+       branchOid: baseCommit,
+       onCreate: async newBranch => {
+-        const itemBasePath = `/keystatic/branch/${encodeURIComponent(newBranch)}/collection/${encodeURIComponent(collection)}/item/`;
++        const itemBasePath = `/admin/pages/branch/${encodeURIComponent(newBranch)}/collection/${encodeURIComponent(collection)}/item/`;
+         router.push(itemBasePath + encodeURIComponent(itemSlug));
+         const slug_0 = getSlugFromState(collectionConfig, props.state);
+         const hasUpdated_0 = await parentOnUpdate({
+@@ -5480,13 +5492,13 @@ function CreateItemInner(props) {
+     t25 = createResult.kind === "needs-new-branch" && /*#__PURE__*/jsx(CreateBranchDuringUpdateDialog, {
+       branchOid: baseCommit,
+       onCreate: async newBranch => {
+-        router.push(`/keystatic/branch/${encodeURIComponent(newBranch)}/collection/${encodeURIComponent(props.collection)}/create`);
++        router.push(`/admin/pages/branch/${encodeURIComponent(newBranch)}/collection/${encodeURIComponent(props.collection)}/create`);
+         if (await props.createItem({
+           branch: newBranch,
+           sha: baseCommit
+         })) {
+           const slug_0 = getSlugFromState(collectionConfig, props.state);
+-          router.push(`/keystatic/branch/${encodeURIComponent(newBranch)}/collection/${encodeURIComponent(props.collection)}/item/${encodeURIComponent(slug_0)}`);
++          router.push(`/admin/pages/branch/${encodeURIComponent(newBranch)}/collection/${encodeURIComponent(props.collection)}/item/${encodeURIComponent(slug_0)}`);
+         }
+       },
+       reason: createResult.reason,
+@@ -6806,7 +6818,7 @@ function SingletonPageInner(props) {
+     t28 = props.updateResult.kind === "needs-new-branch" && /*#__PURE__*/jsx(CreateBranchDuringUpdateDialog, {
+       branchOid: baseCommit,
+       onCreate: async newBranch => {
+-        router.push(`/keystatic/branch/${encodeURIComponent(newBranch)}/singleton/${encodeURIComponent(props.singleton)}`);
++        router.push(`/admin/pages/branch/${encodeURIComponent(newBranch)}/singleton/${encodeURIComponent(props.singleton)}`);
+         props.onUpdate({
+           branch: newBranch,
+           sha: baseCommit
+@@ -7704,7 +7716,7 @@ function KeystaticSetup(props) {
+   if ($[11] !== props.config.storage.repo || $[12] !== deployedURL) {
+     t10 = JSON.stringify({
+       name: `${parseRepoConfig(props.config.storage.repo).owner} Keystatic`,
+-      url: deployedURL ? new URL("/keystatic", deployedURL).toString() : `${window.location.origin}/keystatic`,
++      url: deployedURL ? new URL("/admin/pages", deployedURL).toString() : `${window.location.origin}/admin/pages`,
+       public: true,
+       redirect_url: `${window.location.origin}/api/keystatic/github/created-app`,
+       callback_urls: [`${window.location.origin}/api/keystatic/github/oauth/callback`, `http://127.0.0.1/api/keystatic/github/oauth/callback`, ...(deployedURL ? [new URL("/api/keystatic/github/oauth/callback", deployedURL).toString()] : [])],
+@@ -7894,7 +7906,7 @@ function KeystaticCloudAuthCallback({
+           body: new URLSearchParams({
+             code,
+             client_id: project,
+-            redirect_uri: `${window.location.origin}/keystatic/cloud/oauth/callback`,
++            redirect_uri: `${window.location.origin}/admin/pages/cloud/oauth/callback`,
+             code_verifier: storedState_0.code_verifier,
+             grant_type: 'authorization_code'
+           }).toString(),
+@@ -7913,7 +7925,7 @@ function KeystaticCloudAuthCallback({
+           project,
+           validUntil: Date.now() + parsed.expires_in * 1000
+         }));
+-        router.push(`/keystatic/${storedState_0.from}`);
++        router.push(`/admin/pages/${storedState_0.from}`);
+       })().catch(error_0 => {
+         setError(error_0);
+       });
+@@ -8005,7 +8017,7 @@ function RedirectToBranch(props) {
+         }
+       }
+       if (data !== null && data !== void 0 && (_data$repository = data.repository) !== null && _data$repository !== void 0 && _data$repository.defaultBranchRef) {
+-        push(`/keystatic/branch/${encodeURIComponent(data.repository.defaultBranchRef.name)}`);
++        push(`/admin/pages/branch/${encodeURIComponent(data.repository.defaultBranchRef.name)}`);
+       }
+       if (props.config.storage.kind === "github" && !(data !== null && data !== void 0 && (_data$repository2 = data.repository) !== null && _data$repository2 !== void 0 && _data$repository2.id) && (error === null || error === void 0 || (_error$graphQLErrors = error.graphQLErrors) === null || _error$graphQLErrors === void 0 || (_error$graphQLErrors = _error$graphQLErrors[0]) === null || _error$graphQLErrors === void 0 || (_error$graphQLErrors = _error$graphQLErrors.originalError) === null || _error$graphQLErrors === void 0 ? void 0 : _error$graphQLErrors.type) === "NOT_FOUND" || (error === null || error === void 0 || (_error$graphQLErrors2 = error.graphQLErrors) === null || _error$graphQLErrors2 === void 0 || (_error$graphQLErrors2 = _error$graphQLErrors2[0]) === null || _error$graphQLErrors2 === void 0 || (_error$graphQLErrors2 = _error$graphQLErrors2.originalError) === null || _error$graphQLErrors2 === void 0 ? void 0 : _error$graphQLErrors2.type) === "FORBIDDEN") {
+         window.location.href = "/api/keystatic/github/repo-not-found";
+@@ -8166,7 +8178,7 @@ function PageInner(t0) {
+       return t3;
+     }
+     branch = params[1];
+-    basePath = `/keystatic/branch/${encodeURIComponent(branch)}`;
++    basePath = `/admin/pages/branch/${encodeURIComponent(branch)}`;
+     let t3;
+     if ($[20] !== params) {
+       t3 = parseParamsWithoutBranch(params.slice(2));
+@@ -8186,7 +8198,7 @@ function PageInner(t0) {
+       t2 = $[23];
+     }
+     parsedParams = t2;
+-    basePath = "/keystatic";
++    basePath = "/admin/pages";
+   }
+   const t2 = branch || "";
+   let t3;

@@ -1,22 +1,29 @@
+import { readBuilderGuide } from "@/lib/landing/read-builder-guide";
 import { GuideLayout } from "../_shared/GuideLayout";
 import { buildGuideMetadata } from "../_shared/seo";
-import { GuideClose, GuideLessons, GuideOpening } from "./_sections";
-import { guideCopy } from "./guideCopy";
-import { guideSpec } from "./guide.spec";
+import { GuideGatedSections, GuideOpening } from "./_sections";
 import { guideLiveIdeaCount } from "./ideaCount";
 
-export const metadata = buildGuideMetadata(guideSpec);
+async function loadGuide() {
+  "use cache";
+  return readBuilderGuide();
+}
 
-export default function FiveToNineBuilderGuidePage() {
+export async function generateMetadata() {
+  return buildGuideMetadata((await loadGuide()).spec);
+}
+
+export default async function FiveToNineBuilderGuidePage() {
+  const guide = await loadGuide();
   const ideaCount = guideLiveIdeaCount();
   return (
     <GuideLayout
-      spec={guideSpec}
-      deck={guideCopy}
+      spec={guide.spec}
+      deck={guide.deck}
       ideaCount={ideaCount}
-      opening={<GuideOpening />}
-      lessons={<GuideLessons ideaCount={ideaCount} />}
-      close={<GuideClose ideaCount={ideaCount} />}
+      opening={<GuideOpening guide={guide} />}
+      lessons={<GuideGatedSections guide={guide} ideaCount={ideaCount} />}
+      close={null}
     />
   );
 }

@@ -165,7 +165,9 @@ read the response as text before parsing JSON.
   Source Critic review next to it. `npm run guide:source-review -- draft|verify|seal|check --record=...` drives it:
   `verify` re-fetches cited pages with `--fetch` and reproduces first-hand evidence from this repo, and `check` is the
   gate before a guide is drafted. When a record exists, `audit:guide` requires a sealed PASS and that every figure in
-  the copy traces to a claim. Plan: `docs/plans/publish-guide/PLAN.md`
+  the copy traces to a claim. `recheck` fetches every cited page again on a cadence (30 days for a tool guide) and reports
+  drift with the old excerpt and the page's own wording now. `--write` saves `guides/records/{slug}.recheck.json`.
+  Plan: `docs/plans/publish-guide/PLAN.md`
 - `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
   `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
   `data-m` markers. Keep new homepage content visible without it

@@ -3,8 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 
-import { guideSpec } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
-import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
+import { guideSpec, guideCopy } from "./fixtures/wp104-guide/legacy";
 import { auditGuide, publicSpecStrings } from "@/lib/guides/audit";
 import {
   GuideReviewError,

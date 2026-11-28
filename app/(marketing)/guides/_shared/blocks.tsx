@@ -18,7 +18,7 @@ export function GuideSection({ spec, index, children }: { spec: GuideSpec; index
   const { id, title } = spec.sections[index];
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="guide-section">
-      <Eyebrow className="guide-section-number">{id.slice(1)}</Eyebrow>
+      <Eyebrow className="guide-section-number">{String(index + 1).padStart(2, "0")}</Eyebrow>
       <h2 id={`${id}-title`}>{title}</h2>
       {children}
     </section>
@@ -50,14 +50,15 @@ export function Receipt({ kind, amount, children, source }: { kind: string; amou
 
 export function GuideHero({ spec }: { spec: GuideSpec }) {
   const { hero, headline, headlineEmphasis } = spec;
-  const romanPrefix = headline.slice(0, -headlineEmphasis.length);
+  const emphasis = headlineEmphasis.trim();
+  const romanPrefix = emphasis ? headline.slice(0, -emphasis.length) : headline;
 
   return (
     <section aria-labelledby="builder-hero-title" className="guide-hero">
       <div className="min-w-0">
         <Eyebrow>{hero.eyebrow}</Eyebrow>
         <h1 id="builder-hero-title">
-          {romanPrefix}<Em>{headlineEmphasis}</Em>
+          {romanPrefix}{emphasis && <Em>{emphasis}</Em>}
         </h1>
         <p className="guide-lede">{hero.lede}</p>
         <ul className="guide-meta" aria-label={hero.metaLabel}>
@@ -93,8 +94,8 @@ export function GuideContents({ spec, ideaCount }: { spec: GuideSpec; ideaCount:
       <h2 id="builder-inside-title">{spec.contents.heading}</h2>
       <ol className="guide-toc">
         {spec.sections.map(({ id, title, summary }, index) => {
-          const description = typeof summary === "function" ? summary(ideaCount) : summary;
-          const body = <><span className="font-mono text-xs text-home-orange-ink">{id.slice(1)}</span><span><strong>{title}</strong><span className="block text-sm font-normal text-home-ink-2">{description}</span></span></>;
+          const description = typeof summary === "function" ? summary(ideaCount) : summary.replaceAll("{ideaCount}", String(ideaCount));
+          const body = <><span className="font-mono text-xs text-home-orange-ink">{String(index + 1).padStart(2, "0")}</span><span><strong>{title}</strong><span className="block text-sm font-normal text-home-ink-2">{description}</span></span></>;
           return (
             <li key={id}>
               {index > 0 && (
@@ -210,15 +211,17 @@ export function UpsellCard({
   placement,
   offers = registry,
   isEnabled = isOfferEnabled,
+  copy,
 }: {
   spec: GuideSpec;
   placement: "mid" | "close";
   offers?: readonly Offer[];
   isEnabled?: (offer: Offer) => boolean;
+  copy?: Pick<Offer, "title" | "eyebrow" | "promise" | "linkLabel">;
 }) {
   const upsell = spec.upsells.find((item) => item.placement === placement);
   if (!upsell) throw new Error(`Guide "${spec.slug}" lists no upsell for the "${placement}" placement`);
-  const offer = offerById(upsell.offer, offers);
+  const offer = { ...offerById(upsell.offer, offers), ...copy };
   if (!isEnabled(offer)) return null;
   const price = offer.price ? formatPrice(resolvePrice(offer.price.configKey)) : null;
   const [before, after = ""] = offer.promise.split(PRICE_TOKEN);

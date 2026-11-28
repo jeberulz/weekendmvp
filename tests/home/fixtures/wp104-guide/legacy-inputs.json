@@ -1,0 +1,323 @@
+{
+  "deck": {
+    "The Shift · Lede": "Finding something worth building starts with a problem you can check.",
+    "The Shift · Validation paragraph": "Before you spend an evening building, talk to someone who has the problem. Ask how they deal with it now and what it costs them. Then see whether they'll pay for a fix.",
+    "The Shift · Your expertise": "Your 9-to-5 is the edge. You already know where work is slow, confusing or expensive, because you live inside it. You know the words people use for the problem. You know who signs off on the spend. A stranger with the same tools has to guess at all of that. You don't. The best first idea is rarely a clever one. It is usually a problem you solved at work, thought nothing of, and someone said \"how did you do that?\"",
+    "The Shift · Definition": "A 5-to-9 builder keeps their job and uses evenings to test an idea for extra income.",
+    "The Shift · Honest catch": "Most ideas won't work, and your evenings are the real constraint. Section 4 doesn't soften either.",
+    "The Method · Lede": "Five steps: Find it, Who pays?, Pick it, Prove it, Sell it. Each one is small enough for an evening. Each one ends with something you can show, not a feeling that you're getting somewhere. Below, every step has the reasoning, the mistakes people make, and a worked example on one real idea from the library.",
+    "Find it · Reasoning": "Start with your own week, not a trend. Write down five problems you've solved in the last month. Small and annoying ones count: the spreadsheet you fixed, the process you shortcut, the thing colleagues keep asking you to explain. Circle the one that earned a thank-you. That is a moment, not a market, and a moment is enough to start from. You know the customer already, which is the part most first-time builders have to guess.",
+    "Find it · Common mistakes": "- Hunting on Product Hunt, or asking AI for \"ten startup ideas\", then picking something clever you know nothing about.\n- Writing only big problems down. The small, repeated ones are easier to test.\n- Skipping the circling. Without it you have a notebook, not an idea.\n- Describing a solution (\"an app that…\") instead of the problem and who has it.",
+    "Find it · Worked example": "Take the Repair Estimate Translator. Suppose you've worked a service counter, or you've been the customer holding a repair estimate you couldn't read. The live idea page gives the kind of line that causes it: \"R&R compressor, evac/recharge, orifice tube, dye test\" attached to an $1,800 decision. Your Find it note might read: *customers don't approve estimates they can't understand, and I've watched advisors explain the same line.* That is one sentence, one person, one problem. It is where a reader's own run would start. It is not a result.",
+    "Who pays? · Reasoning": "A problem is not a customer. The next step is to find out whether anyone would pay to make it go away. Find three people who have the problem and ask three questions, word for word: how do you deal with this today? What does it cost you when it goes wrong, in time, money or stress? If someone fixed it properly, what would that be worth to you? Don't pitch. Don't describe your idea. Write down their exact words. Those words become your marketing copy later, so don't tidy them into business-speak.",
+    "Who pays? · Common mistakes": "- Asking friends who'll say it's a great idea. Ask people who have the problem.\n- Pitching during the conversation, which turns an honest answer into a polite one.\n- Counting \"that sounds useful\" as interest. Listen for what it costs them today.\n- Ignoring the answer you don't like. If all three say \"it's annoying but I live with it\", kill the idea. That is a useful result.",
+    "Who pays? · Worked example": "For the Translator, there are two kinds of person to ask. The shop side (an owner or service advisor) and the customer side (someone who has recently been handed an estimate). The live page notes shops already pay for diagnosis and run repair orders in tools such as Shopmonkey, Tekmetric, Mitchell and ShopWare, so the spend exists. What the page describes as missing is the few minutes after the tablet is handed over. The page also names r/MechanicAdvice, r/cars and r/AutoRepair as places where people talk about this. Use them to find people to ask, and to read their wording. Reading a thread is not the same as asking three people, and neither is a market figure.",
+    "Pick it · Reasoning": "If you have more than one idea, don't pick the best-sounding one. Pick the one that ships. Score each idea from 1 to 5 on five questions: can I build the core flow in a weekend? Can I demo it in 15 seconds? Can I find ten testers easily? Is the outcome obvious in one sentence? Does it remove a real annoyance? Highest score wins. Ten minutes, no debate. Then write the one sentence: \"For [who], who [problem], this helps you [outcome], without [the painful old way].\" If the sentence won't fit, the idea is still too big. Shrink it.",
+    "Pick it · Common mistakes": "- Debating instead of scoring. A tie is a coin toss, not a reason for another week.\n- Scoring on excitement rather than on the five questions.\n- Keeping the scope vague so every idea scores well.\n- Picking the idea with the biggest market. A big market doesn't make a first idea easier to test.",
+    "Pick it · Worked example": "Score the Translator honestly, as a reader would. The live page puts the weekend scope at about 8 hours, which helps the first question. A customer-facing one-pager with annotated photos demos quickly. The outcome fits one sentence: *for auto shops, who lose approvals to jargon, this turns the estimate into plain English, without the advisor translating every line.* Whether you can find ten testers depends on your access to shops, and only you can score that. The scorecard exposes the weak point. It doesn't hide it.",
+    "Prove it · Reasoning": "Before you build, get someone to show intent. Pick one test for tonight. The post test: share the problem in their words where your three people gather and count real replies, not likes. The waitlist test: one page, one sentence, one button. The $5 test: offer to solve it by hand, once, for $5. The rule is the same for all three: no building until someone shows intent. Words are cheap. A reply, a signup or a fiver is proof. One person paying $5 tells you more than a hundred saying \"great idea\".",
+    "Prove it · Common mistakes": "- Building \"a small version\" first to have something to show.\n- Counting likes, views or compliments as intent.\n- Running all three tests at once, so you can't tell which one told you what.\n- Moving the goalposts after a quiet result. Decide beforehand what counts as a signal.",
+    "Prove it · Worked example": "For the Translator, the lightest proof test is manual. Take one real estimate from someone willing to share it, rewrite it by hand in plain English with a note on what can wait, and offer it to a shop for $5 or ask the shop to try it on one customer. No code. No integration with their system. You are testing whether the shop sees the value, not whether you can build the product. We don't report a result here, because no such test is on the live page. Yours will be the first data point for your version.",
+    "Sell it · Reasoning": "A first paid offer doesn't need a product. It needs one person, one outcome and one price. \"I'll [solve the problem] for you, this week, for $29. One spot.\" That's the whole offer. A small paid offer teaches more than a large free launch, because a paying customer tells you the truth and a free user tells you what you want to hear. If someone pays, you have a business to test. Then build the weekend version.",
+    "Sell it · Common mistakes": "- Building a landing page with twelve features before anyone has paid.\n- Offering tiers. One spot, one outcome, one price.\n- Pricing so low that nobody believes the outcome.\n- Treating \"maybe\" as a yes and waiting for it.",
+    "Sell it · Worked example": "The Translator's offer, as a reader might write it: *\"I'll turn your next ten repair estimates into plain-English one-pagers this week, for $29. One spot.\"* Adjust the number of estimates to something you can actually deliver. This is an offer to write, not a claim that anyone has bought it. The idea page, by contrast, describes the eventual product: paste the repair order, get a one-pager with what failed, why, what it costs, annotated photos and a defer-or-do-now split, then send it by SMS. Sell the outcome by hand first. Build the product once someone has paid for the outcome.",
+    "The Method · Honest catch": "Five steps don't guarantee an idea survives them. The method is built to let a weak idea fail quickly and cheaply, which is a good outcome even though it feels like losing.",
+    "The 6 Skills · Lede": "The method is the order. The skills are what you practise inside it. There are six. Each one ends with a plain test, so you know when to move on instead of rereading.",
+    "Spot problems in your own week · Explanation": "Your week is full of friction you've stopped noticing. This skill is learning to see it. Keep a running note for a few days. Write down what slowed you down, what you fixed, and what colleagues asked you to explain. Phrase each as a problem and a person, not a product. Over time you'll start noticing the repeated ones. Those are the ideas.",
+    "Spot problems in your own week · Readiness test": "You're ready when you have five written problems from your own recent work, each naming who has it, and one of them is circled.",
+    "The 3-person test · Explanation": "Three people who have the problem, three questions, no pitch. The purpose is to hear how they deal with it today, what it costs them, and what a fix would be worth. Their exact words matter more than your summary. If nobody cares, you've learned something real and you can drop the idea without regret.",
+    "The 3-person test · Readiness test": "You're ready when you've spoken to three people who really have the problem, written down what they said in their own words, and decided whether it's worth continuing.",
+    "The 10-minute scorecard · Explanation": "A scorecard turns a debate into a decision. Five questions, scored 1 to 5: can you build the core flow in a weekend, demo it in 15 seconds, find ten testers, state the outcome in one sentence, and does it remove a real annoyance? Add up. Pick the highest. The point is speed. A slightly wrong pick that you test beats a perfect pick you never start.",
+    "The 10-minute scorecard · Readiness test": "You're ready when every idea you're considering has a score, one has won, and you can say its promise in one sentence.",
+    "The proof test · Explanation": "Proof comes before building. Choose one: the post test, the waitlist test, or the $5 test. Decide in advance what counts as a signal, run it, and stop. A reply, a signup or a payment counts. A compliment doesn't. If nobody bites, you've saved yourself weeks.",
+    "The proof test · Readiness test": "You're ready when you've run one proof test, written down what you decided counted as a signal beforehand, and recorded what happened, including if the answer was nothing.",
+    "The first offer · Explanation": "A first offer is the smallest thing you'd sell: one outcome, for one person, at one price, delivered by hand if needed. It doesn't need a product page or a payment system more complicated than a link. Its job is to find out whether someone will hand over money, not to be your business.",
+    "The first offer · Readiness test": "You're ready when your offer fits in one sentence, names who it's for and what they get, and states one price.",
+    "Pricing and the honest catch · Explanation": "Price the first offer so that paying is easy and the outcome is believable. $29 is a sensible starting example. It's small enough to say yes to and large enough to mean it. Then write down the honest catch: what could stop this working, and what this offer can't tell you. Doing this yourself, before a customer does, keeps you from overclaiming.",
+    "Pricing and the honest catch · Readiness test": "You're ready when your offer has a price you can say aloud without apologising, and you can name the two most likely reasons it might not sell.",
+    "The 6 Skills · Honest catch": "Reading about a skill isn't the same as having it. Each test here asks for something you've actually done. If you can't tick it yet, the skill isn't done.",
+    "The Catch · Lede": "This section is here because the rest of the guide would be dishonest without it. A guide that promises a side income and leaves this out is selling you something. Read it before you start.",
+    "Most ideas won't work": "Most ideas won't work. That is not a flaw in the method. It is the reason for the method. Some problems turn out to be real but small. Some are real but already solved. Some are real, but nobody will pay to fix them. You'll probably go through several ideas before one holds up. If you need your first idea to be the one, you will either stop too early or fool yourself into carrying on. Treat each failed idea as a test that did its job.",
+    "Time is the real constraint": "You have evenings, not a career's worth of hours. Tiredness is real. So are family, commuting and the days when work runs over. A plan that assumes ideal evenings will fail on the first bad week. That is why the steps are small and why you stop at the first weak signal rather than pushing through. Build only what the evidence has earned. If you can only manage two evenings a week, the plan still works. It takes longer.",
+    "What validation can't tell you": "Validation tells you that someone showed intent. It can't tell you whether you can keep them. It can't tell you whether the idea scales, whether you'll enjoy running it, or whether a person who paid $29 once will pay again. A positive test is a reason to continue, not a promise. A negative test is just as limited: it tells you about the idea and the way you tested it. It doesn't tell you what you're capable of.",
+    "Where You're Starting From · Lede": "You aren't starting from a blank page. Your work gives you a head start and a gap, and the right skills to lean on depend on which. Find the closest match below. Designers are one of four, not a separate track.",
+    "Designer · Head start": "You can see trust and clarity problems that most founders miss. You know how to make a promise legible on a page, and taste is a real edge when most products look alike.",
+    "Designer · Gap": "Design skill can pass for evidence. A page that looks convincing isn't proof that anyone will pay for what's on it. You may also be tempted to polish before you test.",
+    "Designer · Lean on": "The 3-person test and the proof test. Let people's words, not the look of the page, tell you whether the idea has legs.",
+    "Developer · Head start": "You can build the weekend version without help, so the cost of building is already low for you. You'll also read technical constraints faster than most people.",
+    "Developer · Gap": "Building is your comfort zone, and that's the risk. It's easy to build for weeks and call it progress. Talking to strangers about money may feel less natural than writing code.",
+    "Developer · Lean on": "Spot problems in your own week, the 3-person test, and the proof test. Do all three before you open the editor.",
+    "Ops & marketing · Head start": "You know how a business actually runs and how people buy. You're used to process, customers and messaging, which are the parts the method depends on.",
+    "Ops & marketing · Gap": "You may be used to working with a team or a budget. On your own, you'll be the person who also has to build or arrange the build, and that can stall the idea.",
+    "Ops & marketing · Lean on": "The 10-minute scorecard, which keeps the scope buildable, and the first offer, which you'll probably find natural. Sell by hand first.",
+    "Non-technical · Head start": "You don't need to code to test an idea. Every proof test in this guide works without code. And the problems you see in your daily work are the kind that don't need a technical solution to validate.",
+    "Non-technical · Gap": "When it's time to build, you'll need a way to do it, whether by using AI tools, a no-code option or someone else's help. That's a real step. The scorecard's \"can I build the core flow in a weekend?\" question will be harder for you to score.",
+    "Non-technical · Lean on": "Spot problems in your own week, the 3-person test and the first offer. These get you to a paying customer without a build.",
+    "Where You're Starting From · Honest catch": "A head start isn't a result. These are general patterns, not a diagnosis. You may not fit any of the four neatly, and that's fine. Use the lines as prompts and take what applies.",
+    "The 30-Day Plan · Lede": "Four weeks, each ending with something you can point to. The pace assumes a few evenings a week. If you do less, stretch it. The order matters more than the speed.",
+    "Week 1 · Shipped proof": "Shipped proof: a written list of five problems from your own work, one circled, and notes from conversations with three people who have it.",
+    "Week 2 · Shipped proof": "Shipped proof: a scored list of your ideas, one winner, and your one-sentence promise for it.",
+    "Week 3 · Shipped proof": "Shipped proof: one proof test run, with your pre-set signal written down and the outcome recorded, whatever it was.",
+    "Week 4 · Shipped proof": "Shipped proof: a first offer with one outcome and one price, put in front of real people. A sale if you get one, and a note on what you learned if you don't.",
+    "The 30-Day Plan · Honest catch": "Thirty days is a plan, not a promise. Weeks slip. If a week ends without its proof, repeat the week. Don't skip ahead.",
+    "The Idea Bank · How to use the library": "If you don't have an idea yet, start from the library, not a blank page. Browse the {ideaCount} researched ideas and look for one that touches something you know from work. Read the problem as if you were your own first customer. Does it match something you've seen? Then run the five steps on it, starting at Who pays?, since you didn't find this one yourself. Use the build prompts when you've earned the build. Treat the library as a source of starting points. It isn't a list of guaranteed winners.",
+    "Repair Estimate Translator · Worked validation": "[Repair Estimate Translator](/ideas/auto-repair-estimate-translator) is built for small business owners and solo founders. The live page describes it as a customer-facing explainer on top of the estimate a shop already wrote. Here's how you'd run the five steps on it.\n\n1. **Find it.** Start from a moment: someone handed an estimate they can't read, and an advisor translating the same line again.\n2. **Who pays?** Ask three people: shop owners or advisors, and customers who've been handed an estimate recently. How do they deal with it today? What does an unapproved or confusing estimate cost? What would a fix be worth?\n3. **Pick it.** Score it on the five questions. The live page puts the weekend scope at about 8 hours.\n4. **Prove it.** Rewrite one real estimate by hand in plain English and offer it, or try the $5 test with one shop.\n5. **Sell it.** Offer a small, hand-delivered version for $29. One spot.\n\nThat's the worked validation: a way to run the method, with the steps filled in. It isn't a test we've completed. No customers, results or approval-rate figures are claimed for this idea, and the idea page itself flags that kind of figure as a sales line, not a published result. Your own three conversations will tell you more than the listing can.",
+    "The Idea Bank · Honest catch": "A researched idea isn't a validated one. The research can tell you where the gap might be. Only your own tests can tell you whether anyone will pay for it, and whether you're the right person to build it.",
+    "The First Sale · Lede": "A first sale proves one thing: someone handed over money for your outcome. It's a small result, and a useful one. This section covers the offer, the price, the ask and what to do when the answer is no.",
+    "The offer": "One person, one outcome, one price. Write it as a single sentence: \"I'll [solve the problem] for you, this week, for $29. One spot.\" No landing page with twelve features. No tiers. If you can deliver it by hand, do. The point is to learn whether it sells, not to scale it.",
+    "The price": "Start with $29 as your working example. It's low enough that saying yes is easy and high enough that it counts as a real signal. A small paid offer teaches you more than a big free launch, because a paying customer tells you the truth and a free user tells you what you want to hear. If $29 doesn't fit your idea, pick a number that does and keep it to one.",
+    "The ask": "Ask directly, to a real person, in the words they used with you. Use the language from your 3-person conversations, not your own business-speak. Say what they get, by when, and for how much. Then stop talking and let them answer. A clear no is useful. A vague maybe is not, so ask for a decision.",
+    "First-sale scripts": "Adapt these. Replace the brackets with the words your people used.\n\n**To someone from your three conversations**\n\n> You mentioned [their problem, in their words]. I'm doing a small version of the fix this week: I'll [outcome] for you for $29. One spot. Want it?\n\n**A public post**\n\n> I'm taking one spot this week to [outcome] for $29. If you [have the problem], reply and I'll send the details.\n\n**When someone says \"maybe\"**\n\n> Totally fair. What would you need to see to say yes, and what would make it worth $29 to you?\n\n**When someone says no**\n\n> Thanks for being straight with me. What was the main reason: the problem, the price or the wording?",
+    "The First Sale · When nobody buys": "The test worked. You found out in a week, not a quarter.\n\nNow find out why. It usually comes down to one of three things: wrong person, wrong price or wrong words. Ask the people who said no, or didn't answer, which one it was. Change one thing and offer again, or go back to your scorecard and pick the next idea. Either way, you've spent evenings, not months.",
+    "The First Sale · Honest catch": "One sale doesn't make a business, and no sale doesn't make you a bad founder. A single yes can come from kindness, and a no can come from timing. Treat it as one data point. Run it again before you decide what it means.",
+    "Self-Check · Lede": "Eighteen things to tick when they're true, not when you intend them to be. Your ticks save on this device, so you can come back. Don't treat 18 of 18 as a prize. It just means you've done the work.",
+    "Self-Check · Item 1": "I have written down five problems I've solved in my own work in the last month.",
+    "Self-Check · Item 2": "I have circled the one that made someone say \"thank you\" or \"how did you do that?\"",
+    "Self-Check · Item 3": "I can describe that problem in one sentence, naming who has it.",
+    "Self-Check · Item 4": "I have found three people who really have the problem.",
+    "Self-Check · Item 5": "I asked all three the same three questions without pitching.",
+    "Self-Check · Item 6": "I have written down their answers in their own words.",
+    "Self-Check · Item 7": "I have decided whether to continue, drop the idea or reshape it, and I know why.",
+    "Self-Check · Item 8": "I have scored every idea I'm considering on the five scorecard questions.",
+    "Self-Check · Item 9": "I have picked the highest-scoring idea without reopening the debate.",
+    "Self-Check · Item 10": "I can say its promise in one sentence: for [who], who [problem], this helps you [outcome], without [the old way].",
+    "Self-Check · Item 11": "I have chosen one proof test: post, waitlist or $5.",
+    "Self-Check · Item 12": "I decided in advance what counts as a signal.",
+    "Self-Check · Item 13": "I have run the test and recorded the outcome, including a quiet one.",
+    "Self-Check · Item 14": "I have not built anything the evidence hasn't earned yet.",
+    "Self-Check · Item 15": "I have written my first offer: one person, one outcome, one price.",
+    "Self-Check · Item 16": "I have set a price I can say aloud without apologising.",
+    "Self-Check · Item 17": "I have asked at least one real person for a decision.",
+    "Self-Check · Item 18": "I can name the two most likely reasons my offer might not sell.",
+    "Self-Check · Honest catch": "A checklist records what you did. It doesn't judge whether it was good. Tick honestly. A box ticked early only fools you.",
+    "The Prompt · Lede": "Paste this into Claude or Grok with your idea filled in. It asks the model to be a sceptical reviewer, not a cheerleader. It doesn't replace talking to three people. It helps you sharpen the questions and find the weak points before you do.",
+    "The Prompt · Prompt text": "You are a sceptical but fair reviewer helping me validate a side-income idea before I build anything. I have a full-time job and only evenings to work on this. Do not flatter me. Do not invent market sizes, statistics, competitors or customer quotes. If you don't know something, say so and tell me how I could find out.\n\nMy idea:\n- The problem, in one sentence: [PROBLEM]\n- Who has it: [WHO]\n- How they deal with it today: [CURRENT WORKAROUND]\n- Why I know this problem (my job or experience): [MY BACKGROUND]\n- What I would offer, and the price I have in mind: [OFFER AND PRICE]\n\nPlease do the following, in order:\n\n1. Restate the idea in one sentence in this form: \"For [who], who [problem], this helps you [outcome], without [the painful old way].\" If it does not fit, tell me what to cut.\n2. Tell me the three weakest assumptions in my idea. For each, say what evidence would prove it wrong.\n3. Write three interview questions I can ask three real people who have this problem. They must not pitch my idea. They should reveal how people cope today, what it costs them, and what a fix would be worth.\n4. Score my idea from 1 to 5 on each of these, with one sentence of reasoning per score:\n   - Can I build the core flow in a weekend?\n   - Can I demo it in 15 seconds?\n   - Can I find ten testers easily?\n   - Is the outcome obvious in one sentence?\n   - Does it remove a real annoyance?\n5. Suggest one proof test I could run in ten minutes before building anything: a post, a waitlist page, or manually solving it once for a small fee. Tell me what result would count as a signal and what would count as a no.\n6. Write my first offer in one sentence: one person, one outcome, one price.\n7. Finish with \"The honest catch\": the most likely reason this fails, and what this test cannot tell me.\n\nKeep it short and plain. Do not tell me it's a great idea unless the evidence I've given supports it.",
+    "The Prompt · Honest catch": "The model only knows what you tell it. It can't speak to your customers, and it may sound more certain than it should. Use it to prepare for your three conversations, not to stand in for them.",
+    "Founder note · Body": "I run Weekend MVP. I wrote this guide because I think the harder question isn't how to build it. It's what to build. AI has made the first one much easier. It hasn't touched the second.\n\nSo the guide is built around the second one. It's slow where it needs to be and honest about what can go wrong. Run the five steps on your own evenings. If an idea fails, good: that's the test doing its job.\n\nI'd like to hear what you test.",
+    "FAQ · Who is this for?": "9-to-5ers who are building, or want to build, in their 5-to-9. Designers too. They're one of the four starting points in Section 5.",
+    "FAQ · I have no idea yet. Where do I start?": "At step 1, Find it: spot problems in your own week. Or start from one of the {ideaCount} researched ideas in the Idea Bank (Section 7).",
+    "FAQ · Do I need to code?": "Not to start. The method tests whether someone will pay before you build. Section 5 has a starting point for non-technical readers.",
+    "FAQ · What if nobody buys?": "Then the test worked. You found out in a week, not a quarter. Section 8 covers what to do next.",
+    "FAQ · What does the 5-day email add?": "The same method at a guided pace: one action a day for five days. The guide is the depth. The email is the pace. There's no second form. It goes to the email you unlocked with.",
+    "Gate · Fine print": "Free. Unsubscribe anytime. We'll send the [5-day Starter](/5-to-9-starter).",
+    "Sign-off · Follow destination": "Follow @weekendmvp on Instagram: https://www.instagram.com/weekendmvp/"
+  },
+  "selfCheckItems": [
+    "I have written down five problems I've solved in my own work in the last month.",
+    "I have circled the one that made someone say \"thank you\" or \"how did you do that?\"",
+    "I can describe that problem in one sentence, naming who has it.",
+    "I have found three people who really have the problem.",
+    "I asked all three the same three questions without pitching.",
+    "I have written down their answers in their own words.",
+    "I have decided whether to continue, drop the idea or reshape it, and I know why.",
+    "I have scored every idea I'm considering on the five scorecard questions.",
+    "I have picked the highest-scoring idea without reopening the debate.",
+    "I can say its promise in one sentence: for [who], who [problem], this helps you [outcome], without [the old way].",
+    "I have chosen one proof test: post, waitlist or $5.",
+    "I decided in advance what counts as a signal.",
+    "I have run the test and recorded the outcome, including a quiet one.",
+    "I have not built anything the evidence hasn't earned yet.",
+    "I have written my first offer: one person, one outcome, one price.",
+    "I have set a price I can say aloud without apologising.",
+    "I have asked at least one real person for a decision.",
+    "I can name the two most likely reasons my offer might not sell."
+  ],
+  "spec": {
+    "slug": "5-to-9-builder",
+    "path": "/guides/5-to-9-builder",
+    "title": "The 5-to-9 Builder",
+    "headline": "AI made building free. Knowing what to build is the job now.",
+    "headlineEmphasis": "Knowing what to build is the job now.",
+    "description": "AI made building free. Knowing what to build is the job now. A free guide for 9-to-5ers to find an idea and prove someone will pay before you build.",
+    "metaTitle": "The 5-to-9 Builder: a tested side income | Weekend MVP",
+    "datePublished": "2026-11-26T07:53:49Z",
+    "dateModified": "2026-11-27",
+    "ogImagePath": "/image/5-to-9-builder-og.png",
+    "lang": "en-GB",
+    "authorName": "John Iseghohi",
+    "utmCampaign": "5-to-9-builder",
+    "checklistKey": "5-to-9-builder-checklist",
+    "promptFileName": "validate-my-idea.txt",
+    "sections": [
+      {
+        "id": "s01",
+        "title": "The Shift",
+        "summary": "Building is free now; validation is the scarce skill."
+      },
+      {
+        "id": "s02",
+        "title": "The Method",
+        "summary": "The 5 steps: Find it, Who pays?, Pick it, Prove it, Sell it."
+      },
+      {
+        "id": "s03",
+        "title": "The 6 Skills",
+        "summary": "Each ends with a “You're ready when…” test."
+      },
+      {
+        "id": "s04",
+        "title": "The Catch",
+        "summary": "Most ideas won't work. Time is the real constraint."
+      },
+      {
+        "id": "s05",
+        "title": "Where You're Starting From",
+        "summary": "Designer, developer, ops & marketing, non-technical."
+      },
+      {
+        "id": "s06",
+        "title": "The 30-Day Plan",
+        "summary": "Four weeks, each ending with a shipped proof."
+      },
+      {
+        "id": "s07",
+        "title": "The Idea Bank",
+        "summary": "How to use {ideaCount} researched ideas, with one worked validation."
+      },
+      {
+        "id": "s08",
+        "title": "The First Sale",
+        "summary": "The offer, the price, the ask. Scripts included."
+      },
+      {
+        "id": "s09",
+        "title": "Self-Check",
+        "summary": "A 15–20 item checklist that saves on your device."
+      },
+      {
+        "id": "s10",
+        "title": "The Prompt",
+        "summary": "A “validate my idea” prompt for Claude or Grok."
+      },
+      {
+        "id": "s11",
+        "title": "FAQ",
+        "summary": "Five common questions."
+      }
+    ],
+    "hero": {
+      "eyebrow": "Free guide · Weekend MVP",
+      "lede": "Turn your 9-to-5 expertise into a tested side income: one tested idea, then one first sale.",
+      "meta": [
+        [
+          "Free",
+          "guide"
+        ],
+        [
+          "5 steps",
+          "to a tested idea"
+        ],
+        [
+          "1",
+          "first sale"
+        ],
+        [
+          "30 days",
+          ""
+        ]
+      ],
+      "metaLabel": "Free guide · 5 steps to a tested idea · 1 first sale · 30 days",
+      "ctaLabel": "Start reading",
+      "lockedNote": "Section 1 is open. One email opens the rest.",
+      "subscribedNote": "The whole guide is open on this device.",
+      "image": {
+        "src": "/image/john-portrait.webp",
+        "alt": "John Iseghohi, founder of Weekend MVP, working at his desk",
+        "width": 1000,
+        "height": 1250,
+        "sizes": "(min-width: 1024px) 458px, 100vw",
+        "assetStatus": "approved"
+      }
+    },
+    "contents": {
+      "heading": "Eleven sections. One tested idea at the end."
+    },
+    "gate": {
+      "mode": "after-section-1",
+      "stubEyebrow": "Free · Sections 02–11",
+      "stubNote": "One email · No download",
+      "heading": "The rest of the guide is free. One email opens it.",
+      "body": "It opens right here, on this page. The same email starts the [5-to-9 Starter](/5-to-9-starter): five daily emails, one action a day.",
+      "unlocks": [
+        "The Method",
+        "The 6 Skills",
+        "The Catch",
+        "30-Day Plan",
+        "Idea Bank",
+        "First Sale",
+        "Self-Check",
+        "The prompt"
+      ],
+      "nextHref": "#s02",
+      "nextLabel": "Start with 02 · The Method ↓",
+      "finePrintSlot": "Gate · Fine print"
+    },
+    "steps": [
+      "Find it",
+      "Who pays?",
+      "Pick it",
+      "Prove it",
+      "Sell it"
+    ],
+    "stepPullQuotes": {
+      "Prove it": "Ten minutes of proof beats ten weeks of building."
+    },
+    "skills": [
+      "Spot problems in your own week",
+      "The 3-person test",
+      "The 10-minute scorecard",
+      "The proof test",
+      "The first offer",
+      "Pricing and the honest catch"
+    ],
+    "roles": {
+      "names": [
+        "Designer",
+        "Developer",
+        "Ops & marketing",
+        "Non-technical"
+      ],
+      "labels": [
+        "Head start",
+        "Gap",
+        "Lean on"
+      ]
+    },
+    "weeks": [
+      [
+        1,
+        "Find it, test it on 3 people."
+      ],
+      [
+        2,
+        "Scorecard, pick one."
+      ],
+      [
+        3,
+        "Proof test."
+      ],
+      [
+        4,
+        "First offer, first sale."
+      ]
+    ],
+    "faq": [
+      "Who is this for?",
+      "I have no idea yet. Where do I start?",
+      "Do I need to code?",
+      "What if nobody buys?",
+      "What does the 5-day email add?"
+    ],
+    "upsells": [
+      {
+        "offer": "build-along",
+        "placement": "mid"
+      },
+      {
+        "offer": "build-along",
+        "placement": "close"
+      }
+    ],
+    "founderName": "John Iseghohi"
+  }
+}
