@@ -1,5 +1,7 @@
-# WP105 · Owner dashboard
+# WP105 — Next.js 16.4.6 security upgrade
 
-1. List current accounts, sign-in methods and recent product actions at /admin. Require the existing super-admin binding in Convex. Verify member and anonymous denials and signup pagination.
-2. Measure consenting members' product page visits and focused time. Limit stored route data to known page types, deduplicate duration reports, and purge on account deletion. Verify with Convex tests.
-3. Connect the four existing admin areas with shared navigation. Exercise the standard typecheck, lint, test and build gates.
+Branch: `codex/wp93-next-security-16-4-6`
+
+- [x] WP105-S1. Upgrade Next.js and its ESLint integration to 16.4.6. Preserve npm's existing caret policy, lock the installed versions, and set `experimental.agentUpgrade` to `"security"`.
+- Verify the clean install, installed version, typecheck, lint, full tests, production build, local HTTP smoke test, production dependency audit, and Git diff.
+- Scope covers `package.json`, `package-lock.json`, `next.config.ts`, and the work package records.

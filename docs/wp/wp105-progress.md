@@ -1,17 +1,23 @@
-# WP105 · Owner dashboard
+# WP105 — Next.js 16.4.6 security upgrade
 
-Implemented on `codex/admin-member-analytics`. Work Package lane.
+## 2026-11-27
 
-- The admin index reads the existing account directory, linked sign-in providers and owner-scoped audit events. Its server reads require the existing super-admin binding. A shared navigation bar links Overview, Editorial, Pages, AI costs and Feedback.
-- The overview shows seven-day signups and distinct members with measured visits. Counts are bounded at 501 inspected rows and a plus sign marks a lower bound. The directory pages through accounts in batches of 25.
-- Measurement requires the account-linked analytics notice, a signed-in account and an allowlisted product page. The browser reports focused duration at 30-second intervals and on departure. Browser or network interruptions can lose a final interval. Dynamic URL segments, queries and fragments are excluded. Each member has one activity row with lifetime measured totals and the latest 20 visits. Account deletion drains it.
-- Historical emails, provider links and the latest eight audit events use existing records. Page activity starts after rollout. There is no telemetry backfill.
-- Updated the privacy notice, consent copy and account deletion data map. Production rollout requires the additive Convex backend before the frontend. No production deployment or live member read was performed.
+- The first pass upgraded 16.4.1 in the separate worktree and passed the standard checks. The branch then fast-forwarded to `43721c0f`, where PR #329 had already upgraded to 16.4.5.
+- Local and remote Git history and open GitHub PRs showed no equivalent upgrade to 16.4.6. The npm advisory endpoint reports affected ranges for 16.4.1 and no findings for 16.4.5 or 16.4.6.
+- The requested target is 16.4.6. The bundled Next.js documentation confirms support for the security upgrade policy.
 
-## Verification
+## Verification on 43721c0f
 
-Focused Convex and UI tests cover member/anonymous denials, account linking display, pagination, stale and duplicate reports, deletion cleanup, safe route templates, focus transitions, consent, and server rendering of the directory with fixture data.
+- `npm ci` passed using an isolated npm cache. `npm exec -- next --version` reported 16.4.6, and `npm ls` confirmed the matching ESLint integration. The lockfile retains the Linux SWC libc metadata published for 16.4.6.
+- App and Convex typechecks passed after the production build refreshed generated route types. Lint passed with 45 warnings and zero errors.
+- All `npm test` groups passed with two skips. Tests ran without ambient `NODE_ENV`, Convex public URL, and provider credentials that interfere with fixture and missing-configuration assertions.
+- The production build generated 498 pages. The local server returned 200 on `/about` and redirected `/api/ideas-today` to `/ideas/today` with 307.
+- Prompt version checks, idea tag validation, server trace checks, and Git whitespace checks passed.
+- The production audit found no high-severity advisories. A moderate Satori advisory remains.
 
-Typecheck and production build passed. ESLint finished with zero errors and 45 existing warnings. Local production smoke returned 404 for a signed-out request to /admin and 403 for a measurement request without consent. The directory render used synthetic data; an authenticated production browser session was not exercised.
+## 2026-11-28
 
-The full test command stopped at the existing IdeaBrowser runtime guard in the newsletter skill files, which match the base branch. All 1,546 Convex tests passed with two workers. Ran the remaining platform and live suites separately. Two platform files hit timing-related failures under concurrent load; both passed in a serial retry with a longer timeout. The live suite passed.
+- Rebased onto `9ce82020` for draft PR delivery. The branch preserves the upstream `allowedDevOrigins` setting. The upgrade records moved to WP105 because main assigned WP104 to the landing page editor.
+- Clean install, exact version, app and Convex typechecks, lint, production build (499 pages), local HTTP smoke, server traces, prompt versions, idea tags, and diff checks passed on the rebased branch. The existing Keystatic postinstall patch applied successfully.
+- All configured test groups were exercised across the initial run and follow-up runs. The engine group passed with three workers after hitting the default test timeout. Two editorial files and one platform case passed isolated retries with longer timeout limits.
+- The production audit passed at the high-severity threshold. The moderate Satori advisory remains.
