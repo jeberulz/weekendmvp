@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { hasSessionHintCookie } from "@/lib/auth-session-cookie";
 
 /**
  * Cookie-consent state, ported from the legacy `scripts.js` lines 1-33.
@@ -31,7 +32,11 @@ function readStoredConsent(): boolean | null {
         Date.now() - (parsed as { timestamp: number }).timestamp <
           CONSENT_EXPIRY_MS
       ) {
-        return (parsed as { value?: unknown }).value === true;
+        const accepted = (parsed as { value?: unknown }).value === true;
+        // Earlier notices described anonymous analytics only. Ask returning
+        // members before associating visits with their account.
+        if (accepted && hasSessionHintCookie(document.cookie) && !("memberActivity" in parsed)) return null;
+        return accepted;
       }
     }
   } catch (e) {
@@ -45,8 +50,9 @@ function writeStoredConsent(value: boolean): void {
   try {
     window.localStorage.setItem(
       CONSENT_KEY,
-      JSON.stringify({ value, timestamp: Date.now() }),
+      JSON.stringify({ value, timestamp: Date.now(), memberActivity: value }),
     );
+    document.cookie = `member_activity_consent=${value}; max-age=${CONSENT_COOKIE_MAX_AGE_SECONDS}; path=/; SameSite=Lax`;
     document.cookie = `${CONSENT_KEY}=${value}; max-age=${CONSENT_COOKIE_MAX_AGE_SECONDS}; path=/; SameSite=Lax`;
   } catch (e) {
     console.error("Error saving consent:", e);

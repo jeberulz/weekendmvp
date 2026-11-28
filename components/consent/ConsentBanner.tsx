@@ -49,7 +49,7 @@ export function ConsentBanner() {
               We use cookies
             </h2>
             <p className="mb-2 max-w-[640px] text-sm leading-[1.55] text-home-ink-2">
-              We use analytics to understand how you use our site. You can
+              With analytics enabled, we link signed-in product page visits and focused time to your account. You can
               accept, reject, or customize your preferences.
             </p>
             <Link

@@ -13,6 +13,7 @@ import type * as account_purge from "../account/purge.js";
 import type * as accountBeehiiv from "../accountBeehiiv.js";
 import type * as admin_aiControls from "../admin/aiControls.js";
 import type * as admin_aiCosts from "../admin/aiCosts.js";
+import type * as admin_members from "../admin/members.js";
 import type * as admin_superAdmin from "../admin/superAdmin.js";
 import type * as ai_budgets from "../ai/budgets.js";
 import type * as ai_gateway from "../ai/gateway.js";
@@ -223,6 +224,7 @@ declare const fullApi: ApiFromModules<{
   accountBeehiiv: typeof accountBeehiiv;
   "admin/aiControls": typeof admin_aiControls;
   "admin/aiCosts": typeof admin_aiCosts;
+  "admin/members": typeof admin_members;
   "admin/superAdmin": typeof admin_superAdmin;
   "ai/budgets": typeof ai_budgets;
   "ai/gateway": typeof ai_gateway;
