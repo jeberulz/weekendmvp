@@ -76,7 +76,7 @@ describe("new account Beehiiv sync", () => {
   test("operator replay is limited to safe failed lookups and configuration", async () => {
     const t = convexTest(schema, modules);
     const [safeId, ambiguousId] = await t.run(async (ctx) => {
-      const safeId = await ctx.db.insert("users", { email: "safe@example.test" });
+      const safeId = await ctx.db.insert("users", { email: "safe@example.test", emailVerificationTime: 1 });
       const ambiguousId = await ctx.db.insert("users", { email: "ambiguous@example.test" });
       await ctx.db.insert("account_beehiiv_sync", {
         userId: safeId, email: "safe@example.test", state: "failed", attempts: 5,
@@ -92,4 +92,40 @@ describe("new account Beehiiv sync", () => {
     expect(await t.mutation(internal.accountBeehiiv.retryFailed, { userId: ambiguousId })).toBe(false);
     expect(await t.mutation(internal.accountBeehiiv.claim, { userId: safeId })).toEqual({ email: "safe@example.test" });
   });
+});
+
+test("account audience works without a marketing automation and keeps subscription status", async () => {
+  const config = { ...env, BEEHIIV_ACCOUNT_AUTOMATION_ID: "", BEEHIIV_ACCOUNT_FIELD: "Weekend MVP Account" };
+  for (const status of ["active", "validating", "unsubscribed", "new"]) {
+    const transport = vi.fn().mockResolvedValueOnce(status === "new" ? reply(404) : reply(200, { data: { status, id: "sub_1" } }))
+      .mockResolvedValueOnce(reply(200, { data: { id: "sub_1" } }));
+    const outcome = await syncBeehiivAccount("member@example.test", config, transport);
+    if (status === "unsubscribed") {
+      expect(outcome.state).toBe("skipped");
+      expect(transport).toHaveBeenCalledTimes(1);
+    } else {
+      const req = transport.mock.calls[1][1];
+      expect(req.method).toBe(status === "new" ? "POST" : "PATCH");
+      expect(JSON.parse(req.body).custom_fields).toEqual([{ name: config.BEEHIIV_ACCOUNT_FIELD, value: "true" }]);
+      expect(JSON.parse(req.body).automation_ids).toBeUndefined();
+    }
+  }
+});
+
+test("backfill dry run, apply, and replay distinguish missing, safe failures and unknown outcomes", async () => {
+  const t = convexTest(schema, modules);
+  await t.run(async ctx => {
+    for (const result of ["missing", "configuration_required", "create_outcome_unknown", "unverified"]) {
+      const email = result + "@example.test";
+      const userId = await ctx.db.insert("users", { email, emailVerificationTime: result === "unverified" ? undefined : 1 });
+      if (result.includes("_")) await ctx.db.insert("account_beehiiv_sync", { userId, email, state: "failed", result, attempts: 1, updatedAt: 1 });
+    }
+  });
+  const args = { paginationOpts: { cursor: null, numItems: 20 } };
+  const check = () => t.mutation(internal.accountBeehiiv.reconcileAccounts, args);
+  expect((await check()).counts).toEqual({ missing: 1, configurationFailed: 1, unchanged: 1, ineligible: 1 });
+  expect((await t.mutation(internal.accountBeehiiv.reconcileAccounts, { ...args, apply: true })).counts).toEqual({
+    missing: 1, configurationFailed: 1, unchanged: 1, ineligible: 1,
+  });
+  expect((await check()).counts).toEqual({ missing: 0, configurationFailed: 0, unchanged: 3, ineligible: 1 });
 });
