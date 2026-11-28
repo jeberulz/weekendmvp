@@ -42,6 +42,9 @@ test("member directory protects identity, reports linked sign-ins and counts eac
   expect(result.page.find(m => m.id === founder.id)).toMatchObject({ email: "founder@example.test", providers: ["google"], focusedMs: 5000, views: 1 });
   expect(JSON.stringify(result)).not.toContain("private-provider-id");
   expect(await ops.query(api.admin.members.week, { since: 0 })).toMatchObject({ signups: 2, active: 1 });
+  const totals = await t.query(api.admin.members.totals, {});
+  expect(totals).toMatchObject({ total: 2, totalLimited: false });
+  expect(JSON.stringify(totals)).not.toContain("founder@example.test");
   await t.run(async ctx => { for (const drain of OWNER_DRAINS) await drain(ctx, founder.id, 10); });
   expect(await t.run(ctx => ctx.db.query("member_activity").first())).toBeNull();
   await t.run(async ctx => {
@@ -50,6 +53,11 @@ test("member directory protects identity, reports linked sign-ins and counts eac
   const first = await ops.query(list, { cursor: null });
   expect(first.page).toHaveLength(25);
   expect((await ops.query(list, { cursor: first.next })).page).toHaveLength(2);
+  await t.run(async ctx => {
+    await ctx.db.insert("users", { isAnonymous: true });
+    await ctx.db.insert("users", { email: "closed@example.test", accountClosureRequestedAt: 1 });
+  });
+  expect(await t.query(api.admin.members.totals, {})).toMatchObject({ total: 27, totalLimited: false });
 });
 
 test("product page analytics drop dynamic identifiers and exclude non-product routes", () => {

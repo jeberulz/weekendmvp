@@ -68,3 +68,20 @@ export const week = query({
     return { signups: signedUp, signupsLimited: users.length === 501, active: active.length, activeLimited: active.length === 501 };
   },
 });
+
+/**
+ * Public aggregate counts for the owner dashboard. Aggregates only: no
+ * identities, emails or rows leave the database, so this is callable with
+ * the deployment's admin key as well as from the signed-in admin page.
+ * Mirrors `week`: exact up to 500 inspected accounts, `totalLimited` marks
+ * the 500+ lower bound. A denormalized counter (or the aggregate component)
+ * is the follow-up if signups approach that bound.
+ */
+export const totals = query({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").order("desc").take(501);
+    const total = users.filter(user => !user.isAnonymous && user.accountClosureRequestedAt === undefined).length;
+    return { total, totalLimited: users.length === 501 };
+  },
+});
