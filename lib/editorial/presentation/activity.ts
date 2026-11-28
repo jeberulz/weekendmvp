@@ -11,6 +11,7 @@ export const ACTIVITY_LABELS: Record<ActivityAction, string> = {
   "review.retracted": "Review withdrawn",
   "review.flagged": "Discrepancy flagged",
   "review.resolved": "Issue resolved",
+  "claim.verified": "Claim verified",
   "review.changes_requested": "Changes requested",
   "review.resumed": "Review resumed",
   "note.added": "Note added",

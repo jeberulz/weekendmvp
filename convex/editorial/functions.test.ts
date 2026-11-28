@@ -379,6 +379,47 @@ describe("the live environment", () => {
     expect(settings.capability.verified).toBe(true);
   });
 
+  test("the owner can verify an unverified claim, and the editor authority round-trips", async () => {
+    const { t, owner, ideaId, revisionId } = await world();
+    const nowMs = Date.now();
+    const editor = as(t, owner);
+    value(
+      await editor.mutation(api.editorial.commands.setCandidateDecision, {
+        ideaId,
+        expectedVersion: 1,
+        input: { decision: "accepted", rationale: "Worth editing" },
+      }),
+    );
+    const draft = value(await editor.query(api.editorial.reads.getRevision, { ideaId, revisionId, nowMs }));
+    // The import trusted no receipt, so every material claim landed unverified.
+    const claim = draft.claims.find((candidate) => candidate.verification.status === "unverified");
+    expect(claim).toBeDefined();
+    if (!claim) return;
+    const verified = value(
+      await editor.mutation(api.editorial.commands.verifyClaim, {
+        revisionId,
+        claimId: claim.id,
+        note: "Checked against the source.",
+      }),
+    );
+    expect(verified.claimId).toBe(claim.id);
+    const after = value(await editor.query(api.editorial.reads.getRevision, { ideaId, revisionId, nowMs }));
+    const stored = after.claims.find((candidate) => candidate.id === claim.id);
+    expect(stored?.verification.status).toBe("verified");
+    expect(stored?.verificationAuthority).toBe("editor");
+    expect(stored?.verification.reason).toBe("Checked against the source.");
+    // A second verification is refused; the claim is already verified.
+    expect(
+      code(
+        await editor.mutation(api.editorial.commands.verifyClaim, {
+          revisionId,
+          claimId: claim.id,
+          note: null,
+        }),
+      ),
+    ).toBe("INVALID_TRANSITION");
+  });
+
   test("the receiver refuses fixture envelopes and malformed JSON", async () => {
     const { t } = await world();
     const fixture = await buildFixtureEnvelope(receiptSplitter, {

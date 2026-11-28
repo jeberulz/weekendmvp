@@ -113,7 +113,7 @@ describe("denial matrix for every public editorial function", () => {
     expect(registered(readsModule, "isQuery")).toEqual(
       ["getIdea", "getRevision", "listActivity", "listIdeas", "listReleases", "listTrash", "queueSummary", "session", "settings", "stagedPreview"],
     );
-    expect(registered(commandsModule, "isMutation")).toHaveLength(22);
+    expect(registered(commandsModule, "isMutation")).toHaveLength(23);
     expect(getFunctionName(api.editorial.reads.session)).toBe("editorial/reads:session");
   });
 
@@ -144,6 +144,7 @@ describe("denial matrix for every public editorial function", () => {
       ["setCandidateDecision", (c) => c.mutation(api.editorial.commands.setCandidateDecision, { ideaId, expectedVersion: 1, input: { decision: "accepted", rationale: "Forged" } })],
       ["markReviewed", (c) => c.mutation(api.editorial.commands.markReviewed, { revisionId, reviewItemId: "section:problem", dependencyHash: "x", note: null })],
       ["retractReview", (c) => c.mutation(api.editorial.commands.retractReview, { revisionId, reviewItemId: "section:problem" })],
+      ["verifyClaim", (c) => c.mutation(api.editorial.commands.verifyClaim, { revisionId, claimId: "clm-forged", note: null })],
       ["flagReviewItem", (c) => c.mutation(api.editorial.commands.flagReviewItem, { revisionId, reviewItemId: "section:problem", dependencyHash: "x", input: { severity: "high", note: "Forged" } })],
       ["resolveIssue", (c) => c.mutation(api.editorial.commands.resolveIssue, { revisionId, issueId: "checks:stale", dependencyHash: "x", note: "Forged" })],
       ["addNote", (c) => c.mutation(api.editorial.commands.addNote, { revisionId, target: { kind: "section", id: "problem" }, note: "Forged" })],
@@ -162,7 +163,7 @@ describe("denial matrix for every public editorial function", () => {
       ["restoreIdea", (c) => c.mutation(api.editorial.commands.restoreIdea, { ideaId, expectedVersion: 1, reason: "Forged" })],
     ];
     expect(reads.length + 1).toBe(9);
-    expect(commands.length).toBe(22);
+    expect(commands.length).toBe(23);
 
     const callers: Caller[] = [
       { label: "anonymous", expected: "UNAUTHENTICATED", recorded: false, client: (tc) => tc },

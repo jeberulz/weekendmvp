@@ -73,6 +73,11 @@ export const markReviewed = mutation({
     (await commandRepository(ctx)).markReviewed(args.revisionId, args.reviewItemId, args.dependencyHash, args.note),
 });
 
+export const verifyClaim = mutation({
+  args: { revisionId: v.string(), claimId: v.string(), note: nullableString },
+  handler: async (ctx, args) => (await commandRepository(ctx)).verifyClaim(args.revisionId, args.claimId, args.note),
+});
+
 export const retractReview = mutation({
   args: { revisionId: v.string(), reviewItemId: v.string() },
   handler: async (ctx, args) => (await commandRepository(ctx)).retractReview(args.revisionId, args.reviewItemId),

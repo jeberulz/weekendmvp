@@ -4,8 +4,10 @@ import { defaultIdeaFilter } from "../../../lib/editorial/contracts/commands";
 import type { CommandResult } from "../../../lib/editorial/contracts/errors";
 import type { EditorialRepository } from "../../../lib/editorial/contracts/repository";
 import type { ReleaseState } from "../../../lib/editorial/contracts/states";
+import type { RevisionView } from "../../../lib/editorial/contracts/views";
 import { receiptSplitter, shiftSwapBoard, warrantyTracker } from "../../../lib/editorial/fixtures/articles/catalog";
 import { menuCostCalculator } from "../../../lib/editorial/fixtures/articles/legacy";
+import type { ArticleSpec } from "../../../lib/editorial/fixtures/spec";
 import type { HarnessFactory, RepositoryHarness } from "./harness";
 
 /**
@@ -413,6 +415,101 @@ export function defineRepositoryContract(name: string, factory: HarnessFactory) 
       expect(code(await h.editor().resolveIssue(view.id, blocker.id, blocker.dependencyHash, "Please ignore"))).toBe(
         "INVALID_TRANSITION",
       );
+    });
+  });
+
+  describe(`${name}: claim verification`, () => {
+    /** A spec whose first material observed claim is unverified, as a Pain Engine submission lands. */
+    function withUnverifiedClaim(spec: ArticleSpec): ArticleSpec {
+      const target = spec.claims.find((claim) => claim.material && claim.kind === "observed");
+      if (!target) throw new Error("spec has no verifiable claim");
+      return {
+        ...spec,
+        claims: spec.claims.map((claim) =>
+          claim.id === target.id ? { ...claim, verification: "unverified" as const } : claim,
+        ),
+      };
+    }
+
+    async function unverifiedWorkingClaim(h: RepositoryHarness) {
+      const spec = withUnverifiedClaim(receiptSplitter);
+      const { ideaId, revisionId } = await importCandidate(h, "contract-verify-claim", spec);
+      await accept(h, ideaId);
+      const view = await working(h.editor(), ideaId);
+      const claim = view.claims.find((candidate) => candidate.verification.status === "unverified");
+      if (!claim) throw new Error("no unverified claim on the working revision");
+      return { ideaId, revisionId, view, claim };
+    }
+
+    function unsupportedClaimBlocker(view: RevisionView, claimId: string) {
+      return view.eligibility.blockers.find(
+        (blocker) => blocker.code === "UNSUPPORTED_CLAIM" && blocker.target?.id === claimId,
+      );
+    }
+
+    test("verifying an unverified material claim sets the editor authority and clears its blocker", async () => {
+      const h = await factory();
+      const { ideaId, revisionId, claim } = await unverifiedWorkingClaim(h);
+      const repo = h.editor();
+      const before = await working(repo, ideaId);
+      expect(unsupportedClaimBlocker(before, claim.id)).toBeDefined();
+      const result = await repo.verifyClaim(revisionId, claim.id, "Checked against the source survey.");
+      expect(result.ok).toBe(true);
+      const after = await working(repo, ideaId);
+      const verified = after.claims.find((candidate) => candidate.id === claim.id);
+      expect(verified?.verification.status).toBe("verified");
+      expect(verified?.verificationAuthority).toBe("editor");
+      expect(verified?.verification.reason).toBe("Checked against the source survey.");
+      expect(unsupportedClaimBlocker(after, claim.id)).toBeUndefined();
+    });
+
+    test("verifying without a note records the editor authority and no reason", async () => {
+      const h = await factory();
+      const { ideaId, revisionId, claim } = await unverifiedWorkingClaim(h);
+      const repo = h.editor();
+      value(await repo.verifyClaim(revisionId, claim.id, null), "verify");
+      const after = await working(repo, ideaId);
+      const verified = after.claims.find((candidate) => candidate.id === claim.id);
+      expect(verified?.verification.status).toBe("verified");
+      expect(verified?.verificationAuthority).toBe("editor");
+      expect(verified?.verification.reason).toBeNull();
+    });
+
+    test("a customer cannot verify a claim", async () => {
+      const h = await factory();
+      const { revisionId, claim } = await unverifiedWorkingClaim(h);
+      expect(code(await h.customer().verifyClaim(revisionId, claim.id, null))).toBe("FORBIDDEN");
+    });
+
+    test("an assumed claim and an already-verified claim are refused", async () => {
+      const h = await factory();
+      const { ideaId, revisionId } = await importCandidate(h, "contract-verify-assumed", shiftSwapBoard);
+      await accept(h, ideaId);
+      const repo = h.editor();
+      const view = await working(repo, ideaId);
+      const assumed = view.claims.find((candidate) => candidate.kind === "assumed");
+      expect(assumed).toBeDefined();
+      if (!assumed) return;
+      expect(code(await repo.verifyClaim(revisionId, assumed.id, null))).toBe("INVALID_TRANSITION");
+      const verified = view.claims.find((candidate) => candidate.verification.status === "verified");
+      expect(verified).toBeDefined();
+      if (!verified) return;
+      expect(code(await repo.verifyClaim(revisionId, verified.id, null))).toBe("INVALID_TRANSITION");
+      const unchanged = await working(repo, ideaId);
+      expect(unchanged.claims.find((candidate) => candidate.id === assumed.id)?.verification.status).toBe(
+        "not_applicable",
+      );
+    });
+
+    test("verifying a claim on an approved revision is refused", async () => {
+      const h = await factory();
+      const { ideaId, revisionId, claim } = await unverifiedWorkingClaim(h);
+      const repo = h.editor();
+      value(await repo.verifyClaim(revisionId, claim.id, "Checked."), "verify");
+      await approveWorking(h, ideaId);
+      const result = await repo.verifyClaim(revisionId, claim.id, null);
+      expect(code(result)).toBe("INVALID_TRANSITION");
+      if (!result.ok) expect(result.error.message).toContain("already approved");
     });
   });
 

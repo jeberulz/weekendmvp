@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { useRef } from "react";
 
 import { SOURCE_TYPE_LABELS } from "@/lib/editorial/contracts/evidence";
+import { EDITORIAL_LIMITS } from "@/lib/editorial/contracts/limits";
 import type { ClaimView, EvidenceLabel, SourceView } from "@/lib/editorial/contracts/views";
 import { truncateText } from "@/lib/editorial/editor/outline";
 import { EVIDENCE_LABEL_TEXT, FRESHNESS_LABELS, formatAbsolute, formatDate } from "@/lib/editorial/presentation/format";
@@ -15,6 +16,7 @@ import {
 } from "@/lib/editorial/presentation/review";
 import { cn } from "@/lib/utils";
 import { StatusBadge, type Tone } from "../common/primitives";
+import { ReasonDialog } from "../common/ReasonDialog";
 import { textButtonClass } from "./ui";
 
 const LABEL_TONES: Record<EvidenceLabel, Tone> = {
@@ -43,7 +45,9 @@ function EvidenceLabels({ labels }: { labels: EvidenceLabel[] }) {
 /**
  * Claims and their sources. Labels keep machine verification, your own
  * review and provisional search summaries apart; opening a source link is
- * never recorded as review.
+ * never recorded as review. A material claim that is still unverified can
+ * be verified here once the editor has checked it against its sources;
+ * verifying clears its unsupported-claim blocker.
  */
 export function EvidencePanel({
   claims,
@@ -51,12 +55,17 @@ export function EvidencePanel({
   selectedClaimId,
   onSelectClaim,
   onShowInArticle,
+  verify,
 }: {
   claims: ClaimView[];
   sources: SourceView[];
   selectedClaimId: string | null;
   onSelectClaim(claimId: string): void;
   onShowInArticle(claimId: string): void;
+  verify: {
+    disabledReason: string | null;
+    onVerifyClaim(claimId: string, note: string | null): Promise<string | null>;
+  };
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sourceById = new Map(sources.map((source) => [source.id, source]));
@@ -112,6 +121,23 @@ export function EvidencePanel({
                       <button type="button" className={textButtonClass} onClick={() => onSelectClaim(claim.id)}>
                         Select<span className="sr-only"> claim: {truncateText(claim.text, 60)}</span>
                       </button>
+                    ) : null}
+                    {claim.material && claim.kind !== "assumed" && claim.verification.status !== "verified" ? (
+                      <ReasonDialog
+                        title="Verify this claim"
+                        description={`Confirm you checked this claim against its sources. The note stays with the revision's history. Claim: “${truncateText(claim.text, 120)}”`}
+                        label="What you checked"
+                        hint="One line, at most 400 characters. Leave it blank to verify without a note."
+                        required={false}
+                        maxLength={EDITORIAL_LIMITS.verificationReasonChars}
+                        confirmLabel="Verify"
+                        trigger={
+                          <button type="button" className={textButtonClass} disabled={verify.disabledReason !== null}>
+                            Verify…<span className="sr-only"> claim: {truncateText(claim.text, 60)}</span>
+                          </button>
+                        }
+                        onConfirm={(text) => verify.onVerifyClaim(claim.id, text === "" ? null : text)}
+                      />
                     ) : null}
                   </div>
                 </article>

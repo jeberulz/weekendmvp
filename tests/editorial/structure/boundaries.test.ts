@@ -82,7 +82,7 @@ describe("fixture isolation", () => {
 
     const commands = read("convex/editorial/commands.ts");
     const mutations = commands.split(/export const \w+ = mutation\(\{/).slice(1);
-    expect(mutations.length).toBe(22);
+    expect(mutations.length).toBe(23);
     for (const body of mutations) expect(body).toMatch(/commandRepository\(ctx\)/);
 
     const reads = read("convex/editorial/reads.ts");
