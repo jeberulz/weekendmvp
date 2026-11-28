@@ -21,8 +21,11 @@ function requireConfig(env: Env) {
   const publicationId = env.BEEHIIV_PUBLICATION_ID?.trim();
   const automationId = env.BEEHIIV_ACCOUNT_AUTOMATION_ID?.trim();
   const field = env.BEEHIIV_ACCOUNT_FIELD?.trim();
+  const silent = env.BEEHIIV_ACCOUNT_MODE === "existing_only";
+  if (env.BEEHIIV_ACCOUNT_MODE && !silent) throw new SyncFailure(false, "configuration_required");
+  if (silent && !field) throw new SyncFailure(false, "configuration_required");
   if (!key || !publicationId || (!automationId && !field)) throw new SyncFailure(false, "configuration_required");
-  return { key, publicationId, automationId, field };
+  return { key, publicationId, automationId: silent ? undefined : automationId, field, silent };
 }
 
 // Beehiiv can accept a subscription while dropping an unknown custom field.
@@ -33,7 +36,7 @@ async function checkFieldResponse(response: Response) {
 
 /** Pure HTTP seam; no provider body, email or key is put into errors/logs. */
 export async function syncBeehiivAccount(email: string, env: Env, transport: typeof fetch = fetch): Promise<Outcome> {
-  const { key, publicationId, automationId, field } = requireConfig(env);
+  const { key, publicationId, automationId, field, silent } = requireConfig(env);
   const base = `https://api.beehiiv.com/v2/publications/${encodeURIComponent(publicationId)}`;
   const customFields = field ? [{ name: field, value: "true" }] : undefined;
   const headers = { Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
@@ -48,6 +51,7 @@ export async function syncBeehiivAccount(email: string, env: Env, transport: typ
   }
 
   if (lookup.status === 404) {
+    if (silent) return { state: "skipped", result: "held_no_email" };
     let created: Response;
     try {
       created = await transport(`${base}/subscriptions`, {
@@ -91,6 +95,15 @@ export async function syncBeehiivAccount(email: string, env: Env, transport: typ
     }
     if (!update.ok) throw new SyncFailure(update.status === 429 || update.status >= 500, "field_update_failed");
     await checkFieldResponse(update);
+    if (silent) {
+      // Adding a tag to a known subscription preserves its existing status.
+      const response = await transport(`${base}/subscriptions/${encodeURIComponent(id)}/tags`, {
+        method: "POST", headers, signal: AbortSignal.timeout(15_000),
+        body: JSON.stringify({ tags: [field] }),
+      });
+      if (!response.ok) throw new SyncFailure(response.status === 429 || response.status >= 500, "tag_update_failed");
+      return { state: "synced", result: "existing_tagged" };
+    }
     if (pendingConfirmation) return { state: "synced", result: "existing_pending_marked" };
   }
 

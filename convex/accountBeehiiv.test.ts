@@ -129,3 +129,22 @@ test("backfill dry run, apply, and replay distinguish missing, safe failures and
   });
   expect((await check()).counts).toEqual({ missing: 0, configurationFailed: 0, unchanged: 3, ineligible: 1 });
 });
+
+test("existing-only mode never creates a subscription or requests a journey", async () => {
+  const config = { ...env, BEEHIIV_ACCOUNT_MODE: "existing_only", BEEHIIV_ACCOUNT_FIELD: "Weekend MVP Account" };
+  for (const status of ["missing", "active", "pending", "inactive"]) {
+    const transport = vi.fn().mockResolvedValueOnce(status === "missing" ? reply(404) : reply(200, { data: { id: "sub_1", status } }))
+      .mockResolvedValueOnce(reply(200, { data: { id: "sub_1" } })).mockResolvedValueOnce(reply(200));
+    const result = await syncBeehiivAccount("member@example.test", config, transport);
+    if (status === "missing" || status === "inactive") {
+      expect(transport).toHaveBeenCalledTimes(1);
+      expect(result.result).toBe(status === "missing" ? "held_no_email" : "existing_not_active");
+    } else {
+      expect(transport.mock.calls.slice(1).map(([url, init]) => [new URL(url).pathname.split("/subscriptions/")[1], init.method, JSON.parse(init.body)])).toEqual([
+        ["sub_1", "PATCH", { custom_fields: [{ name: config.BEEHIIV_ACCOUNT_FIELD, value: "true" }] }],
+        ["sub_1/tags", "POST", { tags: [config.BEEHIIV_ACCOUNT_FIELD] }],
+      ]);
+      expect(result.result).toBe("existing_tagged");
+    }
+  }
+});
