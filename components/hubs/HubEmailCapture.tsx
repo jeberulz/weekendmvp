@@ -88,7 +88,7 @@ export function HubEmailCapture({
       setEmail("");
       setStatus("success");
       setMessage("You're in. Check your inbox to confirm your subscription.");
-      trackEvent("signup_form_success", { ...trackingProps });
+      trackEvent("signup_form_success", { ...trackingProps, method: "api" });
       return;
     }
 

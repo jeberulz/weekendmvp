@@ -12,6 +12,16 @@ import { cn } from "@/lib/utils";
 const BEEHIIV_PUB_ID = "pub_5fbc631f-7950-4bac-80fe-80ba70dae2da";
 const BEEHIIV_FORM_ID = "7346f13f-9331-48d7-97f8-88c38da780b1";
 
+const OPTIMISTIC_MESSAGES = {
+  sending: { text: "Opening the guide…", error: false },
+  slow: { text: "Taking a moment. The guide opens in a few seconds either way.", error: false },
+  invalidEmail: { text: "That doesn't look like an email address. Check for a typo.", error: true },
+  missingEmail: { text: "Enter your email to unlock the guide.", error: true },
+  rejectedEmail: { text: "That email didn't go through. Check it and try again.", error: true },
+};
+
+type OptimisticMessage = keyof typeof OPTIMISTIC_MESSAGES;
+
 /** CSP-resistant fallback: posts the legacy Beehiiv embed form into a hidden iframe. */
 function submitViaBeehiivEmbed(email: string, firstName: string) {
   const form = document.createElement("form");
@@ -106,7 +116,7 @@ export function BeehiivSubscribeForm({
     "idle",
   );
   const [phase, setPhase] = useState<"idle" | "sending" | "slow" | "error" | "unlocked">("idle");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<OptimisticMessage | null>(null);
   const emailInput = useRef<HTMLInputElement>(null);
   const mounted = useRef(false);
   const inFlight = useRef(false);
@@ -128,13 +138,13 @@ export function BeehiivSubscribeForm({
 
   async function submitOptimistically(email: string, firstName: string, delay: number) {
     if (inFlight.current || unlocked.current) return;
-    function showError(text: string) {
+    function showError(message: OptimisticMessage) {
       setPhase("error");
-      setMessage(text);
+      setMessage(message);
       emailInput.current?.focus();
     }
     if (!email || !emailInput.current?.validity.valid) {
-      showError(email ? "That doesn't look like an email address. Check for a typo." : "Enter your email to unlock the guide.");
+      showError(email ? "invalidEmail" : "missingEmail");
       return;
     }
 
@@ -151,17 +161,17 @@ export function BeehiivSubscribeForm({
         // Storage may be unavailable in embedded browsers.
       }
       setPhase("unlocked");
-      setMessage("");
+      setMessage(null);
       onSuccess?.({ email, via });
       if (successHref) router.push(successHref);
     }
 
     inFlight.current = true;
     setPhase("sending");
-    setMessage("Opening the guide…");
+    setMessage("sending");
     slowTimer.current = setTimeout(() => {
       setPhase("slow");
-      setMessage("Taking a moment. The guide opens in a few seconds either way.");
+      setMessage("slow");
     }, 3000);
     unlockTimer.current = setTimeout(() => finish("timer"), delay);
 
@@ -190,7 +200,7 @@ export function BeehiivSubscribeForm({
     if (!failedAfterUnlock && result.status && result.status >= 400 && result.status < 500) {
       trackEvent("signup_form_submitted", { method: "api", email_domain: emailDomain });
       trackEvent("signup_form_error", { error: "address_rejected" });
-      showError("That email didn't go through. Check it and try again.");
+      showError("rejectedEmail");
       return;
     }
     if (failedAfterUnlock) trackEvent("api_failed_after_optimistic_success");
@@ -220,9 +230,9 @@ export function BeehiivSubscribeForm({
     setStatus("submitting");
     const emailDomain = email.split("@")[1] || "unknown";
 
-    const finish = (method: string) => {
+    const finish = (method: "api" | "embed_fallback") => {
       trackEvent("signup_form_submitted", { method, email_domain: emailDomain });
-      trackEvent("signup_form_success", { method });
+      if (method === "api") trackEvent("signup_form_success", { method: "api" });
       try {
         localStorage.setItem("weekendmvp_subscribed", "true");
       } catch {
@@ -258,6 +268,7 @@ export function BeehiivSubscribeForm({
   }
 
   const busy = phase === "sending" || phase === "slow" || phase === "unlocked";
+  const activeMessage = message && OPTIMISTIC_MESSAGES[message];
 
   return (
     <form onSubmit={handleSubmit} className={cn(inlineEmail ? "grid gap-x-2.5 gap-y-2 min-[560px]:grid-cols-[minmax(0,1fr)_auto]" : "space-y-4", className)} noValidate={optimistic || undefined} data-phase={optimistic ? phase : undefined}>
@@ -296,11 +307,11 @@ export function BeehiivSubscribeForm({
           spellCheck={optimistic ? false : undefined}
           readOnly={optimistic && busy ? true : undefined}
           aria-invalid={optimistic && phase === "error" ? true : undefined}
-          aria-describedby={successMessage ? `${emailId}-status` : optimistic ? statusId : undefined}
+          aria-describedby={optimistic ? statusId : successMessage ? `${emailId}-status` : undefined}
           onChange={optimistic ? () => {
             if (phase === "error") {
               setPhase("idle");
-              setMessage("");
+              setMessage(null);
             }
           } : undefined}
           className={cn(
@@ -326,16 +337,25 @@ export function BeehiivSubscribeForm({
             ? "Error. Try again?"
             : submitLabel}
       </button>
-      {successMessage && (
+      {!optimistic && successMessage && (
         <p id={`${emailId}-status`} aria-live="polite" className="col-span-full text-[13px] font-medium text-home-orange-ink empty:sr-only">
           {status === "success" && successMessage}
           {status === "error" && "We couldn’t sign you up. Please try again."}
         </p>
       )}
       {optimistic && (
-        <p id={statusId} role="status" className="subscribe-status">
-          {message && phase === "error" && <span aria-hidden="true">! </span>}
-          {message}
+        <p className="subscribe-status">
+          {/* Reserve the height of every message while keeping the live region's text dynamic. */}
+          {Object.entries(OPTIMISTIC_MESSAGES).map(([key, { text, error }]) => (
+            <span key={key} aria-hidden="true" className={error ? "subscribe-status-error" : undefined}>
+              {error && "! "}
+              {text}
+            </span>
+          ))}
+          <span id={statusId} role="status" aria-atomic="true" className={activeMessage?.error ? "subscribe-status-error" : undefined}>
+            {activeMessage?.error && <span aria-hidden="true">! </span>}
+            {activeMessage?.text}
+          </span>
         </p>
       )}
     </form>

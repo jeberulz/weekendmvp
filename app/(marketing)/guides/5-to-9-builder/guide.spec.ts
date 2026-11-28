@@ -4,6 +4,7 @@ export const guideRuntime = {
   "path": "/guides/5-to-9-builder",
   "title": "The 5-to-9 Builder",
   "headline": "AI made building free. Knowing what to build is the job now.",
+  "headlineEmphasis": "Knowing what to build is the job now.",
   "ogImagePath": "/image/5-to-9-builder-og.png",
   "lang": "en-GB",
   "authorName": "John Iseghohi",

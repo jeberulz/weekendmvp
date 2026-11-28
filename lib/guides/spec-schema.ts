@@ -31,7 +31,8 @@ export const guideSpecSchema = z.object({
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug is lowercase words joined by hyphens"),
   path: z.string().regex(/^\/guides\/[a-z0-9-]+$/, "path looks like /guides/{slug}"),
   title: text,
-  headline: text.refine((value) => value.includes(". "), "headline needs a first sentence and an emphasis tail, split at '. '"),
+  headline: text,
+  headlineEmphasis: text,
   description: text.max(300),
   /** Full `<title>` text. */
   metaTitle: text,
@@ -77,6 +78,10 @@ export const guideSpecSchema = z.object({
   /** Offers this guide shows, by registry id. At most one card per placement, two cards in all. */
   upsells: z.array(z.object({ offer: text, placement: z.enum(["mid", "close"]) })),
   founderName: text,
-});
+}).refine(
+  ({ headline, headlineEmphasis }) =>
+    headlineEmphasis.length < headline.length && headline.endsWith(headlineEmphasis),
+  { path: ["headlineEmphasis"], message: "headlineEmphasis must be a non-empty suffix of headline that leaves a roman prefix" },
+);
 
 export type GuideSpec = z.infer<typeof guideSpecSchema>;

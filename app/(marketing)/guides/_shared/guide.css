@@ -525,13 +525,22 @@
 }
 
 .guide-form .subscribe-status {
+  display: grid;
   min-height: 4.5em;
   color: var(--color-home-ink-2);
   font-size: 14px;
   line-height: 1.5;
 }
 
-.guide-form[data-phase="error"] .subscribe-status {
+.guide-form .subscribe-status > span {
+  grid-area: 1 / 1;
+}
+
+.guide-form .subscribe-status > [aria-hidden="true"] {
+  visibility: hidden;
+}
+
+.guide-form .subscribe-status-error {
   color: var(--color-home-orange-ink);
   font-weight: 500;
 }
