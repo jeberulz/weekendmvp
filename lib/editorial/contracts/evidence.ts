@@ -78,7 +78,7 @@ export type ClaimVerificationStatus = (typeof CLAIM_VERIFICATION_STATUSES)[numbe
  * Who established a verification result. Set by the receiving adapter, never
  * read from a submission: `engine_receipt` requires a validated WP45 receipt
  * (E5); fixtures are always `fixture_simulated`; `editor` is a signed-in
- * editor attesting a claim after checking it against its sources (WP105);
+ * editor attesting a claim after checking it against its sources (WP108);
  * anything else is `none`.
  */
 export const VERIFICATION_AUTHORITIES = ["engine_receipt", "fixture_simulated", "editor", "none"] as const;
