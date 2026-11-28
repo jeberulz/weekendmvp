@@ -38,7 +38,7 @@ describe("production: every review, release and demo action is unavailable", () 
     vi.stubEnv("EDITORIAL_FIXTURE_MODE", FIXTURE_MODE_VALUE);
     const modules = { ...reviewActions, ...releaseActions, ...demoActions };
     const names = Object.keys(modules);
-    expect(names.length).toBe(26);
+    expect(names.length).toBe(27);
     for (const [name, action] of Object.entries(modules)) {
       const result = await (action as (input: unknown) => Promise<CommandResult<unknown>>)({});
       expect(code(result), name).toBe("WORKSPACE_UNAVAILABLE");

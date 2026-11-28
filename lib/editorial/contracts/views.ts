@@ -328,6 +328,7 @@ export const ACTIVITY_ACTIONS = [
   "review.retracted",
   "review.flagged",
   "review.resolved",
+  "claim.verified",
   "review.changes_requested",
   "review.resumed",
   "note.added",

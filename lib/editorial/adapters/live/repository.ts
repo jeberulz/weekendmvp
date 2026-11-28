@@ -211,6 +211,14 @@ export class ConvexEditorialRepository implements EditorialRepository {
     );
   }
 
+  verifyClaim(
+    revisionId: string,
+    claimId: string,
+    note: string | null,
+  ): Promise<CommandResult<{ claimId: string; revisionId: string }>> {
+    return guarded(() => fetchMutation(api.editorial.commands.verifyClaim, { revisionId, claimId, note }, this.auth));
+  }
+
   retractReview(revisionId: string, reviewItemId: string): Promise<CommandResult<ReviewAck>> {
     return guarded(() => fetchMutation(api.editorial.commands.retractReview, { revisionId, reviewItemId }, this.auth));
   }

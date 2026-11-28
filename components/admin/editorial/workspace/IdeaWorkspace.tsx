@@ -12,7 +12,7 @@ import {
   getRevisionAction,
   runChecksAction,
 } from "@/app/admin/editorial/_actions/draft";
-import { resolveIssueAction } from "@/app/admin/editorial/_actions/review";
+import { resolveIssueAction, verifyClaimAction } from "@/app/admin/editorial/_actions/review";
 import type { EditorialTarget } from "@/lib/editorial/contracts/errors";
 import type { EditorialMetadata } from "@/lib/editorial/contracts/metadata";
 import type { IdeaDetail, RevisionView } from "@/lib/editorial/contracts/views";
@@ -456,6 +456,18 @@ export function IdeaWorkspace({
     [view.ideaId, view.id],
   );
 
+  const verifyClaim = useCallback(
+    async (claimId: string, note: string | null): Promise<string | null> => {
+      const result = await verifyClaimAction({ ideaId: view.ideaId, revisionId: view.id, claimId, note }).catch(() => null);
+      if (!result) return "The server could not be reached. Nothing changed; try again.";
+      if (!result.ok) return result.error.message;
+      setView(result.value.view);
+      setAnnouncement("Claim verified.");
+      return null;
+    },
+    [view.ideaId, view.id],
+  );
+
   const conflictTargets: CompareTarget[] = state.conflict
     ? [{ key: "theirs", label: "Newer saved copy", title: state.conflict.title, markdown: state.conflict.markdown }, ...compareTargets]
     : compareTargets;
@@ -669,6 +681,7 @@ export function IdeaWorkspace({
                 selectedClaimId={selectedClaim}
                 onSelectClaim={setSelectedClaim}
                 onShowInArticle={showClaimInArticle}
+                verify={{ disabledReason: reviewDisabledReason, onVerifyClaim: verifyClaim }}
               />
             </Tabs.Content>
             <Tabs.Content value="quality" className={cn(tabPanelClass, "pt-4")}>

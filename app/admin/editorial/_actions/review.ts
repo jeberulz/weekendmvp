@@ -10,7 +10,8 @@ import {
   noteTargetSchema,
 } from "@/lib/editorial/contracts/commands";
 import { ok, type CommandResult } from "@/lib/editorial/contracts/errors";
-import { editorialIdSchema, sha256Schema } from "@/lib/editorial/contracts/primitives";
+import { EDITORIAL_LIMITS } from "@/lib/editorial/contracts/limits";
+import { editorialIdSchema, sha256Schema, singleLineText } from "@/lib/editorial/contracts/primitives";
 import type { EditorialRepository } from "@/lib/editorial/contracts/repository";
 import type { RevisionView } from "@/lib/editorial/contracts/views";
 import { withWorkspace } from "@/lib/editorial/runtime/action-support";
@@ -66,6 +67,24 @@ const retractSchema = z.strictObject({ ...target, itemId: itemIdSchema });
 export async function retractReviewAction(input: z.input<typeof retractSchema>) {
   return withWorkspace(retractSchema, input, async ({ repository }, data) =>
     withView(repository, data.ideaId, data.revisionId, await repository.retractReview(data.revisionId, data.itemId)),
+  );
+}
+
+const verifySchema = z.strictObject({
+  ...target,
+  claimId: itemIdSchema,
+  note: singleLineText(EDITORIAL_LIMITS.verificationReasonChars).nullable(),
+});
+
+/** Verify one material claim after checking it against its sources. The note, when given, is the verification reason. */
+export async function verifyClaimAction(input: z.input<typeof verifySchema>) {
+  return withWorkspace(verifySchema, input, async ({ repository }, data) =>
+    withView(
+      repository,
+      data.ideaId,
+      data.revisionId,
+      await repository.verifyClaim(data.revisionId, data.claimId, data.note),
+    ),
   );
 }
 

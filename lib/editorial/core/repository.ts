@@ -37,7 +37,7 @@ import {
   type IngestionPrincipal,
 } from "../contracts/principal";
 import { EDITORIAL_LIMITS } from "../contracts/limits";
-import { editorialIdSchema } from "../contracts/primitives";
+import { editorialIdSchema, singleLineText } from "../contracts/primitives";
 import type { EditorialRepository } from "../contracts/repository";
 import {
   APPROVABLE_CANDIDATE_STATES,
@@ -64,6 +64,7 @@ import type {
 import { computeRevisionHashes } from "../domain/artifact";
 import { findExecutableMarkup } from "../domain/executable-markup";
 import { hashCanonical, sha256Hex, type Canonicalizable } from "../domain/hash";
+import { truncateLabel } from "../domain/review-items";
 import {
   activeApprovalForIdea,
   approvalView,
@@ -1140,6 +1141,85 @@ export abstract class EditorialCore implements EditorialRepository {
     this.stamp(idea);
     this.record("review.attested", "succeeded", { ideaId: idea.id, revisionId, detail: `Reviewed: ${item.label}` });
     return ok<ReviewAck>({ itemId: item.id, revisionId, reviewState: revision.reviewState });
+  }
+
+  /**
+   * Verify one material claim after the editor checked it against its
+   * sources. The editor is the verification authority, so the claim's
+   * UNSUPPORTED_CLAIM blocker clears. The claim's review item goes stale
+   * (its hash includes verification + authority) and needs re-attestation.
+   * The note, when given, is the verification reason: one line, at most
+   * 400 characters, saying what was checked.
+   */
+  async verifyClaim(
+    revisionId: string,
+    claimId: string,
+    note: string | null,
+  ): Promise<CommandResult<{ claimId: string; revisionId: string }>> {
+    const guard = this.editor("claim.verified", { revisionId });
+    if (!guard.ok) return guard;
+    const parsedNote =
+      note === null ? null : singleLineText(EDITORIAL_LIMITS.verificationReasonChars).safeParse(note);
+    if (parsedNote !== null && !parsedNote.success) {
+      return fail<{ claimId: string; revisionId: string }>(
+        "INVALID_INPUT",
+        "Write one line, at most 400 characters, saying what you checked.",
+      );
+    }
+    const revision = this.revision(revisionId);
+    const idea = revision ? this.state.ideas.get(revision.ideaId) ?? null : null;
+    if (!revision || !idea) return fail<{ claimId: string; revisionId: string }>("NOT_FOUND", "That revision does not exist.");
+    if (idea.lifecycle === "trashed") {
+      return fail<{ claimId: string; revisionId: string }>("IDEA_TRASHED", "Restore the idea first.");
+    }
+    if (idea.workingRevisionId !== revision.id || revision.discarded) {
+      return fail<{ claimId: string; revisionId: string }>(
+        "PRECONDITION_FAILED",
+        "Only the working revision can be reviewed.",
+      );
+    }
+    if (latestApprovalFor(this.state, revision.id)?.status === "active") {
+      return fail<{ claimId: string; revisionId: string }>("INVALID_TRANSITION", "This revision is already approved.");
+    }
+    const claim = revision.claims.find((candidate) => candidate.id === claimId);
+    if (!claim) {
+      return fail<{ claimId: string; revisionId: string }>("NOT_FOUND", "That claim does not exist on this revision.");
+    }
+    if (!claim.material) {
+      return this.refuse(
+        "claim.verified",
+        fail<{ claimId: string; revisionId: string }>("INVALID_TRANSITION", "Only material claims can be verified."),
+        { ideaId: idea.id, revisionId },
+      );
+    }
+    if (claim.kind === "assumed") {
+      return this.refuse(
+        "claim.verified",
+        fail<{ claimId: string; revisionId: string }>(
+          "INVALID_TRANSITION",
+          "An assumption is not verified; use not_applicable.",
+        ),
+        { ideaId: idea.id, revisionId },
+      );
+    }
+    if (claim.verification.status === "verified") {
+      return this.refuse(
+        "claim.verified",
+        fail<{ claimId: string; revisionId: string }>("INVALID_TRANSITION", "That claim is already verified."),
+        { ideaId: idea.id, revisionId },
+      );
+    }
+    const reason = parsedNote === null ? null : parsedNote.data;
+    claim.verification = { status: "verified", reason };
+    claim.verificationAuthority = "editor";
+    if (revision.reviewState === "draft") revision.reviewState = "in_review";
+    this.stamp(idea);
+    this.record("claim.verified", "succeeded", {
+      ideaId: idea.id,
+      revisionId,
+      detail: `Verified claim: ${truncateLabel(claim.text, 70)}${reason ? ` — ${reason}` : ""}`,
+    });
+    return ok<{ claimId: string; revisionId: string }>({ claimId: claim.id, revisionId });
   }
 
   async retractReview(revisionId: string, reviewItemId: string) {

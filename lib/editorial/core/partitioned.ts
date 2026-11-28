@@ -444,6 +444,16 @@ export class PartitionedEditorialRepository implements EditorialRepository {
     );
   }
 
+  verifyClaim(
+    revisionId: string,
+    claimId: string,
+    note: string | null,
+  ): Promise<CommandResult<{ claimId: string; revisionId: string }>> {
+    return this.command({ scope: { kind: "revision", revisionId } }, (core) =>
+      core.verifyClaim(revisionId, claimId, note),
+    );
+  }
+
   retractReview(revisionId: string, reviewItemId: string): Promise<CommandResult<ReviewAck>> {
     return this.command({ scope: { kind: "revision", revisionId } }, (core) => core.retractReview(revisionId, reviewItemId));
   }

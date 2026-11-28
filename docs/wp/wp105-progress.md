@@ -1,0 +1,28 @@
+# WP105 Progress - Editor verify-claim action
+
+Append-only progress log. Do not rely on chat history for project state.
+
+## 2026-11-28 - Setup
+
+- Branch/worktree: `marley/pain-engine-verify-claim` (created by Sir Rulz so Codex can review as the build progresses; local checkout at 54eb717, current main)
+- Assignment: build the editor verify-claim action so the three submitted Pain Engine drafts' evidence blockers can be cleared after the editor checks each claim against its sources.
+- File boundaries: `lib/editorial/contracts/evidence.ts`, `lib/editorial/contracts/views.ts`, `lib/editorial/contracts/repository.ts`, `lib/editorial/core/repository.ts`, `convex/editorial/commands.ts`, `lib/editorial/adapters/live/repository.ts`, `app/admin/editorial/_actions/review.ts`, `components/admin/editorial/workspace/EvidencePanel.tsx`, `components/admin/editorial/workspace/IdeaWorkspace.tsx`, tests in `tests/editorial/contract/repository-contract.ts`, `tests/editorial/core/live-core.test.ts`, `convex/editorial/denials.test.ts`, `convex/editorial/contract.test.ts`, docs `docs/wp/wp105-stories.md`, `docs/wp/wp105-progress.md`.
+- Required checks: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`.
+- Initial risks: adding a new `VERIFICATION_AUTHORITIES` value is a shared-contract change (Convex validators import the same enum); the review item goes stale on verify by design; the live adapter needs a Convex mutation or production cannot use the button.
+- WP number: WP100-WP104 were already in use on this checkout; WP105 is the first free number.
+
+## 2026-11-28 - S1–S4 implemented, tests green
+
+- S1 (contract): `"editor"` added to `VERIFICATION_AUTHORITIES` (`lib/editorial/contracts/evidence.ts`); `"claim.verified"` added to `ACTIVITY_ACTIONS` (`lib/editorial/contracts/views.ts`); `verifyClaim(revisionId, claimId, note)` added to the `EditorialRepository` interface.
+- S2 (core): `verifyClaim` implemented in `EditorialCore` after `markReviewed` — editor-only guard, single-line ≤400-char note, refuses NOT_FOUND / IDEA_TRASHED / PRECONDITION_FAILED (non-working revision) / INVALID_TRANSITION (already approved, non-material, assumed, already verified). Sets `verification = { status: "verified", reason: <note> }` and `verificationAuthority = "editor"`, moves draft → in_review, stamps the idea, records audit + `claim.verified` activity.
+- S3 (transport): Convex mutation in `convex/editorial/commands.ts`, live adapter + `PartitionedEditorialRepository` delegation. Convex validators pick up `"editor"` automatically via `literals(VERIFICATION_AUTHORITIES)`. One real tsc error found and fixed: `ACTIVITY_LABELS` in `lib/editorial/presentation/activity.ts` was missing `"claim.verified"` (added `"Claim verified"`).
+- S4 (UI): `verifyClaimAction` in `app/admin/editorial/_actions/review.ts` (mirrors `markReviewedAction`: `withWorkspace` + `withView`, returns the fresh revision view); Verify button in `EvidencePanel.tsx` next to each verifiable claim (material, not assumed, not already verified), using `ReasonDialog` with `required={false}` and `maxLength={EDITORIAL_LIMITS.verificationReasonChars}`; wired through `IdeaWorkspace.tsx` (mirrors `resolveIssue`, disabled while `reviewDisabledReason` is set).
+- Tests: 5 new contract tests in `tests/editorial/contract/repository-contract.ts` (verify sets editor authority + clears the UNSUPPORTED_CLAIM blocker; verify without a note; customer refused FORBIDDEN; assumed + already-verified refused INVALID_TRANSITION; approved revision refused); 1 new Convex test in `convex/editorial/functions.test.ts` (owner verifies an unverified claim from a `authority: "none"` import, editor authority round-trips through the Convex validators, second verify refused); denials test updated (23 mutations, verifyClaim added to the denied-commands list).
+- Results so far: contract suite 76/76 (fixture + partitioned adapters); Convex contract + denials + functions 52/52. tsc: no errors in any touched file; the 48 remaining errors are pre-existing in untouched files (keystatic not installed, 5-to-9-builder guide, landing builder-guide, tests/home). Full editorial + Convex suites, lint and build still running.
+- Not done yet: full `npm run test:editorial` / `npm run test:convex` results, `npm run lint`, `npm run build`, push + draft PR. Never merge or deploy; Sir Rulz merges. Do not touch E7, releases, publishing, or the three `engine/pain/review/*.json` records (never include them in a push manifest).
+
+## 2026-11-28 - Count fixes; suite failures triaged as load flakes
+
+- Full-suite runs found two more count assertions that must move with the new action/mutation: `tests/editorial/structure/boundaries.test.ts` counts Convex mutations (22 → 23) and `tests/editorial/runtime/workflow-actions.test.ts` counts review+release+demo server actions (26 → 27). Both updated.
+- The remaining full-suite failures were all timeouts, none of them assertions, all in files untouched by this WP: `fixtures.test.ts` / `workflow-actions.test.ts` / `actions.test.ts` / `ui/workflow.test.tsx` (fixture-environment `beforeAll`/`beforeEach` hook timeouts, 10s) and `private-engine-cli.test.ts` (5s test timeout); Convex side: `convex/crew/launchSweep.test.ts` and `convex/editorial/release.test.ts` (5s test timeouts). Every one of them passes when run alone or in a small group (workflow.test.tsx 9/9, private-engine-cli 3/3, launchSweep + release 31/31, fixtures + private-engine-cli together exit 0). Cause is CPU contention on the 1.5-shared-CPU VM, not this change. Full-suite totals with the count fixes: editorial 305 passed / 2 timeouts; Convex 1548 passed / 2 timeouts.
+- eslint on all changed files: clean.

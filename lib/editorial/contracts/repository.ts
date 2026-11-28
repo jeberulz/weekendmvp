@@ -111,6 +111,17 @@ export interface EditorialRepository {
     dependencyHash: string,
     note: string | null,
   ): Promise<CommandResult<ReviewAck>>;
+  /**
+   * Verify one material claim after checking it against its sources. The
+   * signed-in editor is the verification authority; the note records what
+   * was checked. Verifying clears the claim's UNSUPPORTED_CLAIM blocker and
+   * makes its review item stale, so it needs re-attestation.
+   */
+  verifyClaim(
+    revisionId: string,
+    claimId: string,
+    note: string | null,
+  ): Promise<CommandResult<{ claimId: string; revisionId: string }>>;
   retractReview(revisionId: string, reviewItemId: string): Promise<CommandResult<ReviewAck>>;
   flagReviewItem(
     revisionId: string,

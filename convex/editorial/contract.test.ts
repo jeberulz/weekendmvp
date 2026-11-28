@@ -56,6 +56,7 @@ function transactional(t: TestConvex<typeof schema>, context: () => TransactionC
       run((repo) => repo.saveDraft(ideaId, revisionId, baseVersion, patch, key)),
     setCandidateDecision: (ideaId, version, input) => run((repo) => repo.setCandidateDecision(ideaId, version, input)),
     markReviewed: (revisionId, itemId, hash, note) => run((repo) => repo.markReviewed(revisionId, itemId, hash, note)),
+    verifyClaim: (revisionId, claimId, note) => run((repo) => repo.verifyClaim(revisionId, claimId, note)),
     retractReview: (revisionId, itemId) => run((repo) => repo.retractReview(revisionId, itemId)),
     flagReviewItem: (revisionId, itemId, hash, input) => run((repo) => repo.flagReviewItem(revisionId, itemId, hash, input)),
     resolveIssue: (revisionId, issueId, hash, note) => run((repo) => repo.resolveIssue(revisionId, issueId, hash, note)),
