@@ -52,6 +52,8 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 | WP103 | Guide template and /publish-guide skill | Work Package | `claude/wp103-s1-guide-shared-blocks` (S1) | In progress | Pulls the shared blocks and a per-guide spec out of `/guides/5-to-9-builder` so new guides render from data, then adds the `/publish-guide` skill with a sourced-claims gate. S1 changes no visible output. See [WP103 stories](wp/wp103-stories.md) and `docs/plans/publish-guide/PLAN.md`. |
 | WP104 | Landing page editor | Program / spike | `codex/wp104-keystatic-spike` | Compatibility gate | The operator edits staged page copy in Keystatic. Each public page moves after visual and content parity checks. See [WP104 stories](wp/wp104-stories.md). |
 
+| WP105 | Next.js 16.4.6 security upgrade | Work Package | `codex/wp93-next-security-16-4-6` | See [WP105 progress](wp/wp105-progress.md) | Install Next.js 16.4.6, align the Next.js ESLint package, enable the security upgrade policy, and verify the app. |
+
 ## Launch Workspace Program (WP67)
 
 Reserved 2026-11-05 by owner ruling D14 (`docs/wp/RULINGS.md`). Manifest: `docs/wp/wp67-program-manifest.md`. Plan: `docs/plans/launch-workspace/`. Status board: `docs/wp/wp67-progress.md`. No other work may use WP67–WP87.
