@@ -4,3 +4,7 @@
 2. Provide a paginated, dry-run-first reconciliation for verified open accounts missing a job or stopped before any provider write. Validate reruns, suppression and account closure with Convex tests.
 
 3. During the owner’s email hold, match each verified signup immediately. Update the audience field and subscriber tag for existing active or pending contacts. Keep missing addresses in Convex for later reconciliation. The silent worker must have no subscription-create or journey path, including when an automation ID remains configured.
+
+### Verified signup newsletter opt-in
+
+Offer the same optional, initially unchecked choice for Google and email signup. Record affirmative consent against the verified account. Import new opted-in addresses directly with confirmation and welcome delivery disabled. Preserve existing suppression and historical holds.

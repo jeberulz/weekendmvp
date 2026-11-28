@@ -98,6 +98,14 @@ export function AuthCard({
         : baseCopy;
   const activeReturnTo = currentMode === "login" && signInReturnTo ? signInReturnTo : returnTo;
   const { signIn } = useAuthActions();
+  const [newsletter, setNewsletter] = useState(false);
+  function signupDestination() {
+    const destination = safePlatformReturn(activeReturnTo);
+    if (currentMode !== "signup" || !newsletter) return destination;
+    const intent = crypto.randomUUID();
+    localStorage.setItem("weekend-mvp-newsletter-intent", intent);
+    return "/dashboard/newsletter-opt-in?" + new URLSearchParams({ intent, returnTo: destination });
+  }
   const emailFieldId = useId();
   const statusId = useId();
   const [googlePending, setGooglePending] = useState(false);
@@ -122,7 +130,7 @@ export function AuthCard({
     setGoogleFailed(false);
     try {
       await signIn("google", {
-        redirectTo: authCallbackTarget(safePlatformReturn(activeReturnTo)),
+        redirectTo: authCallbackTarget(signupDestination()),
       });
     } catch {
       setGoogleFailed(true);
@@ -135,7 +143,7 @@ export function AuthCard({
     try {
       await signIn("email", {
         email: targetEmail,
-        redirectTo: safePlatformReturn(activeReturnTo),
+        redirectTo: signupDestination(),
       });
       setEmail(targetEmail);
       setSentEmail(targetEmail);
@@ -257,6 +265,14 @@ export function AuthCard({
           </p>
         ) : null}
 
+        {currentMode === "signup" && (
+          <label className="mt-5 flex items-start gap-3 text-sm text-home-ink-2">
+            <input type="checkbox" checked={newsletter} disabled={busy}
+              onChange={(event) => setNewsletter(event.target.checked)} className="mt-1" />
+            Email me the Weekend MVP newsletter and product updates. I can unsubscribe anytime.
+          </label>
+        )}
+
         <button
           type="button"
           onClick={signInWithGoogle}
@@ -345,9 +361,7 @@ export function AuthCard({
         </p>
         {currentMode === "signup" ? (
           <p className="mt-5 text-center text-xs leading-5 text-home-ink-3">
-            New accounts are added to the Weekend MVP newsletter. Beehiiv will
-            ask you to confirm your email separately; account access starts when
-            your site account is verified.{" "}
+            Newsletter signup is optional.{" "}
             <Link
               href="/privacy-policy#email-collection"
               className="underline underline-offset-2"

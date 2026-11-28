@@ -11,3 +11,5 @@ For historical accounts, invoke the internal `accountBeehiiv:reconcileAccounts` 
 Verification uses synthetic HTTP responses and Convex tests. Production activation and backfill require the owner to confirm the destination and confirmation email side effect.
 
 The owner's subsequent email hold uses `BEEHIIV_ACCOUNT_MODE=existing_only` and the dedicated account field. Missing subscriber records stay in Convex with result `held_no_email`. Existing active or pending subscriptions get the matching subscriber tag and segment field. This mode ignores the account automation ID. It does not change a subscriber's status. Changing publication delivery rules or releasing held addresses is separate from activating this worker.
+
+The signup checkbox now records timestamped, versioned consent after authentication. A one-address import skips default signup journeys and newsletter list auto-enrollment. The worker reads back the subscription and applies the account tag. Existing-only processing continues for addresses without a recorded choice.

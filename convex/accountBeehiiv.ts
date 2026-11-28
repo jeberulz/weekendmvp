@@ -1,7 +1,8 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { internalAction, internalMutation } from "./_generated/server";
+import { internalAction, internalMutation, mutation } from "./_generated/server";
 
 const MAX_ATTEMPTS = 5;
 const BASE_RETRY_MS = 60_000;
@@ -35,7 +36,7 @@ async function checkFieldResponse(response: Response) {
 }
 
 /** Pure HTTP seam; no provider body, email or key is put into errors/logs. */
-export async function syncBeehiivAccount(email: string, env: Env, transport: typeof fetch = fetch): Promise<Outcome> {
+export async function syncBeehiivAccount(email: string, env: Env, transport: typeof fetch = fetch, optIn?: { importSubmitted: boolean }): Promise<Outcome> {
   const { key, publicationId, automationId, field, silent } = requireConfig(env);
   const base = `https://api.beehiiv.com/v2/publications/${encodeURIComponent(publicationId)}`;
   const customFields = field ? [{ name: field, value: "true" }] : undefined;
@@ -51,6 +52,23 @@ export async function syncBeehiivAccount(email: string, env: Env, transport: typ
   }
 
   if (lookup.status === 404) {
+    if (optIn) {
+      if (!silent || !field) throw new SyncFailure(false, "configuration_required");
+      if (optIn.importSubmitted) throw new SyncFailure(true, "awaiting_import");
+      // A single-contact import bypasses ordinary Signed up triggers. Never enroll
+      // the import into an automation, subscribe it to lists, or revive an opt-out.
+      const response = await transport(base + "/bulk_subscriptions", {
+        method: "POST", headers, signal: AbortSignal.timeout(15_000),
+        body: JSON.stringify({ subscriptions: [{
+          email, reactivate_existing: false, send_welcome_email: false,
+          double_opt_override: "off", skip_newsletter_list_auto_subscribe: true,
+          custom_fields: customFields, utm_source: "platform_account", utm_medium: "account_creation",
+        }] }),
+      }).catch(() => { throw new SyncFailure(true, "awaiting_import"); });
+      if (!response.ok) throw new SyncFailure(response.status === 429 || response.status >= 500,
+        response.status >= 500 ? "awaiting_import" : "import_failed");
+      throw new SyncFailure(true, "awaiting_import");
+    }
     if (silent) return { state: "skipped", result: "held_no_email" };
     let created: Response;
     try {
@@ -78,6 +96,8 @@ export async function syncBeehiivAccount(email: string, env: Env, transport: typ
   const status = typeof data === "object" && data !== null && "status" in data
     ? (data as { status: unknown }).status : null;
   if (typeof status !== "string") throw new SyncFailure(true, "lookup_invalid");
+  if (optIn?.importSubmitted && status === "validating") throw new SyncFailure(true, "awaiting_import");
+  if (optIn?.importSubmitted && status === "pending") throw new SyncFailure(false, "unexpected_pending");
   const pendingConfirmation = status === "validating" || status === "pending";
   if (status !== "active" && !(field && pendingConfirmation)) return { state: "skipped", result: "existing_not_active" };
 
@@ -120,9 +140,35 @@ export async function syncBeehiivAccount(email: string, env: Env, transport: typ
   return { state: "synced", result: "existing_active_enrolled" };
 }
 
+/** Record the checkbox choice only for the authenticated, verified address. */
+export const optInAtSignup = mutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    const user = userId && await ctx.db.get("users", userId);
+    if (!userId || !user?.email || !user.emailVerificationTime || user.isAnonymous ||
+        user.accountClosureRequestedAt !== undefined) throw new Error("Verified account required");
+    const row = await ctx.db.query("account_beehiiv_sync").withIndex("by_user", q => q.eq("userId", userId)).unique();
+    if (row && row.email !== user.email) throw new Error("Account address changed");
+    if (row?.signupOptInAt) return null;
+    const consent = { signupOptInAt: Date.now(), consentVersion: "signup-newsletter-v1" as const };
+    if (row?.state === "processing") {
+      // The existing worker will schedule the consented job when its lookup finishes.
+      await ctx.db.patch(row._id, consent);
+      return null;
+    }
+    const pending = { ...consent, state: "pending" as const, updatedAt: Date.now(), attempts: 0 };
+    if (row) await ctx.db.patch(row._id, { ...pending, result: undefined });
+    else await ctx.db.insert("account_beehiiv_sync", { ...pending, userId, email: user.email });
+    await ctx.scheduler.runAfter(0, internal.accountBeehiiv.sync, { userId });
+    return null;
+  },
+});
+
 export const claim = internalMutation({
   args: { userId: v.id("users") },
-  returns: v.union(v.object({ email: v.string() }), v.null()),
+  returns: v.union(v.object({ email: v.string(), optedIn: v.optional(v.boolean()), importSubmitted: v.optional(v.boolean()) }), v.null()),
   handler: async (ctx, { userId }) => {
     const row = await ctx.db.query("account_beehiiv_sync").withIndex("by_user", (q) => q.eq("userId", userId)).unique();
     if (!row || row.state === "synced" || row.state === "skipped" || row.state === "failed") return null;
@@ -143,7 +189,7 @@ export const claim = internalMutation({
     }
     await ctx.db.patch(row._id, { state: "processing", attempts: row.attempts + 1, updatedAt: Date.now() });
     await ctx.scheduler.runAfter(LEASE_MS, internal.accountBeehiiv.sync, { userId });
-    return { email: row.email };
+    return { email: row.email, ...(row.signupOptInAt ? { optedIn: true, importSubmitted: !!row.importSubmitted } : {}) };
   },
 });
 
@@ -152,18 +198,25 @@ export const finish = internalMutation({
     userId: v.id("users"),
     outcome: v.union(v.literal("synced"), v.literal("skipped"), v.literal("retry"), v.literal("failed")),
     result: v.string(),
+    processedOptIn: v.optional(v.boolean()),
   },
   returns: v.null(),
-  handler: async (ctx, { userId, outcome, result }) => {
+  handler: async (ctx, { userId, outcome, result, processedOptIn }) => {
     const row = await ctx.db.query("account_beehiiv_sync").withIndex("by_user", (q) => q.eq("userId", userId)).unique();
     if (!row || row.state !== "processing") return null;
+    if (row.signupOptInAt && !processedOptIn) {
+      await ctx.db.patch(row._id, { state: "pending", attempts: 0, updatedAt: Date.now(), result: undefined });
+      await ctx.scheduler.runAfter(0, internal.accountBeehiiv.sync, { userId });
+      return null;
+    }
     const retry = outcome === "retry" && row.attempts < MAX_ATTEMPTS;
     await ctx.db.patch(row._id, {
+      ...(result === "awaiting_import" ? { importSubmitted: true } : {}),
       state: retry ? "pending" : outcome === "retry" ? "failed" : outcome,
       result: retry ? result : outcome === "retry" ? `${result}:retry_limit` : result,
       updatedAt: Date.now(),
     });
-    if (retry) await ctx.scheduler.runAfter(BASE_RETRY_MS * 2 ** (row.attempts - 1), internal.accountBeehiiv.sync, { userId });
+    if (retry) await ctx.scheduler.runAfter((result === "awaiting_import" && !row.importSubmitted ? 1500 : BASE_RETRY_MS) * 2 ** (row.attempts - 1), internal.accountBeehiiv.sync, { userId });
     return null;
   },
 });
@@ -187,15 +240,15 @@ export const sync = internalAction({
   args: { userId: v.id("users") },
   returns: v.null(),
   handler: async (ctx, { userId }) => {
-    const claimed: { email: string } | null = await ctx.runMutation(internal.accountBeehiiv.claim, { userId });
+    const claimed: { email: string; optedIn?: boolean; importSubmitted?: boolean } | null = await ctx.runMutation(internal.accountBeehiiv.claim, { userId });
     if (!claimed) return null;
     try {
-      const outcome = await syncBeehiivAccount(claimed.email, process.env);
-      await ctx.runMutation(internal.accountBeehiiv.finish, { userId, outcome: outcome.state, result: outcome.result });
+      const outcome = await syncBeehiivAccount(claimed.email, { ...process.env, BEEHIIV_ACCOUNT_MODE: "existing_only" }, fetch, claimed.optedIn ? { importSubmitted: !!claimed.importSubmitted } : undefined);
+      await ctx.runMutation(internal.accountBeehiiv.finish, { userId, processedOptIn: claimed.optedIn, outcome: outcome.state, result: outcome.result });
     } catch (error) {
       const failure = error instanceof SyncFailure ? error : new SyncFailure(true, "unexpected_failure");
       await ctx.runMutation(internal.accountBeehiiv.finish, {
-        userId, outcome: failure.retryable ? "retry" : "failed", result: failure.reason,
+        userId, processedOptIn: claimed.optedIn, outcome: failure.retryable ? "retry" : "failed", result: failure.reason,
       });
     }
     return null;

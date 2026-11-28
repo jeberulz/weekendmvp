@@ -148,3 +148,17 @@ test("existing-only mode never creates a subscription or requests a journey", as
     }
   }
 });
+
+test("verified opt-in imports without messages and waits for provider readback without reimporting", async () => {
+  const config = { ...env, BEEHIIV_ACCOUNT_MODE: "existing_only", BEEHIIV_ACCOUNT_FIELD: "Weekend MVP Account" };
+  const transport = vi.fn().mockResolvedValueOnce(reply(404)).mockResolvedValueOnce(reply(200, { import_id: "test" }));
+  await expect(syncBeehiivAccount("opt@example.test", config, transport, { importSubmitted: false })).rejects.toThrow("awaiting_import");
+  expect(transport.mock.calls[1][0]).toMatch(/\/bulk_subscriptions$/);
+  const [item] = JSON.parse(transport.mock.calls[1][1].body).subscriptions;
+  expect(item).toMatchObject({ reactivate_existing: false, send_welcome_email: false, double_opt_override: "off",
+    skip_newsletter_list_auto_subscribe: true, custom_fields: [{ name: "Weekend MVP Account", value: "true" }] });
+  expect(item.automation_ids).toBeUndefined();
+  const waiting = vi.fn().mockResolvedValueOnce(reply(404));
+  await expect(syncBeehiivAccount("opt@example.test", config, waiting, { importSubmitted: true })).rejects.toThrow("awaiting_import");
+  expect(waiting).toHaveBeenCalledTimes(1);
+});
