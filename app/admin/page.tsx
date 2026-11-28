@@ -22,12 +22,13 @@ async function loadMembers(params: Params) {
   const token = await convexAuthNextjsToken();
   if (!token) notFound();
   const { cursor } = await params;
-  const [members, week] = await Promise.all([
+  const [members, week, totals] = await Promise.all([
     fetchQuery(api.admin.members.directory, { cursor: cursor ?? null }, { token }),
     fetchQuery(api.admin.members.week, { since: Date.now() - 7 * 86_400_000 }, { token }),
+    fetchQuery(api.admin.members.totals, {}, { token }),
   ]).catch(() => notFound());
 
-  return { members, week, cursor };
+  return { members, week, totals, cursor };
 }
 
 function Metric({ label, count, limited }: { label: string; count: number; limited: boolean }) {
@@ -38,11 +39,12 @@ function Metric({ label, count, limited }: { label: string; count: number; limit
 }
 
 async function Directory({ params }: { params: Params }) {
-  const { members, week, cursor } = await loadMembers(params);
+  const { members, week, totals, cursor } = await loadMembers(params);
   return <main className="min-h-screen bg-home-paper px-5 py-10 text-home-ink sm:px-10">
     <div className="mx-auto max-w-5xl">
       <h1 className="font-serif text-4xl">Member activity</h1>
-      <div className="my-7 grid gap-4 sm:grid-cols-2">
+      <div className="my-7 grid gap-4 sm:grid-cols-3">
+        <Metric label="Total members" count={totals.total} limited={totals.totalLimited} />
         <Metric label="Signups in the last 7 days" count={week.signups} limited={week.signupsLimited} />
         <Metric label="Members with measured visits in the last 7 days" count={week.active} limited={week.activeLimited} />
       </div>
