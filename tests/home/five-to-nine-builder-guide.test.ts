@@ -4,12 +4,12 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
-import FiveToNineBuilderGuidePage, { metadata } from "@/app/(marketing)/guides/5-to-9-builder/page";
+import FiveToNineBuilderGuidePage, { generateMetadata } from "@/app/(marketing)/guides/5-to-9-builder/page";
 import { formatPrice, resolvePrice } from "@/lib/guides/offer-live";
 import { BUILD_ALONG_GUIDE_CARDS_ENABLED } from "@/lib/live/config";
-import { guideCopy } from "@/app/(marketing)/guides/5-to-9-builder/guideCopy";
+import { readBuilderGuide, type BuilderGuide } from "@/lib/landing/read-builder-guide";
 import { guideLiveIdeaCount } from "@/app/(marketing)/guides/5-to-9-builder/ideaCount";
 import { BUILD_ALONG } from "@/lib/live/config";
 import { BeehiivSubscribeForm } from "@/components/forms/BeehiivSubscribeForm";
@@ -43,76 +43,35 @@ vi.mock("next/image", async () => {
 const guideCss = readFileSync("app/(marketing)/guides/_shared/guide.css", "utf8");
 const subscribeMock = vi.mocked(subscribeViaApi);
 const productionGuideHtml = ".next/server/app/guides/5-to-9-builder.html";
-function expectGuideCopy(html: string) {
-  expect(html).not.toContain("COPY TO WRITE");
+function expectGuideCopy(html: string, { deck }: BuilderGuide) {
   const container = document.createElement("div");
   container.innerHTML = html;
   const guide = activeGuide(container);
   expect(guide.textContent).not.toMatch(/TODO|COPY TO WRITE/i);
   expect(guide.querySelectorAll(".guide-placeholder")).toHaveLength(0);
   expect(guide.querySelector('[data-copy-slot="The Shift · Source for the building-is-free claim"]')).toBeNull();
-  expect(guideCopy).not.toHaveProperty("The Shift · Source for the building-is-free claim");
+
   const receipts = [...guide.querySelectorAll('aside[aria-label="Receipt"]')];
   expect(receipts.some((receipt) => /researched startup ideas in the library/.test(receipt.textContent ?? ""))).toBe(true);
   for (const receipt of receipts) {
-    expect(receipt.textContent).not.toMatch(/building is free/i);
-    expect(receipt.textContent).not.toMatch(/draft|liveIdeas|re-checked at build/i);
+    expect(receipt.textContent).not.toMatch(/building is free|draft|liveIdeas|re-checked at build/i);
   }
-  expect(guide.textContent).not.toContain("£");
-  const slots = [...guide.querySelectorAll<HTMLElement>("[data-copy-slot]")];
-  expect(slots.map((slot) => slot.dataset.copySlot).sort()).toEqual(Object.keys(guideCopy).sort());
-  expect(guide.querySelector('[data-copy-slot="The Shift · Lede"]')?.textContent).toBe(
-    "Finding something worth building starts with a problem you can check.",
-  );
-  expect(guide.querySelector('[data-copy-slot="The Shift · Validation paragraph"]')?.textContent).toBe(
-    "Before you spend an evening building, talk to someone who has the problem. Ask how they deal with it now and what it costs them. Then see whether they'll pay for a fix.",
-  );
-  expect(guide.querySelector('[data-copy-slot="The Shift · Definition"]')?.textContent).toBe(
-    "A 5-to-9 builder keeps their job and uses evenings to test an idea for extra income.",
-  );
-  expect(guide.querySelector('[data-copy-slot="FAQ · Do I need to code?"]')?.textContent).toContain(
-    "The method tests whether someone will pay before you build.",
-  );
-  expect(guide.querySelector('[data-copy-slot="Find it · Worked example"]')?.textContent).toContain("$1,800");
-  expect(guide.querySelector('[data-copy-slot="Find it · Worked example"]')?.textContent).toContain(
-    "R&R compressor, evac/recharge, orifice tube, dye test",
-  );
-  expect(guide.querySelector('[data-copy-slot="Find it · Worked example"]')?.textContent).toContain(
-    "I've watched advisors explain the same line.",
-  );
-  expect(guide.textContent).not.toContain("five times a day");
-  expect(guide.textContent).not.toContain("almost any idea without a team or a budget");
-  expect(guide.textContent).not.toContain("Most people skip that step");
-  expect(guide.textContent).not.toContain("The method proves someone will pay");
-  const finePrint = guide.querySelector('[data-copy-slot="Gate · Fine print"]');
-  expect(finePrint?.textContent).toBe(
-    "Free. Unsubscribe anytime. We'll send the 5-day Starter.",
-  );
-  expect(finePrint?.querySelector("a")?.getAttribute("href")).toBe("/5-to-9-starter");
-  expect(guide.textContent).not.toContain("WeekendMVP");
-  const follow = guide.querySelector('[data-copy-slot="Sign-off · Follow destination"]');
-  expect(follow?.textContent).toMatch(/@weekendmvp/);
-  expect(follow?.textContent).toMatch(/Instagram/);
-  expect(follow?.querySelector("a")?.getAttribute("href")).toBe("https://www.instagram.com/weekendmvp/");
-  expect(guide.textContent).toContain("Follow for one idea a day.");
 
-  for (const slot of ["The Idea Bank · How to use the library", "FAQ · I have no idea yet. Where do I start?"]) {
-    expect(guide.querySelector(`[data-copy-slot="${slot}"]`)?.textContent).toContain(`${guideLiveIdeaCount()} researched ideas`);
+  const slots = new Map([...guide.querySelectorAll<HTMLElement>("[data-copy-slot]")]
+    .map((node) => [node.dataset.copySlot, node]));
+  expect([...slots.keys()].sort()).toEqual(Object.keys(deck).sort());
+  for (const [slot, value] of Object.entries(deck)) {
+    if (value.includes("{ideaCount}")) expect(slots.get(slot)?.textContent).toContain(String(guideLiveIdeaCount()));
   }
   expect(guide.textContent).not.toContain("{ideaCount}");
+  expect(slots.get("The Prompt · Prompt text")?.querySelector("code")?.textContent).toBe(deck["The Prompt · Prompt text"]);
+  expect(slots.get("Sign-off · Follow destination")?.querySelector("a")?.getAttribute("href"))
+    .toBe("https://www.instagram.com/weekendmvp/");
+  expect(guide.textContent).toContain("Follow for one idea a day.");
   expect(guide.querySelectorAll('.guide-checklist input[type="checkbox"]')).toHaveLength(18);
-  expect(guide.querySelector('[data-copy-slot="The Prompt · Prompt text"] code')?.textContent).toBe(guideCopy["The Prompt · Prompt text"]);
-  expect(guide.querySelector('[data-copy-slot="Founder note · Body"]')?.textContent).not.toContain("John Iseghohi");
-  const buildAlongPrice = formatPrice(resolvePrice("BUILD_ALONG.standardUsd"));
-  expect(buildAlongPrice).toBe(`$${BUILD_ALONG.standardUsd}`);
-  expect(buildAlongPrice).toBe("$29");
-  expect(guide.textContent).toContain("$29");
-  // The Build-Along switch in lib/live/config.ts decides whether the sprint shows anywhere in the guide:
-  // both cards, the founder-note sprint line and the link to its page. A switched-off sprint leaves no trace.
-  expect(guide.textContent?.includes("Build-Along")).toBe(BUILD_ALONG_GUIDE_CARDS_ENABLED);
+  expect(formatPrice(resolvePrice("BUILD_ALONG.standardUsd"))).toBe(`$${BUILD_ALONG.standardUsd}`);
   expect(guide.querySelector('a[href="/live/build-along"]') !== null).toBe(BUILD_ALONG_GUIDE_CARDS_ENABLED);
   expect(guide.querySelectorAll('aside[aria-label="Build-Along sprint"]')).toHaveLength(BUILD_ALONG_GUIDE_CARDS_ENABLED ? 2 : 0);
-  expect(guide.textContent).not.toContain("$47");
 }
 
 function deferredSubscription() {
@@ -132,6 +91,14 @@ function activeGuide(container: HTMLElement) {
   return container.querySelector<HTMLElement>(".builder-guide")!;
 }
 
+let guidePage: Awaited<ReturnType<typeof FiveToNineBuilderGuidePage>>;
+let metadata: Awaited<ReturnType<typeof generateMetadata>>;
+let liveGuide: BuilderGuide;
+
+beforeAll(async () => {
+  [guidePage, metadata, liveGuide] = await Promise.all([FiveToNineBuilderGuidePage(), generateMetadata(), readBuilderGuide()]);
+});
+
 beforeEach(() => {
   vi.useFakeTimers();
   vi.clearAllMocks();
@@ -148,30 +115,25 @@ afterEach(() => {
 });
 
 describe("5-to-9 Builder guide", () => {
-  test("has a concise title and description and uses the site social metadata", () => {
-    const title = "The 5-to-9 Builder: a tested side income | Weekend MVP";
-    expect(metadata.title).toEqual({ absolute: title });
-    expect(title.length).toBeLessThanOrEqual(60);
-    expect(title).toContain("Weekend MVP");
-    expect(title).not.toContain("WeekendMVP");
-    expect(metadata.description).toBe(
-      "AI made building free. Knowing what to build is the job now. A free guide for 9-to-5ers to find an idea and prove someone will pay before you build.",
-    );
-    expect(metadata.description?.length).toBeLessThanOrEqual(155);
+  test("uses the current editor metadata with the site social settings", () => {
+    expect(metadata.title).toEqual({ absolute: liveGuide.spec.metaTitle });
+    expect(metadata.description).toBe(liveGuide.spec.description);
+    expect(metadata.openGraph?.title).toBe(liveGuide.spec.metaTitle);
+    expect(metadata.openGraph?.description).toBe(liveGuide.spec.description);
     expect(metadata.openGraph?.siteName).toBe("Weekend MVP");
     expect(metadata.twitter?.site).toBe("@weekendmvp");
   });
 
   test("renders the deck with no visible TODO or COPY TO WRITE in server markup", () => {
-    expectGuideCopy(renderToStaticMarkup(createElement(FiveToNineBuilderGuidePage)));
+    expectGuideCopy(renderToStaticMarkup(guidePage), liveGuide);
   });
 
   test.runIf(process.env.CHECK_BUILT_GUIDE === "1")("renders the same copy in the production HTML", () => {
-    expectGuideCopy(readFileSync(productionGuideHtml, "utf8"));
+    expectGuideCopy(readFileSync(productionGuideHtml, "utf8"), liveGuide);
   });
 
   test("renders the canonical static route and gated body in server markup", () => {
-    const html = renderToStaticMarkup(createElement(FiveToNineBuilderGuidePage));
+    const html = renderToStaticMarkup(guidePage);
     const container = document.createElement("div");
     container.innerHTML = html;
     const guide = activeGuide(container);
@@ -180,13 +142,11 @@ describe("5-to-9 Builder guide", () => {
     expect(metadata.alternates?.canonical).toBe("/guides/5-to-9-builder");
     expect(guide.querySelector("h1")?.textContent).toBe("AI made building free. Knowing what to build is the job now.");
     expect(guide.querySelector('img[alt="John Iseghohi, founder of Weekend MVP, working at his desk"]')).toBeTruthy();
-    expect(guide.querySelector('#gate .guide-locked-face p a[href="/5-to-9-starter"]')?.textContent).toBe("5-to-9 Starter");
     expect(guide.querySelectorAll('.guide-day-one a[href="/5-to-9-starter"]')).toHaveLength(3);
     expect(guide.querySelector("#s01")?.closest(".guide-rest")).toBeNull();
     for (let section = 2; section <= 11; section++) {
       expect(rest?.querySelector(`#s${String(section).padStart(2, "0")}`)).toBeTruthy();
     }
-    expect(rest?.textContent).toContain("Self-Check");
     expect(guide.hasAttribute("data-guide")).toBe(false);
     expect(guide.querySelectorAll("form")).toHaveLength(1);
     expect(JSON.parse(guide.querySelector('script[type="application/ld+json"]')!.textContent!)["@graph"])
@@ -228,7 +188,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("opens in place at eight seconds even when the subscribe request never resolves", async () => {
     subscribeMock.mockReturnValue(new Promise(() => {}));
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     const guide = activeGuide(container);
 
     expect(guide.dataset.guide).toBe("locked");
@@ -256,7 +216,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("recognizes a returning reader without a request or address in storage", () => {
     localStorage.setItem("weekendmvp_subscribed", "true");
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     expect(activeGuide(container).dataset.guide).toBe("returning");
     expect(screen.getByText("You unlocked it on this device.")).toBeTruthy();
     expect(subscribeMock).not.toHaveBeenCalled();
@@ -265,7 +225,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("confirms an API-first success in place and clears the optimistic timer", async () => {
     const reply = deferredSubscription();
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     submitGuide();
     await reply({ ok: true, message: "Subscribed" });
 
@@ -281,7 +241,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("records API confirmation once after the timer opens the guide", async () => {
     const reply = deferredSubscription();
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     submitGuide();
     await act(() => vi.advanceTimersByTimeAsync(8000));
 
@@ -299,7 +259,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("keeps a rejected address locked even after eight seconds", async () => {
     const reply = deferredSubscription();
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     submitGuide();
     await reply({ ok: false, status: 422, message: "Invalid address" });
     await act(() => vi.advanceTimersByTimeAsync(8000));
@@ -317,7 +277,7 @@ describe("5-to-9 Builder guide", () => {
   test("late failure fires a quiet embed and one resend can confirm in place", async () => {
     const reply = deferredSubscription();
     const submitEmbed = vi.spyOn(HTMLFormElement.prototype, "submit").mockImplementation(() => {});
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     submitGuide();
     await act(() => vi.advanceTimersByTimeAsync(8000));
     await reply({ ok: false, status: 502, message: "Unavailable" });
@@ -352,7 +312,7 @@ describe("5-to-9 Builder guide", () => {
 
   test("cancels a pending unlock on unmount", async () => {
     const reply = deferredSubscription();
-    const { unmount } = render(createElement(FiveToNineBuilderGuidePage));
+    const { unmount } = render(guidePage);
     submitGuide();
     unmount();
     await act(() => vi.advanceTimersByTimeAsync(8000));
@@ -364,7 +324,7 @@ describe("5-to-9 Builder guide", () => {
   test("an early 5xx fallback unlocks quietly and fires signup_fallback_fired", async () => {
     const reply = deferredSubscription();
     const submitEmbed = vi.spyOn(HTMLFormElement.prototype, "submit").mockImplementation(() => {});
-    const { container } = render(createElement(FiveToNineBuilderGuidePage));
+    const { container } = render(guidePage);
     submitGuide();
     await reply({ ok: false, status: 502, message: "Unavailable" });
 

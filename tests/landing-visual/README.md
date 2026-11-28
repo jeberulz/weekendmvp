@@ -26,3 +26,7 @@ A second run against the clean main build matched all 44 references. The clean C
 ## Baseline provenance
 
 To replay reference generation, build the recorded main revision in a separate clean worktree. From the spike worktree set `LANDING_VISUAL_APP` to that checkout and run `npm run test:visual -- --record`. The script requires the exact reference commit and a clean source tree for recording. The normal comparison command only reads reference images.
+
+## Builder guide reference after the SEO release
+
+The four Builder guide images in `guide-baseline/` come from a clean production build of main at `692b7b3f`. That revision includes the metadata and link changes from PR #346 and still renders the guide from its TypeScript deck. To replay this capture, set `LANDING_VISUAL_APP` to a clean build at that commit and run `npm run test:visual -- --record --route=/guides/5-to-9-builder`. The original nine-route capture remains in `baseline/`.

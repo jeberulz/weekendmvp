@@ -7,7 +7,7 @@ import { describe, expect, test, vi } from "vitest";
 import { GuideCopy, slotText } from "@/app/(marketing)/guides/_shared/copy";
 import { navSections } from "@/app/(marketing)/guides/_shared/GuideLayout";
 import { buildGuideMetadata, buildGuideSchema } from "@/app/(marketing)/guides/_shared/seo";
-import { guideSpec } from "@/app/(marketing)/guides/5-to-9-builder/guide.spec";
+import { guideSpec } from "./fixtures/wp104-guide/legacy";
 
 vi.mock("@/lib/fonts", () => ({ newsreaderEditorial: { variable: "test-newsreader" } }));
 

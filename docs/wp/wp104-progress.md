@@ -41,3 +41,21 @@ The spike was updated through main at `69baeb5d`. The main-branch CI run failed 
 The updated branch passed 7,186 tests, both typechecks, lint, the production build and artifact trace checks. The built guide passed its HTML test, and its JSON-LD was byte-identical to the file captured from pristine main. The latest visual replay passed all 44 references, with the existing rounding allowance used on two mobile checkout images. An earlier replay differed at two mobile Shipable pixels. The final replay matched them exactly with the same reference and comparison rules.
 
 The owner-run hosted PR 0 check remains the entry gate for page migrations.
+
+## PR 1 · Builder guide migration
+
+The owner reported that PR 0 passed its hosted check and authorised the migration. Local branch `codex/wp104-guide-cms` starts at the verified PR 0 tip `efc98494`. The remote branch initially points to that same commit. The pristine guide reader and JSON-LD fixtures come from `43721c0f`.
+
+### PR 1 verification
+
+PR #348 merged the spike with a green hosted quality check. This branch starts from main at `692b7b3f`, after PR #346 changed the guide's search metadata, branding and links. The four refreshed guide screenshots, reader inputs and JSON-LD were captured from that untouched revision before the reader switch.
+
+The guide and CLI audit use the same Keystatic Reader. The page still prerenders, and the server trace includes the guide JSON. The reader matches the original section inputs, keeps the original fragment IDs through reorder, and derives the gate's next link from the first protected section. The FAQ moves with its closing panel. The countdown and live workshop price remain outside the guide content model. Existing guide links and publication dates from main survive the migration.
+
+The production visual gate passed at 375 and 1440 pixels in both locked and returning states. The built guide's JSON-LD matched the pre-switch script byte for byte. The full suite passed 7,194 tests, and typechecks, lint, production build, trace checks and guide audit passed. A local browser save and reload round-tripped the full singleton. The seed omits its optional empty hero label to match Keystatic's serializer.
+
+### PR 1 hosted review
+
+PR #350 passed the hosted quality job on the submitted Builder guide branch. The review identified two gaps for future content saves: live copy was compared with the migration snapshot, and whitespace in section labels could break lookup of their copy slots.
+
+The historical comparisons now use the frozen CMS input with the workshop switch explicitly off. The live guide tests check the rendered slots, metadata and subscription behavior against the current entry. A temporary edit changed metadata and prose, moved the first gated section and padded several structural labels. All 264 homepage tests passed, and the guide audit passed with its existing upsell warning. The original guide JSON was restored. Checklist section tokens now resolve for the same reordered sections as guide prose.

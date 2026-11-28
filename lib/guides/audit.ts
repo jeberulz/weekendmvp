@@ -43,6 +43,8 @@ export type AuditInput = {
   routeExists?: (urlPath: string) => boolean;
   /** Is the offer's switch on in config? Without it every offer counts as on. */
   isOfferEnabled?: (offer: Offer) => boolean;
+  allowReorderedSections?: boolean;
+  cardCopy?: readonly string[];
   /**
    * The guide's research record and its sealed Source Critic review, when it has them. With a record, the
    * audit requires a sealed PASS and checks the copy against the claims. Without one, claims are not checked.
@@ -131,11 +133,16 @@ export function auditGuide(input: AuditInput): AuditResult {
   const { deck } = input;
   const offerList = loadOffers(input.offers ?? registry);
 
-  // Section ids run s01, s02, ... in order, and titles are unique.
-  spec.sections.forEach((section, index) => {
+  // A guide with movable blocks retains the original public anchor IDs.
+  const sectionIds = spec.sections.map(({ id }) => id);
+  if (input.allowReorderedSections && sectionIds[0] !== "s01") {
+    add("sections-sequential", "error", "s01 must remain the public opening", "sections.0.id");
+  }
+  if (input.allowReorderedSections) sectionIds.sort();
+  sectionIds.forEach((id, index) => {
     const expected = `s${String(index + 1).padStart(2, "0")}`;
-    if (section.id !== expected) {
-      add("sections-sequential", "error", `section ${index + 1} has id "${section.id}", expected "${expected}"`, `sections.${index}.id`);
+    if (id !== expected) {
+      add("sections-sequential", "error", `section ${index + 1} has id "${id}", expected "${expected}"`, `sections.${index}.id`);
     }
   });
   const titles = spec.sections.map((section) => section.title);
@@ -184,7 +191,7 @@ export function auditGuide(input: AuditInput): AuditResult {
     const offer = offerList.known.get(id);
     return offer ? offerReaderStrings(offer) : [];
   });
-  const readerStrings = [...Object.values(deck), ...publicSpecStrings(spec), ...offerStrings];
+  const readerStrings = [...Object.values(deck), ...publicSpecStrings(spec), ...offerStrings, ...(input.cardCopy ?? [])];
   const placeholderHits = readerStrings.filter((text) => PLACEHOLDER_RE.test(text));
   for (const text of placeholderHits) add("placeholder-text", "error", `placeholder wording in copy: "${text.slice(0, 80)}"`);
   for (const text of readerStrings.filter((t) => INTERNAL_LABEL_RE.test(t))) {

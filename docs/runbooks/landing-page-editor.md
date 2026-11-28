@@ -1,12 +1,20 @@
 # Landing page editor
 
-Open `/admin/pages` after signing in as the bound Weekend MVP super-admin. The dashboard, singleton form and branch views all live under this address. The guide singleton in this spike stages search metadata. The public guide continues to read its existing spec.
+Open `/admin/pages` after signing in as the bound Weekend MVP super-admin. The dashboard, singleton form and branch views all live under this address. The 5-to-9 Builder guide reads its published copy from the guide singleton at build time.
 
 ## Local editing
 
 Use the project's usual authenticated Next development setup with a local Convex deployment and its bound operator. With all four Keystatic settings empty, saving updates `content/landing-pages/guide-5-to-9-builder/index.json`. Local tree enumeration starts inside `content/landing-pages`. Each page will have one JSON singleton. The editorial demo has no filesystem access.
 
 For GitHub-mode development, start at the loopback address `http://127.0.0.1:<port>` and sign in there. The site session cookie belongs to that host. Keystatic changes localhost to 127.0.0.1 during GitHub login.
+
+## Editing the builder guide
+
+Keep the opening section in its own group. In **After the email gate**, drag sections into reading order and keep exactly one of each type. Public anchor IDs from the original guide stay with their sections. The FAQ moves together with the closing panel. Steps retain their worked examples when renamed or moved. Skills, roles, weeks and FAQ rows each keep their wording together. The saved checklist uses the same 18 item numbers as before the migration.
+
+Keep `{ideaCount}` in the library summaries and a FAQ answer, `{price}` in each Build-Along promise, and the founder note's two offer tokens. The reader resolves `{section:ideaBank}` and similar references to the current section number. The offer switch, checkout link, current price, subscription integration, and public gate boundary come from code.
+
+Run `npm run audit:guide -- --slug=5-to-9-builder` to validate the same content used by the site.
 
 ## GitHub setup for the owner
 

@@ -1,4 +1,5 @@
-import { config, fields, singleton } from "@keystatic/core";
+import { config, singleton } from "@keystatic/core";
+import { builderGuideFields } from "@/lib/landing/builder-guide-fields";
 
 export type StorageMode = "local" | "github";
 
@@ -15,18 +16,10 @@ export function landingEditorConfig(mode: StorageMode) {
     ui: { brand: { name: "Weekend MVP" } },
     singletons: {
       "guide-5-to-9-builder": singleton({
-        label: "5-to-9 Builder guide (staging)",
+        label: "5-to-9 Builder guide",
         path: prefix + "guide-5-to-9-builder/",
         format: "json",
-        schema: {
-          seoTitle: fields.text({ label: "Search title", validation: { isRequired: true } }),
-          seoDescription: fields.text({
-            label: "Search description",
-            multiline: true,
-            description: "Edits are staged here until this guide is connected to the editor.",
-            validation: { isRequired: true },
-          }),
-        },
+        schema: builderGuideFields,
       }),
     },
   });
