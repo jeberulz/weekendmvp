@@ -20,6 +20,12 @@ Run `npm run audit:guide -- --slug=5-to-9-builder` to validate the same content 
 
 Open **5-to-9 Starter** to edit the opening, four middle sections and final signup copy. The opening and final signup have fixed placements. Keep one of each middle section and keep the Day 1–5 copy aligned with the existing email sequence. Use the `{buildAlongPrice}` token in the Build-Along link labels. The live price, idea count, checkout link and both Beehiiv form destinations come from code.
 
+## Editing the Starter Kit
+
+Select **Starter Kit** to edit the opening, rules, build steps, resources and closing actions. The first three steps remain in teaching order. In **Resources**, drag the ideas, prompts and templates into reading order and keep one of each. The sidebar follows that order. Existing URLs with fragment identifiers still find their sections.
+
+Keep `{count}` in the idea and prompt headings and contents labels. The displayed count comes from the corresponding list. Prompt bodies go straight to the clipboard, so preserve intended line breaks and placeholders. Signup automation and the booking destination come from code.
+
 ## GitHub setup for the owner
 
 1. Protect `main` on GitHub. Require a pull request and passing CI. Apply the rule to the owner and GitHub App, including administrator bypass settings. Keystatic opens the repository default branch. Saving there prompts for a content branch before sending a commit. GitHub enforces branch protection independently for every client.

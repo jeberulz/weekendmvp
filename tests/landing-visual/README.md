@@ -34,3 +34,7 @@ The four Builder guide images in `guide-baseline/` come from a clean production 
 ## Starter reference after the SEO release
 
 The two Starter images in `starter-baseline/` come from a clean production build of main at `692b7b3f`. That revision includes PR #346 and renders the Starter from its inline sections. To replay the capture, point `LANDING_VISUAL_APP` at a clean build at that commit and run `npm run test:visual -- --record --route=/5-to-9-starter`.
+
+## Starter Kit reference after the SEO release
+
+The two Starter Kit images in `starter-kit-baseline/` come from a clean production build at `692b7b3f`, after PR #346 added the guide and Starter links. The route still used inline copy. Point `LANDING_VISUAL_APP` at that build and run `npm run test:visual -- --record --route=/starter-kit` to reproduce the images.
