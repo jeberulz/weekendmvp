@@ -251,7 +251,16 @@ export const sync = internalAction({
     const claimed: { email: string; optedIn?: boolean; importSubmitted?: boolean } | null = await ctx.runMutation(internal.accountBeehiiv.claim, { userId });
     if (!claimed) return null;
     try {
-      const outcome = await syncBeehiivAccount(claimed.email, { ...process.env, BEEHIIV_ACCOUNT_MODE: "existing_only" }, fetch, claimed.optedIn ? { importSubmitted: !!claimed.importSubmitted } : undefined);
+      // Convex exposes environment variables by name. They are not enumerable.
+      const config = {
+        BEEHIIV_API_KEY: process.env.BEEHIIV_API_KEY,
+        BEEHIIV_PUBLICATION_ID: process.env.BEEHIIV_PUBLICATION_ID,
+        BEEHIIV_ACCOUNT_FIELD: process.env.BEEHIIV_ACCOUNT_FIELD,
+        BEEHIIV_ACCOUNT_SEGMENT_ID: process.env.BEEHIIV_ACCOUNT_SEGMENT_ID,
+        BEEHIIV_ACCOUNT_MODE: "existing_only",
+      };
+      const outcome = await syncBeehiivAccount(claimed.email, config, fetch,
+        claimed.optedIn ? { importSubmitted: !!claimed.importSubmitted } : undefined);
       await ctx.runMutation(internal.accountBeehiiv.finish, { userId, processedOptIn: claimed.optedIn, outcome: outcome.state, result: outcome.result });
     } catch (error) {
       const failure = error instanceof SyncFailure ? error : new SyncFailure(true, "unexpected_failure");
