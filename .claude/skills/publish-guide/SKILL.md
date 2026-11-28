@@ -234,7 +234,7 @@ It fetches every cited page again and reports each outside claim as:
 - `gone`: the page has no passage close to it.
 - `unreachable`: the page could not be read. That is never a pass.
 
-It also reproduces first-hand counts from this repo (a count that no longer holds is drift), says when the last re-check ran and whether the next is overdue, and exits 1 when anything needs a person. `--write` saves `guides/records/{slug}.recheck.json`, which holds the result and the date, so commit it. It does not save when a page could not be read, so an incomplete check never resets the clock. `--pages-dir=<dir>` reads saved `<source id>.html` files instead of the web. `--every=<days>` changes the cadence.
+It also reproduces first-hand counts from this repo (a count that no longer holds is drift), says when the last re-check ran and whether the next is overdue, and exits 1 when anything needs a person. A commit or pull-request count can only be checked on a full clone, so on a shallow clone, which is what GitHub Actions checks out by default (use `fetch-depth: 0`), it is reported as `evidence-unchecked` and fails the run. `--write` saves `guides/records/{slug}.recheck.json`, which holds the result and the date, so commit it. It does not save when a page could not be read or a count could not be checked, so an incomplete check never resets the clock. `--pages-dir=<dir>` reads saved `<source id>.html` files instead of the web. `--every=<days>` changes the cadence.
 
 When a claim has drifted or is gone, read the page yourself before touching anything:
 - The meaning changed: update the claim text, the excerpt, `asOf`, the source's `dateChecked` and the guide copy together.

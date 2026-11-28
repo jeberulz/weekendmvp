@@ -106,9 +106,9 @@ Definition of done: `npm run typecheck` green, `npm run lint` with 0 errors, `np
   - Scope: `lib/guides/recheck.ts` (new), `scripts/guide-source-review.mjs` (a `recheck` subcommand), `tests/home/guide-recheck.test.ts` (new), `.claude/skills/publish-guide/SKILL.md` (step 11), `CLAUDE.md`, plan and WP docs.
   - Acceptance criteria:
     - `guide:source-review recheck` fetches every cited page again and reports each outside claim as `unchanged`, `drifted`, `gone` or `unreachable`. A drifted claim shows the old excerpt and the page's own sentence now, with how much wording they share. An unreadable page is never a pass.
-    - It reproduces first-hand counts from this repo, and a count that no longer holds fails the run.
+    - It reproduces first-hand counts from this repo. A count that no longer holds fails the run. A commit or pull-request count that the clone cannot answer (a shallow clone) is `evidence-unchecked`, fails the run and is not saved. An owner statement is never a gap.
     - It exits 0 only when nothing needs a person. `--json` gives the same result for a program.
-    - `--write` saves `guides/records/{slug}.recheck.json` with the date and the record hash, so the next run can say when the last re-check was and whether it is overdue (cadence `--every`, default 30 days). It does not save when a page could not be read. The file is not part of the record, so writing it never makes a sealed review stale.
+    - `--write` saves `guides/records/{slug}.recheck.json` with the date and the record hash, so the next run can say when the last re-check was and whether it is overdue (cadence `--every`, default 30 days). It does not save when a page could not be read or a count could not be checked. The file is not part of the record, so writing it never makes a sealed review stale.
     - `--all` rechecks every record and skips the review and re-check files beside them. `--pages-dir` reads saved pages instead of the web.
     - It changes neither the record nor the sealed review.
     - Each rule has a failing test, and drift detection, the incomplete-check guard and the overdue maths were mutation-checked.

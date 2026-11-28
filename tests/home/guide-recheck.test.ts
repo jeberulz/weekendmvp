@@ -13,8 +13,10 @@ import {
   DRIFT_MIN_SIMILARITY,
   fetchPages,
   recheckClaims,
+  recheckEvidence,
   recheckFileSchema,
   recheckIsClean,
+  recheckIsComplete,
   recheckSchedule,
   type PageResult,
 } from "@/lib/guides/recheck";
@@ -156,28 +158,74 @@ describe("recheckSchedule", () => {
   });
 });
 
+describe("recheckEvidence", () => {
+  const withEvidence = () =>
+    researchRecordSchema.parse({
+      contractVersion: 1,
+      slug: "evidence-fixture",
+      sources: [{ id: "docs", url: "https://docs.example.test/x", publisher: "Example", title: "Docs", dateChecked: "2026-11-20" }],
+      evidence: [
+        { id: "ev-files", label: "Files", verify: { type: "file-count", dir: "content/ideas", ext: ".mdx", expect: 100, atLeast: true } },
+        { id: "ev-prs", label: "Merged pull requests", verify: { type: "git-count", what: "pull-request-merges", expect: 300, atLeast: true } },
+        { id: "ev-commits", label: "Commits", verify: { type: "git-count", what: "commits", expect: 1000, atLeast: true } },
+        { id: "ev-solo", label: "Built solo", verify: { type: "owner-statement", statement: "John said he built it solo.", statedOn: "2026-11-01" } },
+      ],
+      claims: [
+        { id: "tf-1", kind: "tool-fact", text: "A fact.", sourceId: "docs", excerpt: "Create a SKILL.md file with instructions", asOf: "2026-11-20" },
+        { id: "fh-1", kind: "first-hand", text: "Many files.", evidenceId: "ev-files" },
+        { id: "fh-2", kind: "first-hand", text: "Many PRs.", evidenceId: "ev-prs" },
+        { id: "fh-3", kind: "first-hand", text: "Many commits.", evidenceId: "ev-commits" },
+        { id: "fh-4", kind: "first-hand", text: "Built solo.", evidenceId: "ev-solo" },
+      ],
+    });
+
+  test("a git count the repository cannot answer, like a shallow clone, is unchecked and never silently passed", () => {
+    const shallow = recheckEvidence(withEvidence(), { countFiles: () => 231, gitCount: () => null });
+    expect(shallow.unchecked).toEqual(["ev-prs", "ev-commits"]);
+    expect(shallow.mismatch).toEqual([]);
+  });
+
+  test("an owner statement is never a gap, because no machine can check it", () => {
+    const result = recheckEvidence(withEvidence(), { countFiles: () => 231, gitCount: () => 5000 });
+    expect(result.unchecked).toEqual([]);
+    expect(result.results.find((r) => r.evidenceId === "ev-solo")!.status).toBe("unverifiable");
+  });
+
+  test("a count that no longer holds is a mismatch, and a full clone with good counts is clean", () => {
+    expect(recheckEvidence(withEvidence(), { countFiles: () => 99, gitCount: () => 5000 }).mismatch).toEqual(["ev-files"]);
+    const clean = recheckEvidence(withEvidence(), { countFiles: () => 231, gitCount: () => 5000 });
+    expect(clean.mismatch).toEqual([]);
+    expect(clean.unchecked).toEqual([]);
+  });
+});
+
 describe("the re-check file", () => {
   const claims = () =>
     recheckClaims(record(), pages({ "docs-plan": { text: longPage("Claude reads files and creates a plan, but makes no edits until you approve it.") }, "docs-skills": { text: longPage(SKILL_EXCERPT) } }));
 
   test("it is bound to the record's hash, counts each status and parses", () => {
-    const file = buildRecheckFile({ record: record(), claims: claims(), evidenceMismatch: 0, checkedAt: "2026-11-27T12:00:00.000Z", everyDays: 30 });
+    const file = buildRecheckFile({ record: record(), claims: claims(), evidenceMismatch: 0, evidenceUnchecked: 0, checkedAt: "2026-11-27T12:00:00.000Z", everyDays: 30 });
     expect(file.recordHash).toBe(recordHash(record()));
-    expect(file.counts).toEqual({ unchanged: 1, drifted: 1, gone: 0, unreachable: 0, evidenceMismatch: 0 });
+    expect(file.counts).toEqual({ unchanged: 1, drifted: 1, gone: 0, unreachable: 0, evidenceMismatch: 0, evidenceUnchecked: 0 });
     expect(recheckFileSchema.safeParse(JSON.parse(JSON.stringify(file))).success).toBe(true);
     expect(recheckIsClean(file)).toBe(false);
   });
 
   test("a clean run is clean, and any drift, gone, unreachable page or wrong count is not", () => {
-    const clean = { counts: { unchanged: 2, drifted: 0, gone: 0, unreachable: 0, evidenceMismatch: 0 } };
+    const clean = { counts: { unchanged: 2, drifted: 0, gone: 0, unreachable: 0, evidenceMismatch: 0, evidenceUnchecked: 0 } };
     expect(recheckIsClean(clean)).toBe(true);
-    for (const key of ["drifted", "gone", "unreachable", "evidenceMismatch"] as const) {
+    expect(recheckIsComplete(clean)).toBe(true);
+    for (const key of ["drifted", "gone", "unreachable", "evidenceMismatch", "evidenceUnchecked"] as const) {
       expect(recheckIsClean({ counts: { ...clean.counts, [key]: 1 } })).toBe(false);
     }
+    // Drift and a wrong count are findings, but the check still ran. An unread page or an unchecked count did not.
+    expect(recheckIsComplete({ counts: { ...clean.counts, drifted: 3, evidenceMismatch: 1 } })).toBe(true);
+    expect(recheckIsComplete({ counts: { ...clean.counts, unreachable: 1 } })).toBe(false);
+    expect(recheckIsComplete({ counts: { ...clean.counts, evidenceUnchecked: 1 } })).toBe(false);
   });
 
   test("changing the record changes the hash the file was bound to", () => {
-    const file = buildRecheckFile({ record: record(), claims: claims(), evidenceMismatch: 0, checkedAt: "2026-11-27T12:00:00.000Z", everyDays: 30 });
+    const file = buildRecheckFile({ record: record(), claims: claims(), evidenceMismatch: 0, evidenceUnchecked: 0, checkedAt: "2026-11-27T12:00:00.000Z", everyDays: 30 });
     const edited = researchRecordSchema.parse({ ...record(), claims: record().claims.map((c) => (c.id === "tf-plan" ? { ...c, text: "A different sentence." } : c)) });
     expect(recordHash(edited)).not.toBe(file.recordHash);
   });
@@ -311,6 +359,28 @@ describe("guide:source-review recheck CLI", () => {
     expect(result.status).toBe(1);
     expect(result.stdout).toContain("recheck-not-written");
     expect(fs.existsSync(path.join(process.cwd(), rel.replace(/\.json$/, ".recheck.json")))).toBe(false);
+  });
+
+  test("a git count the clone cannot answer makes the re-check incomplete, so it fails and is not saved", () => {
+    const raw = rawRecord();
+    raw.evidence.push({ id: "ev-prs", label: "Merged pull requests", verify: { type: "git-count", what: "pull-request-merges", expect: 0, atLeast: true } } as never);
+    raw.claims.push({ id: "fh-prs", kind: "first-hand", text: "Pull requests were merged.", evidenceId: "ev-prs" } as never);
+    const rel = writeRecord("zz-test-recheck-shallow", raw);
+    const sidecar = path.join(process.cwd(), rel.replace(/\.json$/, ".recheck.json"));
+    const result = run("recheck", `--record=${rel}`, `--pages-dir=${unchangedPages()}`, NOW_ARG, "--write");
+    // Git can only count on a full clone. A shallow clone, which is what GitHub Actions checks out by default, cannot.
+    const shallow = spawnSync("git", ["rev-parse", "--is-shallow-repository"], { encoding: "utf8" }).stdout.trim() === "true";
+    if (shallow) {
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("evidence-unchecked");
+      expect(result.stdout).toContain("1 evidence unchecked");
+      expect(result.stdout).toContain("recheck-not-written");
+      expect(fs.existsSync(sidecar)).toBe(false);
+    } else {
+      expect(result.status).toBe(0);
+      expect(result.stdout).not.toContain("evidence-unchecked");
+      expect(fs.existsSync(sidecar)).toBe(true);
+    }
   });
 
   test("a re-check changes neither the record nor the sealed review", () => {

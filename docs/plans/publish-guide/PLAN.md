@@ -161,6 +161,8 @@ Keep today's behavior (email unlocks, starts the 5-day Starter) as the default f
 - Built (WP103-S7): `npm run guide:source-review -- recheck`. It reports each claim as unchanged, drifted (old excerpt and
   the page's own sentence now), gone or unreachable, reproduces first-hand counts, and saves the result and the date next
   to the record (`{slug}.recheck.json`, not part of the sealed record). It never edits the record or the review.
+- A commit or pull-request count needs a full clone. On a shallow clone it is reported unchecked and the run fails, so a scheduled
+  GitHub Action must check out with `fetch-depth: 0`.
 - Decisions left to the owner: who runs it on the cadence (a scheduled GitHub Action, or a scheduled Claude task), whether
   an unresolved drift should warn in `audit:guide`, and whether a clean mechanical re-check should refresh a source's age
   without a full re-review. Today it does not: only `dateChecked` plus a redone review resets age.

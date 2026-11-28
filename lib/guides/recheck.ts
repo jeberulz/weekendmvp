@@ -4,7 +4,7 @@ import { findContiguousSpan, normalizeForSourceMatch } from "../engine/evidence/
 
 import { recordHash } from "./guide-review.ts";
 import { EXTERNAL_CLAIM_KINDS, type ResearchRecord } from "./research-record.ts";
-import { htmlToText } from "./verify-claims.ts";
+import { htmlToText, verifyEvidence, type EvidenceResult, type EvidenceRunners } from "./verify-claims.ts";
 
 /**
  * Re-check for a guide's research record (WP103-S7). A guide's facts go stale: a vendor rewrites a docs page,
@@ -171,6 +171,28 @@ export async function fetchPages(record: ResearchRecord, fetchText: (url: string
   return pages;
 }
 
+export type EvidenceRecheck = {
+  results: EvidenceResult[];
+  /** Counts that were checked and no longer hold. */
+  mismatch: string[];
+  /** Counts a machine should be able to check but the repository could not answer, like git history on a shallow clone. */
+  unchecked: string[];
+};
+
+/**
+ * Reproduce first-hand evidence again. An owner statement can never be checked by a machine, so it is not a gap.
+ * A count the repository could not answer is one: the re-check is incomplete, and it must not look finished.
+ */
+export function recheckEvidence(record: ResearchRecord, runners: EvidenceRunners): EvidenceRecheck {
+  const results = verifyEvidence(record, runners);
+  const typeOf = (id: string) => record.evidence.find((e) => e.id === id)?.verify.type;
+  return {
+    results,
+    mismatch: results.filter((r) => r.status === "mismatch").map((r) => r.evidenceId),
+    unchecked: results.filter((r) => r.status === "unverifiable" && typeOf(r.evidenceId) !== "owner-statement").map((r) => r.evidenceId),
+  };
+}
+
 const DAY_MS = 24 * 3600 * 1000;
 
 /** How long ago a re-check ran, and whether the next one is overdue. `last` undefined means it never ran. */
@@ -196,6 +218,7 @@ export const recheckFileSchema = z.object({
     gone: z.number().int().nonnegative(),
     unreachable: z.number().int().nonnegative(),
     evidenceMismatch: z.number().int().nonnegative(),
+    evidenceUnchecked: z.number().int().nonnegative(),
   }),
   claims: z.array(
     z.object({
@@ -212,7 +235,7 @@ export const recheckFileSchema = z.object({
 
 export type RecheckFile = z.infer<typeof recheckFileSchema>;
 
-export function buildRecheckFile(input: { record: ResearchRecord; claims: readonly ClaimRecheck[]; evidenceMismatch: number; checkedAt: string; everyDays: number }): RecheckFile {
+export function buildRecheckFile(input: { record: ResearchRecord; claims: readonly ClaimRecheck[]; evidenceMismatch: number; evidenceUnchecked: number; checkedAt: string; everyDays: number }): RecheckFile {
   const count = (status: ClaimRecheckStatus) => input.claims.filter((claim) => claim.status === status).length;
   return {
     contractVersion: 1,
@@ -220,13 +243,18 @@ export function buildRecheckFile(input: { record: ResearchRecord; claims: readon
     recordHash: recordHash(input.record),
     checkedAt: input.checkedAt,
     everyDays: input.everyDays,
-    counts: { unchanged: count("unchanged"), drifted: count("drifted"), gone: count("gone"), unreachable: count("unreachable"), evidenceMismatch: input.evidenceMismatch },
+    counts: { unchanged: count("unchanged"), drifted: count("drifted"), gone: count("gone"), unreachable: count("unreachable"), evidenceMismatch: input.evidenceMismatch, evidenceUnchecked: input.evidenceUnchecked },
     claims: input.claims.map((claim) => ({ ...claim })),
   };
 }
 
-/** True when the re-check found nothing that needs a person: no drift, no gone sentence, no unreadable page, no wrong count. */
+/** True when the re-check found nothing that needs a person: no drift, no gone sentence, no unreadable page, no wrong or unchecked count. */
 export function recheckIsClean(file: Pick<RecheckFile, "counts">): boolean {
-  const { drifted, gone, unreachable, evidenceMismatch } = file.counts;
-  return drifted + gone + unreachable + evidenceMismatch === 0;
+  const { drifted, gone, unreachable, evidenceMismatch, evidenceUnchecked } = file.counts;
+  return drifted + gone + unreachable + evidenceMismatch + evidenceUnchecked === 0;
+}
+
+/** False when something could not be checked at all. An incomplete re-check must not be saved, or it would reset the cadence clock. */
+export function recheckIsComplete(file: Pick<RecheckFile, "counts">): boolean {
+  return file.counts.unreachable + file.counts.evidenceUnchecked === 0;
 }

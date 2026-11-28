@@ -184,12 +184,13 @@ async function recheckOne(recordFile, every) {
   }
 
   // First-hand evidence is checked against this repo again too. A count that no longer holds is drift.
-  let evidenceMismatch = 0;
-  for (const r of verifyClaims.verifyEvidence(rec, repoRunners())) {
-    if (r.status === "mismatch") {
-      evidenceMismatch++;
-      add("evidence-mismatch", "error", `evidence "${r.evidenceId}": ${r.detail}`);
-    } else if (r.status === "verified") add("evidence-verified", "info", `evidence "${r.evidenceId}": ${r.detail}`);
+  const evidence = recheckLib.recheckEvidence(rec, repoRunners());
+  for (const r of evidence.results) {
+    if (r.status === "mismatch") add("evidence-mismatch", "error", `evidence "${r.evidenceId}": ${r.detail}`);
+    else if (r.status === "verified") add("evidence-verified", "info", `evidence "${r.evidenceId}": ${r.detail}`);
+    else if (evidence.unchecked.includes(r.evidenceId)) {
+      add("evidence-unchecked", "error", `evidence "${r.evidenceId}": ${r.detail}. This count was not re-checked, so the re-check is incomplete. Run it on a full clone.`);
+    }
   }
 
   // A re-check does not reset a source's age. That date moves only when someone updates it and the review is redone.
@@ -199,11 +200,11 @@ async function recheckOne(recordFile, every) {
     }
   }
 
-  const report = recheckLib.buildRecheckFile({ record: rec, claims, evidenceMismatch, checkedAt: new Date(now).toISOString(), everyDays: every });
+  const report = recheckLib.buildRecheckFile({ record: rec, claims, evidenceMismatch: evidence.mismatch.length, evidenceUnchecked: evidence.unchecked.length, checkedAt: new Date(now).toISOString(), everyDays: every });
   let written = false;
   if (args.write) {
-    if (claims.some((c) => c.status === "unreachable")) {
-      add("recheck-not-written", "error", "not saved: a page could not be read, so this re-check is incomplete and saving it would reset the clock without checking everything");
+    if (!recheckLib.recheckIsComplete(report)) {
+      add("recheck-not-written", "error", "not saved: a page could not be read or a count could not be checked, so this re-check is incomplete and saving it would reset the clock without checking everything");
     } else {
       fs.writeFileSync(sidecarPath, `${JSON.stringify(report, null, 2)}\n`);
       written = true;
@@ -245,7 +246,7 @@ async function runRecheck() {
       const errors = r.findings.filter((f) => f.severity === "error").length;
       const warns = r.findings.filter((f) => f.severity === "warn").length;
       const c = r.report?.counts;
-      const tally = c ? `${c.unchanged} unchanged, ${c.drifted} drifted, ${c.gone} gone, ${c.unreachable} unreachable, ${c.evidenceMismatch} evidence mismatches` : "not run";
+      const tally = c ? `${c.unchanged} unchanged, ${c.drifted} drifted, ${c.gone} gone, ${c.unreachable} unreachable, ${c.evidenceMismatch} evidence mismatches, ${c.evidenceUnchecked} evidence unchecked` : "not run";
       console.log(`${errors === 0 ? "PASS" : "FAIL"} recheck ${r.slug}: ${tally}, ${warns} warnings`);
     }
   }
