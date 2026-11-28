@@ -101,9 +101,21 @@ Definition of done: `npm run typecheck` green, `npm run lint` with 0 errors, `np
   - Owner-provided evidence (2026-11-27): weekendmvp.app itself, built solo with Claude Code. The design, the research of over 200 startup ideas, and more features coming. This is first-hand evidence and goes in the research record as `first-hand` claims.
   - What the repo can already prove (checked 2026-11-27 with `guide:source-review verify`): 231 idea pages in `content/ideas`, 101 articles in `content/articles`. "Built solo" is an `owner-statement` that a reviewer must confirm. The pull-request and commit counts need full git history, which a shallow clone (this cloud session, and CI's default checkout) does not have, so they stay unverifiable until history is fetched in full.
   - Still needed from the owner: which specific things built with Claude Code to feature (screens, features, the Idea Engine, the audit tooling), with the real numbers behind each, and which screenshots.
-- [ ] `WP103-S7` - Re-check command and cadence
+- [x] `WP103-S7` - Re-check command and cadence
+  - Branch: `claude/wp103-s7-guide-recheck`, cut from `main` after S1 to S5 landed.
+  - Scope: `lib/guides/recheck.ts` (new), `scripts/guide-source-review.mjs` (a `recheck` subcommand), `tests/home/guide-recheck.test.ts` (new), `.claude/skills/publish-guide/SKILL.md` (step 11), `CLAUDE.md`, plan and WP docs.
+  - Acceptance criteria:
+    - `guide:source-review recheck` fetches every cited page again and reports each outside claim as `unchanged`, `drifted`, `gone` or `unreachable`. A drifted claim shows the old excerpt and the page's own sentence now, with how much wording they share. An unreadable page is never a pass.
+    - It reproduces first-hand counts from this repo. A count that no longer holds fails the run. A commit or pull-request count that the clone cannot answer (a shallow clone) is `evidence-unchecked`, fails the run and is not saved. An owner statement is never a gap.
+    - It exits 0 only when nothing needs a person. `--json` gives the same result for a program.
+    - `--write` saves `guides/records/{slug}.recheck.json` with the date and the record hash, so the next run can say when the last re-check was and whether it is overdue (cadence `--every`, default 30 days). It does not save when a page could not be read or a count could not be checked. The file is not part of the record, so writing it never makes a sealed review stale.
+    - `--all` rechecks every record and skips the review and re-check files beside them. `--pages-dir` reads saved pages instead of the web.
+    - It changes neither the record nor the sealed review.
+    - Each rule has a failing test, and drift detection, the incomplete-check guard and the overdue maths were mutation-checked.
+  - Verification: `npm run typecheck`, `npx eslint` on the changed files, `npm run test:home` (three full runs), `npm run test:security`, and a live run on the Claude Code pilot's record against Anthropic's pages, plus a throwaway copy with one drifted excerpt.
+  - Not in S7: a scheduler (a GitHub Action or a scheduled Claude task, the owner's call), an `audit:guide` warning for overdue or drifted records, refreshing a source's age from a clean re-check, and per-guide cadence stored in the record.
 
-S2 to S7 are defined in the plan. Do not start them without an owner go-ahead.
+S2 to S7 were defined in the plan and each started on an owner go-ahead.
 
 ## Out Of Scope For S1
 
