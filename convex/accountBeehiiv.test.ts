@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import schema from "./schema";
 import { syncBeehiivAccount } from "./accountBeehiiv";
 
@@ -161,4 +161,22 @@ test("verified opt-in imports without messages and waits for provider readback w
   const waiting = vi.fn().mockResolvedValueOnce(reply(404));
   await expect(syncBeehiivAccount("opt@example.test", config, waiting, { importSubmitted: true })).rejects.toThrow("awaiting_import");
   expect(waiting).toHaveBeenCalledTimes(1);
+});
+
+test("a verified opt-in racing an existing lookup is queued once and audited", async () => {
+  const t = convexTest(schema, modules);
+  const userId = await t.run(async ctx => {
+    const email = "verified@example.test";
+    const userId = await ctx.db.insert("users", { email, emailVerificationTime: 1 });
+    await ctx.db.insert("account_beehiiv_sync", { userId, email, state: "processing", attempts: 1, updatedAt: Date.now() });
+    return userId;
+  });
+  await expect(t.mutation(api.accountBeehiiv.optInAtSignup, {})).rejects.toThrow("Verified account required");
+  const auth = t.withIdentity({ subject: userId + "|session" });
+  await auth.mutation(api.accountBeehiiv.optInAtSignup, {});
+  await t.mutation(internal.accountBeehiiv.finish, { userId, outcome: "skipped", result: "held_no_email" });
+  await auth.mutation(api.accountBeehiiv.optInAtSignup, {});
+  expect(await t.mutation(internal.accountBeehiiv.claim, { userId })).toMatchObject({ optedIn: true, importSubmitted: false });
+  const row = await t.run(ctx => ctx.db.query("account_beehiiv_sync").unique());
+  expect(row).toMatchObject({ consentVersion: "signup-newsletter-v1", attempts: 1 });
 });

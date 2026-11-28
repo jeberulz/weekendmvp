@@ -122,7 +122,14 @@ export async function syncBeehiivAccount(email: string, env: Env, transport: typ
         body: JSON.stringify({ tags: [field] }),
       });
       if (!response.ok) throw new SyncFailure(response.status === 429 || response.status >= 500, "tag_update_failed");
-      return { state: "synced", result: "existing_tagged" };
+      if (optIn && env.BEEHIIV_ACCOUNT_SEGMENT_ID) {
+        const segment = encodeURIComponent(env.BEEHIIV_ACCOUNT_SEGMENT_ID);
+        const refreshed = await transport(base + "/segments/" + segment + "/recalculate", {
+          method: "PUT", headers, signal: AbortSignal.timeout(15_000),
+        });
+        if (!refreshed.ok) throw new SyncFailure(refreshed.status === 429 || refreshed.status >= 500, "segment_refresh_failed");
+      }
+      return { state: "synced", result: optIn && status === "active" ? "opted_in_active" : "existing_tagged" };
     }
     if (pendingConfirmation) return { state: "synced", result: "existing_pending_marked" };
   }
