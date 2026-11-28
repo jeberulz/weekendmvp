@@ -211,7 +211,7 @@ export const reconcileAccounts = internalMutation({
       else counts.missing++;
       if (!apply) continue;
       const pending = { state: "pending" as const, attempts: 0, updatedAt: Date.now() };
-      if (row) await ctx.db.patch(row._id, { ...pending, result: undefined });
+      if (row) await ctx.db.patch("account_beehiiv_sync", row._id, { ...pending, result: undefined });
       else await ctx.db.insert("account_beehiiv_sync", { ...pending, userId: user._id, email: user.email });
       await ctx.scheduler.runAfter((counts.missing + counts.configurationFailed) * 1500, internal.accountBeehiiv.sync, { userId: user._id });
     }
