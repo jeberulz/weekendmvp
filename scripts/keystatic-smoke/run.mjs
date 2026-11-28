@@ -18,7 +18,9 @@ assert(["dev-local", "dev-github", "build", "prod-github", "prod-disabled"].incl
 const appPort = 44074;
 const convexPort = 44075;
 const origin = `http://127.0.0.1:${appPort}`;
-const singleton = "guide-5-to-9-builder";
+const singleton = process.argv[3] ?? "guide-5-to-9-builder";
+assert(singleton === "guide-5-to-9-builder" || (mode === "dev-local" && singleton === "starter-5-to-9"),
+  "The optional Starter singleton is supported in dev-local mode");
 const fixtureFile = `content/landing-pages/${singleton}/index.json`;
 const github = mode.includes("github") || mode === "build";
 const iat = Math.floor(Date.now() / 1000);
@@ -161,7 +163,7 @@ async function checkEditor(browser) {
     return;
   }
 
-  const link = await page.waitForSelector('::-p-text(5-to-9 Builder guide)', { visible: true });
+  const link = await page.waitForSelector(`a[href="/admin/pages/singleton/${singleton}"]`, { visible: true });
   await link.click();
   const field = await page.waitForSelector('input[aria-labelledby][aria-required="true"]');
   assert.equal(new URL(page.url()).pathname, `/admin/pages/singleton/${singleton}`);

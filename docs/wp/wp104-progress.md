@@ -59,3 +59,11 @@ The production visual gate passed at 375 and 1440 pixels in both locked and retu
 PR #350 passed the hosted quality job on the submitted Builder guide branch. The review identified two gaps for future content saves: live copy was compared with the migration snapshot, and whitespace in section labels could break lookup of their copy slots.
 
 The historical comparisons now use the frozen CMS input with the workshop switch explicitly off. The live guide tests check the rendered slots, metadata and subscription behavior against the current entry. A temporary edit changed metadata and prose, moved the first gated section and padded several structural labels. All 264 homepage tests passed, and the guide audit passed with its existing upsell warning. The original guide JSON was restored. Checklist section tokens now resolve for the same reordered sections as guide prose.
+
+## PR 2 · Starter migration
+
+Local branch `codex/wp104-starter-cms` stacks on the verified builder guide migration. The Starter's two production screenshots, rendered section tree and JSON-LD were captured from main at `692b7b3f` before the Keystatic switch.
+
+The Starter reads a JSON singleton through Keystatic and still prerenders. The trace contains the singleton. Editors can update the fixed opening and final signup copy, arrange the four middle sections and edit the five emails in sequence. Form placement, automation IDs, subscription callbacks, live idea count and offer routing come from code. Build-Along link labels contain a validated price token and render the standard USD price from live configuration.
+
+Both final screenshots match pixel for pixel. The actual production HTML matches the published section and JSON-LD fixtures. Restoring the original adjacent text grouping resolved small raster differences in the first candidate. The editor browser test round-tripped the Starter JSON, and the full suite passed 7,196 tests. Lint, both typechecks and trace checks passed.
