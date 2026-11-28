@@ -9,3 +9,5 @@ Configure the serving Convex deployment with the matching publication and API cr
 For historical accounts, invoke the internal `accountBeehiiv:reconcileAccounts` with `{"paginationOpts":{"cursor":null,"numItems":25}}`, passing each returned continueCursor until isDone. Inspect counts before repeating with `apply:true`. Apply schedules one job per eligible account with a missing sync row or an exact configuration failure. A second pass leaves queued or completed jobs alone. Provider write uncertainties require review before replay.
 
 Verification uses synthetic HTTP responses and Convex tests. Production activation and backfill require the owner to confirm the destination and confirmation email side effect.
+
+The owner's subsequent email hold uses `BEEHIIV_ACCOUNT_MODE=existing_only` and the dedicated account field. Missing subscriber records stay in Convex with result `held_no_email`. Existing active or pending subscriptions get the matching subscriber tag and segment field. This mode ignores the account automation ID. It does not change a subscriber's status. Changing publication delivery rules or releasing held addresses is separate from activating this worker.
