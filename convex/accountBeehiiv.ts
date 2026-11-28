@@ -162,11 +162,11 @@ export const optInAtSignup = mutation({
     const consent = { signupOptInAt: Date.now(), consentVersion: "signup-newsletter-v1" as const };
     if (row?.state === "processing") {
       // The existing worker will schedule the consented job when its lookup finishes.
-      await ctx.db.patch(row._id, consent);
+      await ctx.db.patch("account_beehiiv_sync", row._id, consent);
       return null;
     }
     const pending = { ...consent, state: "pending" as const, updatedAt: Date.now(), attempts: 0 };
-    if (row) await ctx.db.patch(row._id, { ...pending, result: undefined });
+    if (row) await ctx.db.patch("account_beehiiv_sync", row._id, { ...pending, result: undefined });
     else await ctx.db.insert("account_beehiiv_sync", { ...pending, userId, email: user.email });
     await ctx.scheduler.runAfter(0, internal.accountBeehiiv.sync, { userId });
     return null;
@@ -181,20 +181,20 @@ export const claim = internalMutation({
     if (!row || row.state === "synced" || row.state === "skipped" || row.state === "failed") return null;
     if (row.state === "processing") {
       if (Date.now() - row.updatedAt >= LEASE_MS - 30_000) {
-        await ctx.db.patch(row._id, { state: "failed", result: "worker_outcome_unknown", updatedAt: Date.now() });
+        await ctx.db.patch("account_beehiiv_sync", row._id, { state: "failed", result: "worker_outcome_unknown", updatedAt: Date.now() });
       }
       return null;
     }
     const user = await ctx.db.get(userId);
     if (!user?.emailVerificationTime || user.accountClosureRequestedAt !== undefined || user.isAnonymous || user.email !== row.email) {
-      await ctx.db.patch(row._id, { state: "skipped", result: "account_ineligible", updatedAt: Date.now() });
+      await ctx.db.patch("account_beehiiv_sync", row._id, { state: "skipped", result: "account_ineligible", updatedAt: Date.now() });
       return null;
     }
     if (row.attempts >= MAX_ATTEMPTS) {
-      await ctx.db.patch(row._id, { state: "failed", result: "retry_limit", updatedAt: Date.now() });
+      await ctx.db.patch("account_beehiiv_sync", row._id, { state: "failed", result: "retry_limit", updatedAt: Date.now() });
       return null;
     }
-    await ctx.db.patch(row._id, { state: "processing", attempts: row.attempts + 1, updatedAt: Date.now() });
+    await ctx.db.patch("account_beehiiv_sync", row._id, { state: "processing", attempts: row.attempts + 1, updatedAt: Date.now() });
     await ctx.scheduler.runAfter(LEASE_MS, internal.accountBeehiiv.sync, { userId });
     return { email: row.email, ...(row.signupOptInAt ? { optedIn: true, importSubmitted: !!row.importSubmitted } : {}) };
   },
@@ -212,12 +212,12 @@ export const finish = internalMutation({
     const row = await ctx.db.query("account_beehiiv_sync").withIndex("by_user", (q) => q.eq("userId", userId)).unique();
     if (!row || row.state !== "processing") return null;
     if (row.signupOptInAt && !processedOptIn) {
-      await ctx.db.patch(row._id, { state: "pending", attempts: 0, updatedAt: Date.now(), result: undefined });
+      await ctx.db.patch("account_beehiiv_sync", row._id, { state: "pending", attempts: 0, updatedAt: Date.now(), result: undefined });
       await ctx.scheduler.runAfter(0, internal.accountBeehiiv.sync, { userId });
       return null;
     }
     const retry = outcome === "retry" && row.attempts < MAX_ATTEMPTS;
-    await ctx.db.patch(row._id, {
+    await ctx.db.patch("account_beehiiv_sync", row._id, {
       ...(result === "awaiting_import" ? { importSubmitted: true } : {}),
       state: retry ? "pending" : outcome === "retry" ? "failed" : outcome,
       result: retry ? result : outcome === "retry" ? `${result}:retry_limit` : result,
@@ -238,7 +238,7 @@ export const retryFailed = internalMutation({
       row.result === "configuration_required" || row.result?.startsWith("lookup_") ||
       (row.signupOptInAt && ["import_unavailable:retry_limit", "import_failed:retry_limit", "awaiting_import:retry_limit", "segment_refresh_failed:retry_limit"].includes(row.result ?? ""))
     )) return false;
-    await ctx.db.patch(row._id, { state: "pending", attempts: 0, result: undefined, updatedAt: Date.now() });
+    await ctx.db.patch("account_beehiiv_sync", row._id, { state: "pending", attempts: 0, result: undefined, updatedAt: Date.now() });
     await ctx.scheduler.runAfter(0, internal.accountBeehiiv.sync, { userId });
     return true;
   },
