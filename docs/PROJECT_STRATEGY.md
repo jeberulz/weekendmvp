@@ -55,6 +55,8 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 
 | WP105 | Next.js 16.4.6 security upgrade | Work Package | `codex/wp93-next-security-16-4-6` | See [WP105 progress](wp/wp105-progress.md) | Install Next.js 16.4.6, align the Next.js ESLint package, enable the security upgrade policy, and verify the app. |
 
+| WP107 | Beehiiv account audience | Work Package | `codex/wp107-beehiiv-account-audience` | Implementation | [Stories](wp/wp107-stories.md) |
+
 ## Launch Workspace Program (WP67)
 
 Reserved 2026-11-05 by owner ruling D14 (`docs/wp/RULINGS.md`). Manifest: `docs/wp/wp67-program-manifest.md`. Plan: `docs/plans/launch-workspace/`. Status board: `docs/wp/wp67-progress.md`. No other work may use WP67–WP87.
